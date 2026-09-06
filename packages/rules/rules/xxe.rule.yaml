@@ -1,0 +1,52 @@
+id: xxe
+title: XML external entity processing
+stride: information-disclosure
+cwe: 611
+capec: [CAPEC-201]
+asvs: V5.5.2
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html
+function: development
+
+description: >
+  The asset parses XML from its callers with entity resolution left on, so a document
+  can name a local file or an internal URL and have the parser fetch it into the
+  response.
+
+detection_logic: >
+  An element that declares xml among the formats it accepts, on a technology the
+  catalogue marks vulnerable to XXE — application servers and SOAP services, where the
+  historic parser defaults are the dangerous ones — and that does not record
+  validates_schema.
+
+risk_assessment: >
+  Impact is High rather than Medium because the primitive reads arbitrary files with
+  the process's own privileges and doubles as an SSRF into the internal network.
+  Likelihood follows exposure.
+
+false_positives: >
+  Modern parsers that ship with entity resolution disabled by default, and services
+  whose XML never comes from an untrusted source — an internal feed from a system you
+  operate. Schema validation is the recorded control here, but disabling DTD support
+  outright is the stronger fix, so a service that has done that is a false positive
+  worth suppressing explicitly.
+
+mitigation: >
+  Disable DTDs and external entity resolution on every parser instance, rather than
+  relying on a library default that a version bump can change back. Validate against a
+  schema afterwards.
+action: Set the parser to reject DOCTYPE declarations, and fail closed if the setting is unavailable.
+check: Post a document containing an external entity pointing at a file you control and confirm nothing is fetched.
+
+scope: element
+match: |
+  'xml' in el.accepts_formats
+  && el.technology.vulnerable_to_xxe
+  && !el.controls.validates_schema
+
+likelihood: |
+  el.internet_reachable ? 'likely' : 'unlikely'
+impact: high
+
+data_breach_probability: probable
+risk_title: "{{ el.name }} parses caller-supplied XML with entity resolution unconfirmed"
+tags: [input-validation, xml]

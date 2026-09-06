@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=./tmc.schema.json
+#
+# Run `tmc schema -o tmc.schema.json` once and your editor will complete every
+# field and enum in this file.
+#
+# The one rule worth knowing: a security control you omit means "nobody has
+# recorded this", not "this is absent". Findings that depend on an unrecorded
+# control come back marked low confidence, naming the gap. Write the control as
+# `false` when you know it is missing.
+
+schema: tmc/1.0
+
+meta:
+  title: My System
+  owner: your-team
+  business_criticality: important   # archive | operational | important | critical | mission-critical
+  questions:
+    Which of these boundaries is actually enforced, and by what?: null
+
+data_assets:
+  customer_data:
+    description: What you would rather not see in a breach notification.
+    classification: confidential    # public | internal | restricted | confidential | strictly-confidential
+    integrity: important            # archive | operational | important | critical | mission-critical
+    availability: important
+    quantity: many                  # very-few | few | many | very-many
+    pii: true
+
+elements:
+  user:
+    name: End user
+    kind: actor
+    technology: browser
+    human: true
+    internet_facing: true
+
+  api:
+    name: API service
+    technology: web-service-rest    # run `tmc rules list` and see docs for the catalogue
+    size: service
+    machine: container
+    internet_facing: true
+    custom_code: true
+    processes: [customer_data]
+    controls:
+      validates_input: true
+      uses_parameterized_queries: true
+
+  db:
+    name: Primary database
+    technology: database
+    encryption: transparent
+    stores: [customer_data]
+
+flows:
+  - id: user_to_api
+    from: user
+    to: api
+    protocol: https
+    authentication: session-id      # none | credentials | session-id | token | client-certificate | two-factor
+    authorization: end-user-identity
+    sends: [customer_data]
+
+  - id: api_to_db
+    from: api
+    to: db
+    protocol: sql-access-protocol-encrypted
+    authentication: credentials
+    authorization: technical-user
+    sends: [customer_data]
+    receives: [customer_data]
+
+trust_boundaries:
+  internet:
+    type: network-untrusted
+    contains: [user]
+  production:
+    type: network-cloud-provider
+    contains: [api, db]
+
+assumptions: []
+manual_threats: []
+risk_tracking: {}

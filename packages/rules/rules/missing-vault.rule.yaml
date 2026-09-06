@@ -1,0 +1,50 @@
+id: missing-vault
+title: Credentials held outside a vault
+stride: information-disclosure
+cwe: 522
+capec: [CAPEC-560]
+asvs: V6.4
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html
+function: architecture
+
+description: >
+  A secret lives in an asset that was not built to hold secrets, so it inherits that
+  asset's backup policy, access control and logging rather than a vault's.
+
+detection_logic: >
+  An in-scope element that stores a data asset flagged as credentials, where the
+  element's technology is not a vault or an HSM. Storing is the test, not processing:
+  a service that receives a credential, uses it and forgets it is doing the right
+  thing, while one that keeps its own copy is the problem.
+
+risk_assessment: >
+  Impact is High regardless of where the element sits, because a leaked credential is
+  a leaked credential; likelihood rises when the holder is reachable from the
+  internet, since the paths to it are then not limited to insiders.
+
+false_positives: >
+  A credential cached in memory for the life of a request, which some teams model as
+  stored, and bootstrap secrets that a platform injects and rotates automatically. If
+  a secret is only ever held transiently, list it under processes rather than stores.
+
+mitigation: >
+  Move the secret into a vault and have the holder fetch it at runtime with a workload
+  identity, so the credential is never at rest inside the application and rotation
+  does not require a redeploy.
+action: Replace the stored secret with a vault lookup and rotate the exposed value.
+check: Grep the asset's configuration and images for the secret; confirm only a vault reference remains.
+
+scope: element
+match: |
+  el.stores.exists(d, d.credentials)
+  && !el.technology.vault
+  && !el.technology.hsm
+
+likelihood: |
+  el.internet_reachable ? 'likely' : 'unlikely'
+impact: |
+  el.stores.exists(d, d.credentials && d.integrity >= 'mission-critical') ? 'very-high' : 'high'
+
+data_breach_probability: probable
+risk_title: "{{ el.name }} stores credentials outside a vault"
+tags: [secrets, credentials]

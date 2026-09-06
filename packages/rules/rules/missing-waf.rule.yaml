@@ -1,0 +1,51 @@
+id: missing-waf
+title: Internet-facing application with no web application firewall
+stride: tampering
+cwe: 693
+capec: [CAPEC-1]
+asvs: V1.14.6
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Virtual_Patching_Cheat_Sheet.html
+function: operations
+
+description: >
+  A publicly reachable application takes web traffic with nothing in front to filter
+  it, so a newly published exploit reaches the code the day it is released and stays
+  reachable until the code ships.
+
+detection_logic: >
+  An internet-facing element that is a web application or web service, is not itself a
+  WAF, and has no incoming flow originating from one. A WAF is compensating rather than
+  primary, so this rule is deliberately independent of whether the application's own
+  input handling is recorded.
+
+risk_assessment: >
+  Rated modestly on impact, because a WAF prevents nothing on its own; what it buys is
+  the window between a disclosure and a deploy. Likelihood is Likely because internet
+  scanning is continuous and untargeted.
+
+false_positives: >
+  Applications behind a managed edge — a CDN with rules enabled, a cloud load balancer
+  with a policy attached — that the model does not draw as an element, and APIs where a
+  schema-validating gateway does the same job under a different name. Add the edge as
+  an element with the waf or gateway technology and the finding retires.
+
+mitigation: >
+  Put a WAF or schema-validating gateway in front, run it in blocking mode against
+  known signatures, and treat the rules as a place to apply a virtual patch quickly
+  rather than as a permanent substitute for fixing the code.
+action: Deploy a WAF or gateway in front of the application and record it in the model.
+check: Send a request that the rule set should block and confirm it never reaches the application log.
+
+scope: element
+match: |
+  el.internet_facing
+  && (el.technology.web_application || el.technology.web_service)
+  && !el.technology.waf
+  && !el.incoming.exists(f, f.from.technology.waf)
+
+likelihood: likely
+impact: medium
+
+data_breach_probability: improbable
+risk_title: "{{ el.name }} faces the internet with no web application firewall in front"
+tags: [operations, edge, defence-in-depth]

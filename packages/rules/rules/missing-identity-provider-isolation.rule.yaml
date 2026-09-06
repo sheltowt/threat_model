@@ -1,0 +1,55 @@
+id: missing-identity-provider-isolation
+title: Identity infrastructure shares a boundary with its relying parties
+stride: elevation-of-privilege
+cwe: 668
+capec: [CAPEC-593]
+asvs: V1.2.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
+function: architecture
+
+description: >
+  The identity provider or identity store sits in the same network as the applications
+  that rely on it. Compromising any of them puts an attacker beside the component that
+  decides who everyone is.
+
+detection_logic: >
+  An element whose technology is an identity provider or an identity store, placed in
+  no boundary at all or in one that also contains something which is neither. Identity
+  infrastructure is the one component whose compromise invalidates every other
+  authentication decision in the model, so it earns a boundary of its own.
+
+risk_assessment: >
+  Impact is Very High by construction: signing keys and password hashes together are a
+  key to the whole estate. Likelihood is judged on whether the shared boundary contains
+  anything internet-reachable.
+
+false_positives: >
+  A managed identity service modelled as an internal element for convenience, and
+  coarse network drawings where one boundary represents several. If the provider is
+  somebody else's SaaS, model it as external and out of scope.
+
+mitigation: >
+  Give identity infrastructure a dedicated segment, allow only the authentication
+  protocol in, keep administrative access on a separate path with its own second
+  factor, and store signing keys in an HSM rather than on the host.
+action: Move the identity component into its own boundary and restrict inbound traffic to the auth protocol.
+check: From a relying-party host, confirm nothing but the authentication endpoint answers.
+
+scope: element
+match: |
+  (el.technology.identity_provider || el.technology.identity_store)
+  && (
+    !has(el.boundary)
+    || el.boundary.all_members.exists(other,
+         other.id != el.id
+         && !other.technology.identity_provider
+         && !other.technology.identity_store)
+  )
+
+likelihood: |
+  el.internet_reachable ? 'likely' : 'unlikely'
+impact: very-high
+
+data_breach_probability: probable
+risk_title: "{{ el.name }} is not isolated from the applications that rely on it"
+tags: [identity, segmentation, architecture]

@@ -1,0 +1,57 @@
+id: dos-risky-access-across-trust-boundary
+title: Unthrottled access to an availability-critical asset
+stride: denial-of-service
+cwe: 770
+capec: [CAPEC-125, CAPEC-227]
+asvs: V11.1.4
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html
+function: operations
+
+description: >
+  Traffic crosses a network boundary into an asset the business needs available, and
+  nothing on either the link or the target records a limit on how much of it there can
+  be.
+
+detection_logic: >
+  A non-response flow crossing a network trust boundary into an in-scope asset rated
+  critical or better for availability, where the caller either comes from an untrusted
+  network or is reachable from an internet-facing element, and neither the link nor the
+  target records rate_limited. When neither has been recorded the finding is raised at
+  low confidence and names the missing fields.
+
+risk_assessment: >
+  Likelihood is Likely when the traffic originates outside a trusted network, since the
+  caller set is then unbounded and the cost of sending is the attacker's rather than
+  yours. Impact follows how critical the target's availability is.
+
+false_positives: >
+  Links whose volume is bounded by construction — a scheduled batch, a queue consumer
+  pulling at its own pace — and paths already throttled by a platform layer the model
+  does not draw, such as a mesh or an ingress controller. Record rate_limited on the
+  flow in that case.
+
+mitigation: >
+  Rate limit per caller identity rather than per address, set concurrency and payload
+  size caps, and shed load at the edge so the pressure never reaches the asset you care
+  about. Load shedding that returns quickly beats a queue that grows.
+action: Apply a per-identity rate limit and a concurrency cap on this path.
+check: Drive the endpoint past the intended limit and confirm it returns a throttling response rather than degrading.
+
+scope: flow
+match: |
+  !flow.is_response
+  && !flow.to.out_of_scope
+  && flow.crosses_network_boundary
+  && (flow.from_internet || flow.from.internet_reachable)
+  && flow.to.availability >= 'critical'
+  && !flow.controls.rate_limited
+  && !flow.to.controls.rate_limited
+
+likelihood: |
+  flow.from_internet ? 'likely' : 'unlikely'
+impact: |
+  flow.to.availability >= 'mission-critical' ? 'high' : 'medium'
+
+data_breach_probability: improbable
+risk_title: "{{ flow.to.name }} accepts unthrottled traffic over {{ flow.id }}"
+tags: [availability, rate-limiting]

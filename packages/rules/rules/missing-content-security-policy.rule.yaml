@@ -1,0 +1,49 @@
+id: missing-content-security-policy
+title: Missing content security policy
+stride: tampering
+cwe: 1021
+capec: [CAPEC-63]
+asvs: V14.4.3
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html
+function: development
+
+description: >
+  The application ships no policy telling the browser where script may come from, so a
+  single injection flaw anywhere in the page turns straight into code execution in the
+  user's session.
+
+detection_logic: >
+  An in-scope web application that does not record uses_content_security_policy. This
+  is a defence-in-depth control, so it fires independently of whether output encoding
+  is in place; the two mitigate the same class of bug at different layers and both are
+  worth having.
+
+risk_assessment: >
+  Rated on the modest side deliberately. A missing policy is not itself exploitable —
+  it is the absence of the thing that would have contained the flaw you have not found
+  yet — so likelihood reflects exposure and impact stays at the middle of the range.
+
+false_positives: >
+  APIs that never return HTML, single-purpose endpoints with no browser surface, and
+  applications where the policy is set by a reverse proxy the model does not draw. The
+  first two are better modelled as a web service than as a web application.
+
+mitigation: >
+  Serve a policy with a nonce-based script-src and no unsafe-inline, then tighten
+  frame-ancestors, base-uri and form-action. Start in report-only mode against real
+  traffic rather than guessing at the directive set.
+action: Add a Content-Security-Policy header with a nonce-based script-src.
+check: Load the application and confirm the header is present, then check the report endpoint for violations from normal use.
+
+scope: element
+match: |
+  el.technology.web_application
+  && !el.controls.uses_content_security_policy
+
+likelihood: |
+  el.internet_facing ? 'likely' : 'unlikely'
+impact: medium
+
+data_breach_probability: improbable
+risk_title: "{{ el.name }} serves pages without a content security policy"
+tags: [web, hardening]

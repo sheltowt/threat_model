@@ -1,0 +1,256 @@
+threagile_version: 1.0.0
+title: Some Example Application
+date: 2026-04-01
+author:
+  name: John Doe
+  homepage: www.example.com
+
+business_criticality: important
+
+management_summary_comment: >
+  Just some sample text. Findings are prioritised by the risk they carry.
+
+questions:
+  How are the admin credentials rotated?: Quarterly, by the platform team.
+  Who owns the ERP interface?: null
+
+abuse_cases:
+  Denial-of-Service: An attacker exhausts the order API and blocks real customers.
+  CPU-Cycle Theft: An attacker runs their own workload on our build agents.
+
+security_requirements:
+  Input Validation: Strict input validation is required to avoid injection.
+  Securing Administrative Access: Administrative access must use a jump host.
+
+business_overview:
+  description: The application sells widgets to consumers across Europe.
+
+technical_overview:
+  description: A Java web application behind an nginx load balancer.
+
+data_assets:
+  Customer Contract Summary:
+    id: contract-summary
+    description: Customer Contract Summary
+    usage: business
+    origin: Customer
+    owner: Company XYZ
+    quantity: many
+    confidentiality: restricted
+    integrity: operational
+    availability: operational
+    justification_cia_rating: Just some line of justification.
+    tags:
+      - gdpr
+
+  Client Application Code:
+    id: client-application-code
+    description: Angular and JavaScript client code
+    usage: devops
+    origin: Company ABC
+    owner: Company ABC
+    quantity: very-few
+    confidentiality: public
+    integrity: critical
+    availability: important
+    justification_cia_rating: Tampered code endangers every customer.
+
+  Server Application Code:
+    id: server-application-code
+    description: Server side application code
+    usage: devops
+    quantity: very-few
+    confidentiality: internal
+    integrity: mission-critical
+    availability: important
+
+technical_assets:
+  Apache Webserver:
+    id: apache-webserver
+    description: Apache Webserver hosting the API code and client-side code
+    type: process
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    size: application
+    technology: web-server
+    tags:
+      - linux
+    internet: false
+    machine: container
+    encryption: none
+    owner: Company ABC
+    confidentiality: confidential
+    integrity: critical
+    availability: critical
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: true
+    data_assets_processed:
+      - contract-summary
+      - client-application-code
+      - server-application-code
+    data_formats_accepted:
+      - json
+      - serialization
+    communication_links:
+      Database Traffic:
+        target: sql-database
+        description: Link to the database
+        protocol: jdbc
+        authentication: credentials
+        authorization: technical-user
+        vpn: false
+        ip_filtered: false
+        readonly: false
+        usage: business
+        data_assets_sent:
+          - contract-summary
+        data_assets_received:
+          - contract-summary
+      ERP System Traffic:
+        target: erp-system
+        description: Link to the ERP system
+        protocol: https
+        authentication: token
+        authorization: end-user-identity
+        vpn: true
+        ip_filtered: false
+        readonly: true
+        usage: business
+        data_assets_received:
+          - contract-summary
+
+  Identity Provider:
+    id: identity-provider
+    description: Identity provider for the whole estate
+    type: process
+    usage: business
+    size: service
+    technologies:
+      - identity-provider
+    internet: false
+    machine: virtual
+    encryption: transparent
+    owner: Company ABC
+    confidentiality: strictly-confidential
+    integrity: mission-critical
+    availability: critical
+    redundant: true
+
+  SQL Database:
+    id: sql-database
+    description: The database behind the application
+    type: datastore
+    usage: business
+    size: component
+    technology: database
+    internet: false
+    machine: virtual
+    encryption: data-with-symmetric-shared-key
+    owner: Company ABC
+    confidentiality: strictly-confidential
+    integrity: critical
+    availability: critical
+    data_assets_stored:
+      - contract-summary
+      - client-application-code
+    data_formats_accepted:
+      - serialization
+
+  ERP System:
+    id: erp-system
+    description: ERP system, out of our control
+    type: process
+    usage: business
+    out_of_scope: true
+    justification_out_of_scope: Owned by finance and modelled separately.
+    size: system
+    technology: erp
+    internet: false
+    machine: virtual
+    encryption: transparent
+
+  Marketing CMS:
+    id: marketing-cms
+    description: CMS running the public site
+    type: process
+    usage: business
+    size: application
+    technology: cms-with-widgets
+    internet: true
+    machine: container
+    encryption: none
+
+  External Development Client:
+    id: external-dev-client
+    description: External developer laptop
+    type: external-entity
+    usage: devops
+    used_as_client_by_human: true
+    size: system
+    technology: devops-client
+    internet: true
+    machine: physical
+    communication_links:
+      Git Repository Code Write Access:
+        target: apache-webserver
+        description: Deploys the built artefact
+        protocol: ssh
+        authentication: client-certificate
+        authorization: technical-user
+        usage: devops
+        vpn: true
+        data_assets_sent:
+          - server-application-code
+
+trust_boundaries:
+  Web DMZ:
+    id: web-dmz
+    description: Web DMZ
+    type: network-cloud-security-group
+    technical_assets_inside:
+      - apache-webserver
+      - marketing-cms
+
+  Application Network:
+    id: application-network
+    description: Application Network
+    type: network-cloud-provider
+    technical_assets_inside:
+      - identity-provider
+      - sql-database
+    trust_boundaries_nested:
+      - web-dmz
+
+  Dev Network:
+    id: dev-network
+    description: Development network
+    type: network-on-prem
+    technical_assets_inside:
+      - external-dev-client
+
+shared_runtimes:
+  WebApp and Website Runtime:
+    id: webapp-runtime
+    description: A shared Kubernetes runtime
+    technical_assets_running:
+      - apache-webserver
+      - marketing-cms
+
+risk_tracking:
+  unencrypted-asset@sql-database:
+    status: accepted
+    justification: Risk accepted as tolerable
+    ticket: XYZ-1234
+    date: 2026-01-04
+    checked_by: John Doe
+  missing-authentication@apache-webserver@erp-system:
+    status: in-progress
+    justification: Waiting on the ERP team
+    ticket: XYZ-5678
+    date: 2026-02-11
+    checked_by: Jane Roe
+  bogus-entry@nowhere:
+    status: not-a-real-status
+    justification: Should be dropped with a warning

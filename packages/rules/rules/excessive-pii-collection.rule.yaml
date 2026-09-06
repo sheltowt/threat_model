@@ -1,0 +1,56 @@
+id: excessive-pii-collection
+title: Excessive personal data aggregated in one asset
+stride: information-disclosure
+linddun: linking
+cwe: 359
+capec: [CAPEC-118]
+asvs: V8.3
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html
+function: business-side
+
+description: >
+  One processing asset holds several distinct categories of personal data at once, at
+  least one of them in volume. The categories are more dangerous together than apart:
+  joining them is what turns records into people.
+
+detection_logic: >
+  An in-scope element that is not itself a datastore, which processes or stores two or
+  more data assets flagged as personal data, at least one of them with a quantity of
+  many or more. Datastores are excluded because a system of record is supposed to hold
+  the whole picture; the finding is about processing tiers and edge services that have
+  accumulated one.
+
+risk_assessment: >
+  Likelihood is Very Likely for an internet-facing asset, since a single flaw there
+  exposes the aggregate rather than a slice of it. Impact rises where any of the
+  categories is under a named regulation, because the consequences of the same breach
+  are then not only reputational.
+
+false_positives: >
+  Assets that hold the categories only in transit, never together in one record, and
+  services whose access to several categories is real but strictly segregated per
+  request. If the aggregation is genuinely necessary, the finding is still the right
+  place to write down why.
+
+mitigation: >
+  Split the categories across assets that do not share a compromise, replace direct
+  identifiers with tokens resolvable only by the asset that must resolve them, and
+  narrow each service's read scope to the fields it uses rather than the record it sits
+  on.
+action: Reduce this asset to the personal data fields it actually needs, and tokenise the rest.
+check: List every personal data field the asset can read, and for each one name the feature that requires it.
+
+scope: element
+match: |
+  !el.technology.datastore
+  && size(el.handles.filter(d, d.pii)) >= 2
+  && el.handles.exists(d, d.pii && d.quantity >= 'many')
+
+likelihood: |
+  el.internet_facing ? 'very-likely' : 'likely'
+impact: |
+  el.handles.exists(d, d.pii && size(d.regulations) > 0) ? 'high' : 'medium'
+
+data_breach_probability: probable
+risk_title: "{{ el.name }} aggregates several categories of personal data"
+tags: [privacy, data-minimisation]

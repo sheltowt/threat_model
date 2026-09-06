@@ -1,0 +1,53 @@
+id: unbounded-agent-autonomy
+title: Agent acting without a human in the loop
+stride: elevation-of-privilege
+cwe: 862
+capec: [CAPEC-248]
+asvs: V4.1.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
+function: architecture
+
+description: >
+  An agent takes actions on other systems with nothing recorded about a human approving
+  them. Its plans come from a model whose input an attacker may influence, and its
+  effects are real.
+
+detection_logic: >
+  An element whose technology is an AI agent, with at least one outgoing flow that is
+  not read-only, which does not record human_in_the_loop. Write-capable outgoing links
+  are the test: an agent that only reads has a disclosure problem, while an agent that
+  writes has an authorisation problem, and this rule is about the second.
+
+risk_assessment: >
+  Impact follows the integrity rating of what the agent can write to, since the concrete
+  outcome is an unintended change to a downstream system. Likelihood is Very Likely
+  where the agent is reachable from the internet and its instructions are therefore
+  influenceable.
+
+false_positives: >
+  Agents confined to a sandbox whose writes are all reversible, and pipelines where a
+  reviewer approves at a later gate that the model does not draw. Approval that happens
+  outside the diagram is approval nobody is measuring; draw it.
+
+mitigation: >
+  Give the agent its own identity with narrowly scoped permissions rather than the
+  operator's, require explicit confirmation for irreversible or costly actions, cap the
+  rate and blast radius of what it can do unattended, and log every action with the
+  prompt that caused it so a bad run can be reconstructed and undone.
+action: Add an approval step for irreversible actions and scope the agent's credentials down.
+check: Ask the agent to perform a destructive action and confirm it stops for approval.
+
+scope: element
+match: |
+  el.technology.ai_agent
+  && size(el.outgoing.filter(f, !f.readonly)) > 0
+  && !el.controls.human_in_the_loop
+
+likelihood: |
+  el.internet_reachable ? 'very-likely' : 'likely'
+impact: |
+  el.integrity >= 'critical' ? 'very-high' : 'high'
+
+data_breach_probability: possible
+risk_title: "{{ el.name }} takes write actions with no recorded human approval"
+tags: [ai, authorization, agents]

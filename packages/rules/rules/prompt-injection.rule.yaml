@@ -1,0 +1,56 @@
+id: prompt-injection
+title: Prompt injection
+stride: tampering
+cwe: 77
+capec: [CAPEC-248]
+asvs: V5.2.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html
+function: development
+
+description: >
+  Untrusted text reaches a model that treats instructions and data as the same thing.
+  Whatever the caller writes competes with the system prompt on equal terms, and there
+  is no parser boundary to enforce which one wins.
+
+detection_logic: >
+  An element on a technology the catalogue marks vulnerable to prompt injection, with at
+  least one incoming flow from an untrusted network, from an internet-reachable asset,
+  or from a human, which does not record content_filtered. The input source matters
+  because injection needs a channel: a model fed only from an internal fixed corpus has
+  a much narrower problem than one summarising whatever a user pastes in.
+
+risk_assessment: >
+  Impact follows what the model can reach rather than what it says, approximated by the
+  element's confidentiality rating: a model that can call tools or read documents can be
+  made to exfiltrate through them. Likelihood is Very Likely on any internet-reachable
+  path, since the attack requires only text.
+
+false_positives: >
+  Deployments whose inputs are entirely trusted and templated, and those where filtering
+  happens in a gateway the model does not draw. Note that content filtering is a
+  mitigation and not a fix — treat a recorded content_filtered as reducing frequency
+  rather than closing the class.
+
+mitigation: >
+  Assume the prompt is attacker-controlled and design so that it does not matter: give
+  the model no capability the caller should not have, require confirmation for
+  consequential actions, keep retrieved content clearly separated from instructions, and
+  validate the model's output before anything acts on it.
+action: Constrain the model's tools and permissions to what an untrusted caller may already do.
+check: Feed a document containing an instruction that contradicts the system prompt and confirm the model does not follow it.
+
+scope: element
+match: |
+  el.technology.vulnerable_to_prompt_injection
+  && el.incoming.exists(f,
+       !f.is_response && (f.from_internet || f.from.internet_reachable || f.from.human))
+  && !el.controls.content_filtered
+
+likelihood: |
+  el.internet_reachable ? 'very-likely' : 'likely'
+impact: |
+  el.confidentiality >= 'confidential' || el.integrity >= 'critical' ? 'high' : 'medium'
+
+data_breach_probability: possible
+risk_title: "{{ el.name }} accepts untrusted input into its prompt"
+tags: [ai, injection, input-validation]

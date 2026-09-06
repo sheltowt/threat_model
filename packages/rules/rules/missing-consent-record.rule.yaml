@@ -1,0 +1,52 @@
+id: missing-consent-record
+title: Personal data with no recorded origin or basis
+stride: repudiation
+linddun: unawareness
+cwe: 359
+capec: [CAPEC-118]
+asvs: V8.3
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html
+function: business-side
+
+description: >
+  The model holds personal data and does not say where it came from. Without that,
+  nobody can answer the two questions every privacy review starts with: on what basis
+  do we hold this, and were the people it describes told.
+
+detection_logic: >
+  A data asset flagged as personal data whose origin field is not set. Origin stands in
+  for provenance and lawful basis together — collected from the subject, derived from
+  behaviour, purchased from a broker, inferred by a model — because those four have
+  very different consent stories and the difference is invisible once the data is in a
+  table.
+
+risk_assessment: >
+  Impact is Medium where a named regulation applies and Low otherwise, because the
+  concrete consequence is an unanswerable audit rather than a technical exposure.
+  Likelihood is Likely: the question does get asked, eventually, by someone with a
+  deadline.
+
+false_positives: >
+  Data whose provenance is recorded thoroughly in a separate register that the model
+  simply references elsewhere, and derived assets whose origin is obvious from the
+  pipeline that produces them. Writing one line in origin is cheaper than explaining
+  either.
+
+mitigation: >
+  Record the origin and the lawful basis on the data asset, then check that the basis
+  actually covers every use the model shows — a basis for collection is not a basis for
+  every downstream transfer this diagram contains.
+action: Set origin on the data asset and name the lawful basis for holding it.
+check: Pick one record and trace it back to the collection point and the notice shown there.
+
+scope: data
+match: |
+  data.pii && !has(data.origin)
+
+likelihood: likely
+impact: |
+  size(data.regulations) > 0 ? 'medium' : 'low'
+
+data_breach_probability: improbable
+risk_title: "Personal data {{ data.id }} has no recorded origin"
+tags: [privacy, compliance, hygiene]

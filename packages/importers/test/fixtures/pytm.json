@@ -1,0 +1,136 @@
+{
+  "name": "Order service",
+  "description": "pytm model of the order service, exported with --json",
+  "elements": [
+    {
+      "__class__": "Boundary",
+      "name": "Internet",
+      "description": "Hostile network",
+      "inBoundary": null
+    },
+    {
+      "__class__": "Boundary",
+      "name": "Server/DB",
+      "description": "Production subnet",
+      "inBoundary": null
+    },
+    {
+      "__class__": "Data",
+      "name": "Order details",
+      "description": "Basket contents and delivery address",
+      "classification": "SENSITIVE",
+      "isPII": true,
+      "isCredentials": false,
+      "carriedBy": []
+    },
+    {
+      "__class__": "Data",
+      "name": "DB credentials",
+      "description": "Service account password",
+      "classification": "TOP_SECRET",
+      "isPII": false,
+      "isCredentials": true
+    },
+    {
+      "__class__": "Actor",
+      "name": "Customer",
+      "description": "A person buying something",
+      "inBoundary": "Internet",
+      "inScope": true
+    },
+    {
+      "__class__": "Server",
+      "name": "Web Server",
+      "description": "The web server hosting the order UI",
+      "inBoundary": "Server/DB",
+      "inScope": true,
+      "controls": {
+        "isHardened": true,
+        "sanitizesInput": false,
+        "encodesOutput": true,
+        "authenticatesSource": false,
+        "hasAccessControl": false,
+        "implementsCSRFToken": true,
+        "validatesInput": false,
+        "usesParameterizedInput": false
+      }
+    },
+    {
+      "__class__": "Datastore",
+      "name": "SQL Database",
+      "description": "The database holding orders",
+      "inBoundary": "Server/DB",
+      "inScope": true,
+      "isEncryptedAtRest": true,
+      "data": ["Order details"],
+      "controls": {
+        "hasAccessControl": true,
+        "isHardened": false,
+        "validatesInput": false
+      }
+    },
+    {
+      "__class__": "Lambda",
+      "name": "Order cleanup job",
+      "description": "Nightly tidy up of abandoned baskets",
+      "inBoundary": "Server/DB",
+      "inScope": true,
+      "controls": { "implementsPOLP": false }
+    },
+    {
+      "__class__": "LLM",
+      "name": "Support assistant",
+      "description": "Answers order questions in the help widget",
+      "inBoundary": "Server/DB",
+      "inScope": true,
+      "controls": { "contentFiltered": false, "humanInTheLoop": false }
+    },
+    {
+      "__class__": "ExternalEntity",
+      "name": "Payment gateway",
+      "description": "Third party card processor",
+      "inBoundary": "Internet",
+      "inScope": false,
+      "outOfScopeReason": "Operated by the processor under its own attestation."
+    },
+    {
+      "__class__": "Dataflow",
+      "name": "Submit order",
+      "description": "Customer submits the checkout form",
+      "source": "Customer",
+      "sink": "Web Server",
+      "protocol": "HTTPS",
+      "dstPort": 443,
+      "data": ["Order details"],
+      "controls": { "isEncrypted": true, "authenticatesSource": true, "usesVPN": false }
+    },
+    {
+      "__class__": "Dataflow",
+      "name": "Insert order",
+      "description": "Web server writes the order row",
+      "source": "Web Server",
+      "sink": "SQL Database",
+      "protocol": "MySQL",
+      "dstPort": 3306,
+      "data": ["Order details", "DB credentials"],
+      "controls": { "usesParameterizedInput": false, "authenticatesSource": false }
+    },
+    {
+      "__class__": "Dataflow",
+      "name": "Charge card",
+      "source": "Web Server",
+      "sink": "Payment gateway",
+      "protocol": "HTTPS",
+      "dstPort": 443,
+      "controls": { "authenticatesDestination": true }
+    },
+    {
+      "__class__": "Dataflow",
+      "name": "Ask the model",
+      "source": "Web Server",
+      "sink": "Support assistant",
+      "protocol": "Weird-RPC",
+      "dstPort": 9000
+    }
+  ]
+}

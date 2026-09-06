@@ -1,0 +1,58 @@
+id: pii-crossing-untrusted-boundary
+title: Personal data sent into an untrusted network
+stride: information-disclosure
+linddun: data-disclosure
+cwe: 359
+capec: [CAPEC-117]
+asvs: V8.3
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html
+function: business-side
+
+description: >
+  Personal data leaves the estate for an asset on an untrusted network. Once it lands
+  there, what happens to it is governed by someone else's retention policy, someone
+  else's access control and someone else's breach notification.
+
+detection_logic: >
+  A non-response flow carrying at least one data asset flagged as personal data, whose
+  destination is internet-facing or sits in a boundary typed network-untrusted, where
+  the source is not itself internet-facing. Excluding internet-facing sources keeps the
+  ordinary case — a user's own browser sending their own data in — out of the results.
+
+risk_assessment: >
+  Likelihood is Likely where the personal data carries a named regulation, since an
+  onward transfer of regulated data is a documented obligation rather than a judgement
+  call. Impact follows the classification of what crosses.
+
+false_positives: >
+  Transfers to a processor under a contract that already covers them, and destinations
+  modelled as untrusted only because the model has one boundary for everything external.
+  In the first case the finding is still the right anchor for recording the contract and
+  the lawful basis.
+
+mitigation: >
+  Send the least you can: a token or a hashed identifier rather than the record, fields
+  the recipient actually uses rather than the object you happen to have. Encrypt in
+  transit, pin the recipient, and record the lawful basis, the retention period and the
+  deletion path before the first transfer rather than after the first question.
+action: Minimise and tokenise the payload, and record the basis for this transfer.
+check: Capture one real request and confirm every personal data field in it is needed by the recipient.
+
+scope: flow
+match: |
+  flow.carries_pii
+  && !flow.is_response
+  && !flow.from.internet_facing
+  && (
+    flow.to.internet_facing
+    || (has(flow.to.boundary) && flow.to.boundary.type == 'network-untrusted')
+  )
+
+likelihood: |
+  flow.carries.exists(d, d.pii && size(d.regulations) > 0) ? 'likely' : 'unlikely'
+impact: |
+  flow.max_classification >= 'confidential' ? 'high' : 'medium'
+
+data_breach_probability: probable
+risk_title: "{{ flow.id }} carries personal data to {{ flow.to.name }} outside the estate"
+tags: [privacy, transport, compliance]

@@ -1,0 +1,51 @@
+id: cross-site-scripting
+title: Cross-site scripting
+stride: tampering
+cwe: 79
+capec: [CAPEC-63, CAPEC-591]
+asvs: V5.3.3
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html
+function: development
+
+description: >
+  Custom code renders data into a page without encoding it for the context it lands
+  in, so a value an attacker supplies executes in the browser of whoever views it.
+
+detection_logic: >
+  An in-scope element containing custom-developed code, on a technology the catalogue
+  marks vulnerable to XSS, that does not record encodes_output. Output encoding is the
+  control that decides this; input validation is listed separately because it is a
+  useful defence and not a sufficient one.
+
+risk_assessment: >
+  Likelihood is Very Likely for an internet-facing application, where the attacker
+  chooses both the payload and the victim. Impact follows what a session on this
+  application is worth, which is the element's own confidentiality rating.
+
+false_positives: >
+  Applications that render no untrusted data at all — a static marketing page behind
+  the same deployment — and frameworks that encode by default and are used without
+  raw-HTML escapes. React or Angular used without dangerouslySetInnerHTML is a real
+  mitigation; record encodes_output so the rule stops asking.
+
+mitigation: >
+  Encode on output, per context, using the template engine's contextual escaping rather
+  than a hand-rolled filter, and add a content security policy so a missed spot is not
+  immediately fatal.
+action: Audit every template that interpolates request data and switch to contextual escaping.
+check: Submit a payload that closes the surrounding attribute or tag and confirm it renders as text.
+
+scope: element
+match: |
+  el.custom_code
+  && el.technology.vulnerable_to_xss
+  && !el.controls.encodes_output
+
+likelihood: |
+  el.internet_facing ? 'very-likely' : 'likely'
+impact: |
+  el.confidentiality >= 'confidential' ? 'high' : 'medium'
+
+data_breach_probability: possible
+risk_title: "{{ el.name }} may render untrusted data without encoding it"
+tags: [web, injection, input-validation]

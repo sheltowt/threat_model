@@ -1,0 +1,54 @@
+id: missing-vault-isolation
+title: Vault shares a trust boundary with its clients
+stride: elevation-of-privilege
+cwe: 668
+capec: [CAPEC-560]
+asvs: V6.4
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html
+function: architecture
+
+description: >
+  The vault sits in the same network as the things it issues secrets to, so a foothold
+  in any of them is already inside the vault's perimeter and only the vault's own
+  authentication stands in the way.
+
+detection_logic: >
+  A vault or HSM that is either placed in no trust boundary at all, or shares one with
+  at least one element that is not itself a vault. The whole point of a vault is that
+  compromising a client should not move the attacker closer to the secret store; a
+  shared boundary removes the one control that made that true.
+
+risk_assessment: >
+  Impact is Very High because a vault holds, by construction, the material that opens
+  everything else. Likelihood is judged on whether anything sharing the boundary is
+  reachable from the internet.
+
+false_positives: >
+  Models that describe network topology coarsely, where one "production" boundary
+  stands in for a segmented estate, and managed vault services whose real isolation is
+  the provider's, not yours. In the second case model the vault as external rather
+  than as a member of your network.
+
+mitigation: >
+  Give the vault its own network boundary with an explicit allow-list of client
+  identities, and terminate its API on a listener that nothing else in the estate can
+  reach.
+action: Move the vault into a dedicated segment and restrict inbound access to named workloads.
+check: From a shell on a client host, confirm nothing but the vault's API port is reachable, and that unauthenticated calls are refused.
+
+scope: element
+match: |
+  (el.technology.vault || el.technology.hsm)
+  && (
+    !has(el.boundary)
+    || el.boundary.all_members.exists(other,
+         other.id != el.id && !other.technology.vault && !other.technology.hsm)
+  )
+
+likelihood: |
+  el.internet_reachable ? 'likely' : 'unlikely'
+impact: very-high
+
+data_breach_probability: probable
+risk_title: "{{ el.name }} is not isolated from the assets it serves secrets to"
+tags: [secrets, segmentation, architecture]

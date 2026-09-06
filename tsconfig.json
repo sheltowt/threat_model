@@ -1,0 +1,11 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/rules" },
+    { "path": "packages/render" },
+    { "path": "packages/report" },
+    { "path": "packages/importers" },
+    { "path": "apps/cli" }
+  ]
+}

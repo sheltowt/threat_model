@@ -1,0 +1,45 @@
+id: unnecessary-communication-link
+title: Communication link carrying no data
+stride: information-disclosure
+cwe: 1059
+capec: [CAPEC-116]
+asvs: V1.1.2
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html
+function: architecture
+
+description: >
+  A link exists between two assets and carries nothing the model names. Every rule that
+  reasons about classification, credentials or personal data is blind on this link, so
+  it is a hole in the analysis as well as possibly a hole in the network.
+
+detection_logic: >
+  A flow whose combined sends and receives lists are empty. The check is on the model's
+  content rather than on the system: a link that really carries no data is a network
+  path that should not be open, and a link that carries data nobody listed is a link
+  every other rule silently under-rates.
+
+risk_assessment: >
+  Impact Low, likelihood Likely. This is a completeness finding whose value is that it
+  explains why other findings are missing rather than that it describes an attack.
+
+false_positives: >
+  Health checks, heartbeats and connectivity probes, which genuinely carry nothing
+  worth naming. Tag those links and suppress them deliberately rather than leaving the
+  reader to guess which empty links were intentional.
+
+mitigation: >
+  List the data the link carries, or remove the link and close the network path that
+  allows it.
+action: Record the data assets this link carries, or delete it.
+check: Observe the link in production and name what actually crosses it.
+
+scope: flow
+match: |
+  size(flow.carries) == 0
+
+likelihood: likely
+impact: low
+
+data_breach_probability: improbable
+risk_title: "{{ flow.id }} carries no declared data"
+tags: [hygiene, completeness]

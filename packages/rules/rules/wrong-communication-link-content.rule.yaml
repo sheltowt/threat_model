@@ -1,0 +1,53 @@
+id: wrong-communication-link-content
+title: Communication link inconsistent with its own description
+stride: information-disclosure
+cwe: 1059
+capec: [CAPEC-116]
+asvs: V1.1.2
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html
+function: architecture
+
+description: >
+  The link contradicts itself. Either it uses a protocol that never leaves a process
+  while connecting assets in different trust boundaries, or it is marked read-only and
+  sends data anyway. In both cases something downstream is being told the wrong thing.
+
+detection_logic: >
+  Two independent contradictions, reported together because they have the same cause
+  and the same fix. First, a protocol the catalogue marks process-local — an in-process
+  call, IPC, container spawning — on a flow whose endpoints are in different trust
+  boundaries. Second, a flow marked read-only that nonetheless lists assets in its
+  sends. The first matters most because the transport rules deliberately skip
+  process-local links: an unencrypted network hop mislabelled as a library call is
+  invisible to every one of them.
+
+risk_assessment: >
+  Rated on likelihood rather than impact. The direct consequence is that other rules
+  under-report on this link, so what the rating expresses is how likely that silence is
+  to be hiding something.
+
+false_positives: >
+  Boundaries drawn around logical rather than physical groupings, where two components
+  in different boxes really do share a process — a plugin and its host, a sidecar in the
+  same pod modelled separately. Merging them, or giving them a shared
+  execution-environment boundary, removes the contradiction honestly.
+
+mitigation: >
+  Correct whichever half is wrong: give the link the protocol it really uses, or place
+  the endpoints in the same boundary. For the read-only case, either clear the flag or
+  move the payload into receives.
+action: Reconcile the protocol and boundary placement, or the read-only flag and the payload.
+check: Confirm on the host whether the two endpoints share a process, and whether the link writes.
+
+scope: flow
+match: |
+  (flow.protocol.process_local && flow.crosses_boundary)
+  || (flow.readonly && size(flow.sends) > 0)
+
+likelihood: |
+  flow.max_classification >= 'confidential' ? 'likely' : 'unlikely'
+impact: medium
+
+data_breach_probability: possible
+risk_title: "{{ flow.id }} contradicts its own protocol or direction"
+tags: [hygiene, modelling]

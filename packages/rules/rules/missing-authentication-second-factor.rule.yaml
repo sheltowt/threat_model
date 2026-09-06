@@ -1,0 +1,57 @@
+id: missing-authentication-second-factor
+title: Missing second factor on a human-driven login
+stride: spoofing
+cwe: 308
+capec: [CAPEC-560, CAPEC-600]
+asvs: V2.8
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html
+function: business-side
+
+description: >
+  A person signs in to something valuable with one factor, so every credential-stuffing
+  list, phishing kit and shoulder-surf is a complete authentication bypass.
+
+detection_logic: >
+  A flow whose source is a human, arriving at a technology the catalogue marks a
+  high-value target or carrying devops usage, where the recorded authentication is
+  something weaker than two-factor and the link does not record uses_mfa. Flows with no
+  authentication at all are left to missing-authentication, which says something
+  stronger. Where uses_mfa is simply unrecorded the finding is raised at low confidence
+  and names that field, because "nobody wrote it down" is not the same as "there is no
+  second factor".
+
+risk_assessment: >
+  Likelihood is Very Likely for a login reachable from the internet, since automated
+  credential stuffing needs no target selection. Impact tracks the confidentiality of
+  what the account can reach.
+
+false_positives: >
+  Consumer flows where a second factor is a deliberate, documented business trade-off,
+  and sessions established behind an SSO portal that already enforced MFA upstream — in
+  the latter case the second factor exists, it is just on a hop the model does not
+  draw. Record uses_mfa on the link to settle it either way.
+
+mitigation: >
+  Require a phishing-resistant second factor — a passkey or a hardware authenticator —
+  for administrative access without exception, and step it up on sensitive actions for
+  everyone else.
+action: Enforce MFA on this login path and record it on the flow.
+check: Attempt the login with a valid password alone and confirm it is refused.
+
+scope: flow
+match: |
+  flow.from.human
+  && !flow.is_response
+  && flow.authentication != 'none'
+  && flow.authentication < 'two-factor'
+  && (flow.to.technology.high_value_target || flow.usage == 'devops')
+  && !flow.controls.uses_mfa
+
+likelihood: |
+  flow.from_internet ? 'very-likely' : 'likely'
+impact: |
+  flow.usage == 'devops' || flow.to.confidentiality >= 'confidential' ? 'high' : 'medium'
+
+data_breach_probability: possible
+risk_title: "{{ flow.from.name }} signs in to {{ flow.to.name }} with a single factor"
+tags: [authentication, mfa]

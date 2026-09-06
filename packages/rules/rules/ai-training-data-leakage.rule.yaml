@@ -1,0 +1,54 @@
+id: ai-training-data-leakage
+title: Sensitive data exposed through a model
+stride: information-disclosure
+linddun: data-disclosure
+cwe: 200
+capec: [CAPEC-118]
+asvs: V8.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html
+function: architecture
+
+description: >
+  An AI component handles personal or confidential data. Whatever the component is
+  trained on, fine-tuned with, or given as context becomes reachable through its output,
+  and the output is not something access control can scope per caller.
+
+detection_logic: >
+  An element on a technology the catalogue marks as AI — a model, an agent, or a vector
+  database — which processes or stores at least one asset flagged as personal data or
+  classified confidential or above, and does not record content_filtered. Vector stores
+  count: an embedding index of confidential documents answers questions about them for
+  anyone who can query it.
+
+risk_assessment: >
+  Impact follows the sensitivity of what the component holds. Likelihood is Very Likely
+  where the component is internet-reachable, because extraction needs only queries and
+  the boundary between tenants inside a single model is not one the platform enforces.
+
+false_positives: >
+  Components whose sensitive data is scoped per request and never retained — no
+  fine-tuning, no shared cache, no shared index — and deployments where retrieval is
+  filtered by the caller's own permissions before anything reaches the model. Both are
+  the right design; record content_filtered and describe the scoping.
+
+mitigation: >
+  Keep sensitive data out of training and fine-tuning corpora, filter retrieval by the
+  caller's permissions before the model sees the content rather than after, partition
+  indexes per tenant, and redact identifiers on the way into any shared store.
+action: Scope retrieval to the caller's own permissions and exclude sensitive data from training.
+check: Query as a low-privilege caller for content only a privileged one should see, and confirm it is not returned or paraphrased.
+
+scope: element
+match: |
+  el.technology.ai
+  && el.handles.exists(d, d.pii || d.classification >= 'confidential')
+  && !el.controls.content_filtered
+
+likelihood: |
+  el.internet_reachable ? 'very-likely' : 'likely'
+impact: |
+  el.confidentiality >= 'strictly-confidential' ? 'very-high' : 'high'
+
+data_breach_probability: probable
+risk_title: "{{ el.name }} may disclose sensitive data through model output"
+tags: [ai, privacy, confidentiality]

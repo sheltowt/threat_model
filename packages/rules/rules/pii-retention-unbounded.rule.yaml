@@ -1,0 +1,54 @@
+id: pii-retention-unbounded
+title: Personal data stored in volume with nobody accountable for it
+stride: information-disclosure
+linddun: non-compliance
+cwe: 359
+capec: [CAPEC-118]
+asvs: V8.3
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html
+function: business-side
+
+description: >
+  A large body of personal data is held durably and no owner is recorded. Retention
+  periods do not enforce themselves; they are enforced by someone whose job it is, and
+  the model does not say who that is.
+
+detection_logic: >
+  A data asset flagged as personal data, stored by at least one in-scope element, with a
+  quantity of many or more and no owner recorded. Durable storage is what makes
+  retention a question at all — data that only passes through has no retention period
+  to exceed — and volume is what makes the accumulated liability material.
+
+risk_assessment: >
+  Impact follows classification and regulation. Likelihood is Likely rather than
+  higher: unbounded retention does not cause an incident, it decides how bad one is when
+  it comes, and it grows quietly the whole time.
+
+false_positives: >
+  Assets governed by a retention policy held outside the model, and stores where
+  deletion is automatic at the platform level — a TTL on the table, a lifecycle rule on
+  the bucket. Naming an owner on the data asset costs one line and makes the next
+  reviewer's job possible.
+
+mitigation: >
+  Name an owner, set a retention period in the store rather than in a document, and
+  implement deletion as a scheduled job that proves it ran. Confirm that a deletion
+  request reaches replicas, exports, caches, analytics copies and backups, since those
+  are where the data survives the policy.
+action: Assign an owner and enforce a retention period in the storage layer.
+check: Confirm records older than the intended period are absent from the store and from its backups.
+
+scope: data
+match: |
+  data.pii
+  && data.quantity >= 'many'
+  && !has(data.owner)
+  && data.stored_by.exists(e, !e.out_of_scope)
+
+likelihood: likely
+impact: |
+  data.classification >= 'confidential' || size(data.regulations) > 0 ? 'high' : 'medium'
+
+data_breach_probability: probable
+risk_title: "Personal data {{ data.id }} is stored in volume with no owner"
+tags: [privacy, retention, compliance]

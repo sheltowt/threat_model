@@ -1,0 +1,304 @@
+{
+  "version": "2.4.0",
+  "summary": {
+    "title": "Storefront checkout",
+    "owner": "platform-security",
+    "description": "Card checkout path for the storefront, drawn in Threat Dragon.",
+    "id": 0
+  },
+  "detail": {
+    "contributors": [{ "name": "B. Shelton" }, { "name": "A. Reviewer" }],
+    "diagramTop": 1,
+    "reviewer": "security-guild",
+    "threatTop": 4,
+    "diagrams": [
+      {
+        "id": 0,
+        "title": "Checkout flow",
+        "diagramType": "STRIDE",
+        "description": "Main checkout data flow diagram",
+        "thumbnail": "./public/content/images/thumbnail.stride.jpg",
+        "version": "2.4.0",
+        "cells": [
+          {
+            "position": { "x": 20, "y": 20 },
+            "size": { "width": 260, "height": 200 },
+            "shape": "trust-boundary-box",
+            "id": "b1f0c0de-0000-4000-8000-000000000001",
+            "zIndex": -1,
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Public Internet",
+              "description": "Everything outside our perimeter",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": { "x": 340, "y": 20 },
+            "size": { "width": 520, "height": 460 },
+            "shape": "trust-boundary-box",
+            "id": "b1f0c0de-0000-4000-8000-000000000002",
+            "zIndex": -1,
+            "data": {
+              "type": "tm.Boundary",
+              "name": "AWS VPC",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": { "x": 380, "y": 260 },
+            "size": { "width": 440, "height": 180 },
+            "shape": "trust-boundary-box",
+            "id": "b1f0c0de-0000-4000-8000-000000000003",
+            "zIndex": -1,
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Data tier",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "shape": "trust-boundary-curve",
+            "id": "b1f0c0de-0000-4000-8000-000000000004",
+            "source": { "x": 300, "y": 30 },
+            "target": { "x": 300, "y": 460 },
+            "vertices": [],
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Legacy separation",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": { "x": 80, "y": 60 },
+            "size": { "width": 100, "height": 60 },
+            "shape": "actor",
+            "id": "a0000000-0000-4000-8000-000000000001",
+            "zIndex": 1,
+            "data": {
+              "type": "tm.Actor",
+              "name": "Shopper Browser",
+              "description": "A customer buying something",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "providesAuthentication": true,
+              "threats": [
+                {
+                  "id": "11111111-0000-4000-8000-000000000001",
+                  "number": 1,
+                  "title": "Session cookie theft",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Spoofing",
+                  "description": "An attacker replays a stolen session cookie.",
+                  "mitigation": "Bind the session to the client and shorten its lifetime.",
+                  "modelType": "STRIDE",
+                  "score": ""
+                }
+              ]
+            }
+          },
+          {
+            "position": { "x": 400, "y": 60 },
+            "size": { "width": 140, "height": 70 },
+            "shape": "process",
+            "id": "c0000000-0000-4000-8000-000000000001",
+            "zIndex": 1,
+            "data": {
+              "type": "tm.Process",
+              "name": "Storefront web app",
+              "description": "Server rendered checkout UI",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "privilegeLevel": "user",
+              "isWebApplication": true,
+              "handlesCardPayment": true,
+              "handlesGoodsOrServices": true,
+              "threats": [
+                {
+                  "id": "11111111-0000-4000-8000-000000000002",
+                  "number": 2,
+                  "title": "Checkout page accepts unvalidated coupon codes",
+                  "status": "Open",
+                  "severity": "TBD",
+                  "type": "Business logic bypass",
+                  "description": "The coupon field is not constrained.",
+                  "mitigation": "Validate coupon codes server side.",
+                  "modelType": "STRIDE",
+                  "score": ""
+                }
+              ]
+            }
+          },
+          {
+            "position": { "x": 620, "y": 60 },
+            "size": { "width": 140, "height": 70 },
+            "shape": "process",
+            "id": "c0000000-0000-4000-8000-000000000002",
+            "zIndex": 1,
+            "data": {
+              "type": "tm.Process",
+              "name": "Payments API",
+              "outOfScope": false,
+              "hasOpenThreats": false,
+              "privilegeLevel": "service",
+              "isWebApplication": false,
+              "handlesCardPayment": true,
+              "threats": []
+            }
+          },
+          {
+            "position": { "x": 420, "y": 300 },
+            "size": { "width": 140, "height": 70 },
+            "shape": "store",
+            "id": "d0000000-0000-4000-8000-000000000001",
+            "zIndex": 1,
+            "data": {
+              "type": "tm.Store",
+              "name": "Orders database",
+              "description": "Order and token records",
+              "outOfScope": false,
+              "hasOpenThreats": true,
+              "isALog": false,
+              "storesCredentials": false,
+              "isEncrypted": true,
+              "isSigned": false,
+              "storesInventory": true,
+              "threats": [
+                {
+                  "id": "11111111-0000-4000-8000-000000000003",
+                  "number": 3,
+                  "title": "Backup snapshots are readable by the whole account",
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Information disclosure",
+                  "description": "RDS snapshots inherit the account default policy.",
+                  "mitigation": "Restrict snapshot sharing and encrypt with a CMK.",
+                  "modelType": "STRIDE",
+                  "score": ""
+                }
+              ]
+            }
+          },
+          {
+            "position": { "x": 640, "y": 300 },
+            "size": { "width": 140, "height": 70 },
+            "shape": "store",
+            "id": "d0000000-0000-4000-8000-000000000002",
+            "zIndex": 1,
+            "data": {
+              "type": "tm.Store",
+              "name": "Audit log",
+              "outOfScope": true,
+              "reasonOutOfScope": "Managed by the platform team under its own model.",
+              "hasOpenThreats": false,
+              "isALog": true,
+              "isEncrypted": false,
+              "threats": []
+            }
+          },
+          {
+            "shape": "flow",
+            "id": "f0000000-0000-4000-8000-000000000001",
+            "source": { "cell": "a0000000-0000-4000-8000-000000000001" },
+            "target": { "cell": "c0000000-0000-4000-8000-000000000001" },
+            "vertices": [],
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Place order",
+              "description": "Checkout form submission",
+              "outOfScope": false,
+              "hasOpenThreats": true,
+              "protocol": "HTTPS",
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "isBidirectional": false,
+              "threats": [
+                {
+                  "id": "11111111-0000-4000-8000-000000000004",
+                  "number": 4,
+                  "title": "Card data logged by the edge proxy",
+                  "status": "Open",
+                  "severity": "Low",
+                  "type": "Information disclosure",
+                  "description": "Request bodies are logged in full at the edge.",
+                  "mitigation": "Redact the card field before logging.",
+                  "modelType": "STRIDE",
+                  "score": ""
+                }
+              ]
+            }
+          },
+          {
+            "shape": "flow",
+            "id": "f0000000-0000-4000-8000-000000000002",
+            "source": { "cell": "c0000000-0000-4000-8000-000000000001" },
+            "target": { "cell": "c0000000-0000-4000-8000-000000000002" },
+            "vertices": [],
+            "data": {
+              "type": "tm.Flow",
+              "name": "Tokenise card",
+              "outOfScope": false,
+              "hasOpenThreats": false,
+              "protocol": "HTTPS",
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "isBidirectional": true,
+              "threats": []
+            }
+          },
+          {
+            "shape": "flow",
+            "id": "f0000000-0000-4000-8000-000000000003",
+            "source": { "cell": "c0000000-0000-4000-8000-000000000002" },
+            "target": { "cell": "d0000000-0000-4000-8000-000000000001" },
+            "vertices": [],
+            "data": {
+              "type": "tm.Flow",
+              "name": "Persist order",
+              "outOfScope": false,
+              "hasOpenThreats": false,
+              "protocol": "SQL",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "isBidirectional": false,
+              "threats": []
+            }
+          },
+          {
+            "shape": "flow",
+            "id": "f0000000-0000-4000-8000-000000000004",
+            "source": { "cell": "c0000000-0000-4000-8000-000000000002" },
+            "target": { "cell": "d0000000-0000-4000-8000-000000000002" },
+            "vertices": [],
+            "data": {
+              "type": "tm.Flow",
+              "name": "Write audit record",
+              "outOfScope": false,
+              "hasOpenThreats": false,
+              "protocol": "AMQP-X",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "isBidirectional": false,
+              "threats": []
+            }
+          },
+          {
+            "position": { "x": 20, "y": 500 },
+            "size": { "width": 200, "height": 40 },
+            "shape": "text",
+            "id": "e0000000-0000-4000-8000-000000000001",
+            "data": { "type": "tm.Text", "name": "Diagram v3, reviewed 2026-08-01" }
+          }
+        ]
+      }
+    ]
+  }
+}

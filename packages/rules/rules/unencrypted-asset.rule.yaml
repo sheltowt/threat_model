@@ -1,0 +1,54 @@
+id: unencrypted-asset
+title: Unencrypted data at rest
+stride: information-disclosure
+cwe: 311
+capec: [CAPEC-37]
+asvs: V6.2
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html
+function: operations
+
+description: >
+  A datastore holds sensitive data with no encryption applied, so anyone who reaches
+  the storage layer — a stolen backup, a snapshot, a mislaid disk, a compromised
+  hypervisor — reads it directly.
+
+detection_logic: >
+  A datastore rated confidential or above whose encryption is recorded as none, and
+  whose technology does not declare that unencrypted storage is tolerated. The
+  element's rating is used rather than the classification of any one asset, because
+  it already reflects the most sensitive thing the store holds.
+
+risk_assessment: >
+  Likelihood is Likely when the store is reachable from an internet-facing asset,
+  because an application-level compromise then reaches the plaintext without needing
+  physical or platform access. Impact follows the store's own confidentiality.
+
+false_positives: >
+  Stores whose encryption is provided by a layer the model does not describe, such as
+  a managed database with encryption enabled by the provider or a self-encrypting
+  volume. Record that as transparent rather than leaving it at none; note that
+  transparent encryption still leaves the data readable to anything holding a valid
+  connection, which missing-pii-encryption-at-rest reports separately.
+
+mitigation: >
+  Encrypt at rest, and choose the key custody that matches the threat: transparent
+  encryption defends against a lost disk, application-managed keys defend against a
+  compromised database account, and end-user keys defend against you.
+action: Enable encryption on the store and record which key material protects it.
+check: Read a page of the underlying storage and confirm it is not plaintext.
+
+scope: element
+match: |
+  el.technology.datastore
+  && el.confidentiality >= 'confidential'
+  && el.encryption == 'none'
+  && !el.technology.tolerates_unencrypted_storage
+
+likelihood: |
+  el.internet_reachable ? 'likely' : 'unlikely'
+impact: |
+  el.confidentiality >= 'strictly-confidential' ? 'high' : 'medium'
+
+data_breach_probability: probable
+risk_title: "{{ el.name }} stores {{ el.confidentiality }} data without encryption"
+tags: [crypto, storage, confidentiality]

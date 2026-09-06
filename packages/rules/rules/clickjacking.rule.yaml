@@ -1,0 +1,54 @@
+id: clickjacking
+title: Clickjacking
+stride: tampering
+cwe: 1021
+capec: [CAPEC-103, CAPEC-181]
+asvs: V14.4.7
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking_Defense_Cheat_Sheet.html
+function: development
+
+description: >
+  Nothing stops another site from loading this application in a frame, so a user can be
+  induced to click a control they cannot see, in a session they are already
+  authenticated for.
+
+detection_logic: >
+  An internet-facing web application that does not record
+  uses_content_security_policy, which is where frame-ancestors would be declared. This
+  shares a control with missing-content-security-policy and is reported separately
+  because the fix and the consequence are different: frame-ancestors is a one-line
+  directive, and its absence is exploitable on its own rather than only in combination
+  with another flaw.
+
+risk_assessment: >
+  Impact tracks the integrity rating of the application, since the outcome is an action
+  taken as the user rather than data read. Likelihood is Likely only where the
+  application is internet-facing; framing a page nobody outside can load is not
+  useful.
+
+false_positives: >
+  Applications with no clickable state-changing controls, applications that are
+  deliberately embeddable — a payment widget, an embedded map — and those whose proxy
+  sets frame-ancestors on the way out. Embeddable by design is the common case; record
+  the control as true and add a note.
+
+mitigation: >
+  Set frame-ancestors in the content security policy to the exact origins allowed to
+  embed the page, using 'none' when that is nobody, and require re-authentication or a
+  typed confirmation for the actions worth stealing a click for.
+action: Add a frame-ancestors directive to the application's policy.
+check: Load the application inside an iframe on a foreign origin and confirm the browser blocks it.
+
+scope: element
+match: |
+  el.technology.web_application
+  && el.internet_facing
+  && !el.controls.uses_content_security_policy
+
+likelihood: likely
+impact: |
+  el.integrity >= 'critical' ? 'high' : 'medium'
+
+data_breach_probability: improbable
+risk_title: "{{ el.name }} can be framed by another origin"
+tags: [web, hardening]

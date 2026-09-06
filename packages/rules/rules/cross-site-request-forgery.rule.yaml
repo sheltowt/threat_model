@@ -1,0 +1,50 @@
+id: cross-site-request-forgery
+title: Cross-site request forgery
+stride: spoofing
+cwe: 352
+capec: [CAPEC-62]
+asvs: V4.2.2
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+function: development
+
+description: >
+  A web application acts on a request purely because it carried a valid session
+  cookie, so any other site a logged-in user visits can make that request on their
+  behalf.
+
+detection_logic: >
+  An in-scope web application that does not record implements_csrf_token. The rule
+  keys on the technology being a web application rather than on the presence of forms,
+  because a cookie-authenticated API endpoint is just as forgeable as a form post and
+  is more often forgotten.
+
+risk_assessment: >
+  Impact follows the integrity rating of the application, since forgery is a write
+  primitive rather than a read one. Likelihood is Likely wherever the application is
+  reachable by a browser that also visits the wider web.
+
+false_positives: >
+  Applications that authenticate with a bearer token in a header rather than a cookie,
+  which the browser will not attach cross-origin, and those that rely on SameSite=Strict
+  cookies. Both are real defences; record implements_csrf_token to reflect them, or
+  model the authentication on the inbound flow as token.
+
+mitigation: >
+  Bind every state-changing request to an unguessable per-session token, and set
+  SameSite on the session cookie as a second line rather than the only one.
+action: Add synchroniser tokens to state-changing endpoints and reject requests without them.
+check: Replay a state-changing request from a foreign origin with the session cookie present and confirm it fails.
+
+scope: element
+match: |
+  el.technology.web_application
+  && !el.controls.implements_csrf_token
+
+likelihood: |
+  el.internet_facing ? 'likely' : 'unlikely'
+impact: |
+  el.integrity >= 'critical' ? 'high' : 'medium'
+
+data_breach_probability: improbable
+risk_title: "{{ el.name }} may act on forged cross-origin requests"
+tags: [web, session]

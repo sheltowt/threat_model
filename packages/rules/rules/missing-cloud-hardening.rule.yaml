@@ -1,0 +1,50 @@
+id: missing-cloud-hardening
+title: Cloud environment with no recorded hardening
+stride: elevation-of-privilege
+cwe: 1188
+capec: [CAPEC-1]
+asvs: V14.1.3
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Infrastructure_as_Code_Security_Cheat_Sheet.html
+function: operations
+
+description: >
+  A cloud-provider trust boundary holds assets, and nothing inside it records that it
+  has been hardened. In a cloud account the defaults that matter are the account's —
+  public storage, permissive security groups, over-scoped roles, no logging — and they
+  are set once and inherited by everything.
+
+detection_logic: >
+  A trust boundary typed as a cloud provider network containing at least one in-scope
+  member that does not record the hardened control. The boundary is the subject rather
+  than any one asset, because cloud misconfiguration is an account-level property that
+  no single element owns.
+
+risk_assessment: >
+  Likelihood is Likely: cloud accounts are enumerated continuously, and the common
+  findings — an open bucket, a wide security group — need no exploitation at all.
+  Impact follows the most sensitive thing inside the boundary.
+
+false_positives: >
+  Accounts governed by policy-as-code with a passing posture report, where the control
+  is true for the whole boundary and simply not written on each element. Record hardened
+  on the members, or add an assumption naming the posture tool and its last run.
+
+mitigation: >
+  Apply the provider's benchmark at the account level, enforce it with policy-as-code
+  in the deployment pipeline rather than by review, turn on the audit trail before
+  anything else, and scope roles to the actions they actually use.
+action: Adopt a cloud benchmark and enforce it in the pipeline that creates these resources.
+check: Run a posture assessment against the account and confirm no high findings remain open.
+
+scope: boundary
+match: |
+  boundary.type == 'network-cloud-provider'
+  && boundary.all_members.exists(m, !m.out_of_scope && !m.controls.hardened)
+
+likelihood: likely
+impact: |
+  boundary.all_members.exists(m, m.confidentiality >= 'confidential') ? 'high' : 'medium'
+
+data_breach_probability: possible
+risk_title: "{{ boundary.name }} has no recorded cloud hardening baseline"
+tags: [operations, cloud, hardening]

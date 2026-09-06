@@ -1,0 +1,53 @@
+id: missing-authentication
+title: Missing authentication
+stride: elevation-of-privilege
+cwe: 306
+capec: [CAPEC-115]
+asvs: V2.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
+function: architecture
+
+description: >
+  A caller reaches a sensitive asset without proving who it is, so any party that can
+  reach the endpoint inherits the caller's access.
+
+detection_logic: >
+  An inbound flow declaring no authentication, arriving at an asset that holds data
+  classified confidential or above or rated critical for integrity, where the link
+  leaves its process and is not a response leg of an earlier request.
+
+risk_assessment: >
+  Likelihood rises to Very Likely when the target is reachable from the internet,
+  since the caller set is then unbounded. Impact follows the target's own rating
+  rather than the flow's, because an unauthenticated caller reaches everything the
+  target holds, not only what this link carries.
+
+false_positives: >
+  Health check and metrics endpoints that expose nothing sensitive, and links where
+  the platform authenticates transparently, such as a mesh applying mutual TLS. In
+  the second case record the authentication as client-certificate.
+
+mitigation: >
+  Require an authenticated identity on the link, and prefer a workload identity over
+  a shared secret between services.
+action: Add authentication to the receiving endpoint, not only to the caller.
+check: Replay the request with the credential removed and confirm it is rejected.
+
+scope: flow
+match: |
+  flow.authentication == 'none'
+  && !flow.process_local
+  && !flow.is_response
+  && !flow.to.out_of_scope
+  && (flow.to.confidentiality >= 'confidential' || flow.to.integrity >= 'critical')
+
+likelihood: |
+  flow.to.internet_reachable ? 'very-likely' : 'likely'
+impact: |
+  flow.to.confidentiality >= 'strictly-confidential' || flow.to.integrity >= 'mission-critical'
+    ? 'very-high'
+    : 'high'
+
+data_breach_probability: probable
+risk_title: "{{ flow.to.name }} accepts unauthenticated calls over {{ flow.id }}"
+tags: [authentication, access-control]

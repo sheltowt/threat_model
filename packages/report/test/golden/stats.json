@@ -1,0 +1,87 @@
+{
+  "schema": "tmc/stats/1.0",
+  "generated_at": "2026-09-06T12:00:00Z",
+  "model": {
+    "title": "Payment Service",
+    "business_criticality": "critical",
+    "description": "Card-present checkout API for the storefront, plus its settlement batch.",
+    "owner": "platform-security",
+    "author": "B. Shelton",
+    "date": "2026-09-06",
+    "version": "3"
+  },
+  "stats": {
+    "rules_run": 53,
+    "rules_skipped": 0,
+    "candidates_evaluated": 344,
+    "elements": 8,
+    "elements_in_scope": 7,
+    "elements_out_of_scope": 1,
+    "internet_facing": 2,
+    "flows": 7,
+    "trust_boundaries": 4,
+    "shared_runtimes": 1,
+    "data_assets": 5,
+    "orphaned_data_assets": 0,
+    "risks": 31,
+    "open_risks": 31,
+    "low_confidence_risks": 11,
+    "suppressed_risks": 0,
+    "risks_by_severity": {
+      "critical": 0,
+      "high": 5,
+      "elevated": 20,
+      "medium": 6,
+      "low": 0
+    },
+    "open_risks_by_severity": {
+      "critical": 0,
+      "high": 5,
+      "elevated": 20,
+      "medium": 6,
+      "low": 0
+    },
+    "risks_by_status": {
+      "unchecked": 31
+    },
+    "risks_by_stride": {
+      "denial-of-service": 3,
+      "elevation-of-privilege": 5,
+      "information-disclosure": 8,
+      "repudiation": 3,
+      "spoofing": 5,
+      "tampering": 7
+    },
+    "risks_by_function": {
+      "architecture": 8,
+      "business-side": 8,
+      "development": 3,
+      "operations": 12
+    },
+    "risks_by_rule": {
+      "clickjacking": 1,
+      "container-baseimage-backdooring": 2,
+      "dos-risky-access-across-trust-boundary": 3,
+      "excessive-pii-collection": 2,
+      "incomplete-model": 1,
+      "manual": 1,
+      "missing-authentication-second-factor": 2,
+      "missing-build-infrastructure": 1,
+      "missing-cloud-hardening": 1,
+      "missing-consent-record": 2,
+      "missing-content-security-policy": 1,
+      "missing-hardening": 2,
+      "missing-identity-store": 1,
+      "missing-pii-encryption-at-rest": 1,
+      "missing-waf": 1,
+      "pii-crossing-untrusted-boundary": 1,
+      "pii-retention-unbounded": 1,
+      "sql-nosql-injection": 1,
+      "unencrypted-communication": 2,
+      "unguarded-access-from-internet": 1,
+      "unguarded-direct-datastore-access": 1,
+      "weak-authentication": 2
+    },
+    "warnings": 0
+  }
+}

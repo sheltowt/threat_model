@@ -1,0 +1,53 @@
+id: sql-nosql-injection
+title: Query injection
+stride: tampering
+cwe: 89
+capec: [CAPEC-66, CAPEC-7]
+asvs: V5.3.4
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html
+function: development
+
+description: >
+  Custom code builds a query for a datastore from data it received, so a caller who
+  controls that data controls the query.
+
+detection_logic: >
+  A flow to a datastore over a query protocol, where the calling asset contains
+  custom-developed code and does not record that it uses parameterised queries. The
+  rule fires as a confirmed finding when the control is recorded absent, and as a
+  low-confidence finding when nobody has recorded it either way.
+
+risk_assessment: >
+  Likelihood is Very Likely where the caller is reachable from the internet, because
+  the attacker-controlled input path is then direct. Impact follows the datastore's
+  own confidentiality and integrity rating.
+
+false_positives: >
+  Callers that only ever issue static queries with no interpolated values, and
+  callers whose data layer is a mature ORM used without raw query escapes. Record
+  uses_parameterized_queries on the caller to settle it.
+
+mitigation: >
+  Use parameterised statements or an ORM binding for every query, and never build one
+  by string concatenation.
+action: Replace concatenated query construction in the calling service.
+check: Search the caller for string-built queries and confirm each uses bound parameters.
+
+scope: flow
+match: |
+  flow.protocol.database_access
+  && flow.to.technology.vulnerable_to_query_injection
+  && flow.from.custom_code
+  && !flow.from.out_of_scope
+  && !flow.from.controls.uses_parameterized_queries
+
+likelihood: |
+  flow.from.internet_reachable ? 'very-likely' : 'likely'
+impact: |
+  flow.to.confidentiality >= 'confidential' || flow.to.integrity >= 'critical'
+    ? 'very-high'
+    : 'high'
+
+data_breach_probability: probable
+risk_title: "{{ flow.from.name }} may build injectable queries against {{ flow.to.name }}"
+tags: [injection, input-validation]

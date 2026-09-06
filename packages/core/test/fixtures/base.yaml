@@ -1,0 +1,12 @@
+schema: tmc/1.0
+meta:
+  title: Split model
+data_assets:
+  secret:
+    classification: strictly-confidential
+    credentials: true
+elements:
+  api:
+    technology: web-service-rest
+    internet_facing: true
+    processes: [secret]

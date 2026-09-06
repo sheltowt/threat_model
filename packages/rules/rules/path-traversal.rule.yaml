@@ -1,0 +1,51 @@
+id: path-traversal
+title: Path traversal
+stride: information-disclosure
+cwe: 22
+capec: [CAPEC-126]
+asvs: V12.3.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html
+function: development
+
+description: >
+  Custom code builds a filesystem path from data it received, so a caller who controls
+  that data reads or writes files the application never meant to expose.
+
+detection_logic: >
+  An element containing custom code on a technology the catalogue marks vulnerable to
+  path traversal — a web server, a file server, a local filesystem component — which
+  is reachable from an internet-facing asset and does not record validates_input.
+
+risk_assessment: >
+  Likelihood is Very Likely when the asset itself faces the internet, since the input
+  path is then direct. Impact is High where the asset holds confidential data, because
+  traversal usually reaches configuration and key material alongside the target file.
+
+false_positives: >
+  Applications that address files by opaque identifier and map them to paths through a
+  lookup table, and those running with a filesystem view narrow enough that traversal
+  reaches nothing — a distroless container with a read-only root, for instance. Both
+  are real; record validates_input where the mapping is deliberate.
+
+mitigation: >
+  Never concatenate request data into a path. Map an identifier to a filename through a
+  table you control, canonicalise the result, and verify it still sits under the
+  intended root before opening it.
+action: Replace path construction from request data with an identifier lookup.
+check: Request a resource with encoded and doubly-encoded traversal sequences and confirm each is rejected rather than normalised and served.
+
+scope: element
+match: |
+  el.custom_code
+  && el.technology.vulnerable_to_path_traversal
+  && el.internet_reachable
+  && !el.controls.validates_input
+
+likelihood: |
+  el.internet_facing ? 'very-likely' : 'likely'
+impact: |
+  el.confidentiality >= 'confidential' ? 'high' : 'medium'
+
+data_breach_probability: probable
+risk_title: "{{ el.name }} may build filesystem paths from caller-controlled data"
+tags: [input-validation, filesystem]

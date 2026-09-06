@@ -1,0 +1,49 @@
+id: missing-gateway
+title: Multiple assets published to the internet with no gateway anywhere
+stride: elevation-of-privilege
+cwe: 1327
+capec: [CAPEC-1]
+asvs: V1.1.4
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Secure_Product_Design_Cheat_Sheet.html
+function: architecture
+
+description: >
+  The estate exposes several assets to the internet and has no gateway, proxy or load
+  balancer at all, so there is no single place where TLS, authentication, rate limiting
+  or logging can be enforced consistently. Each exposure is configured on its own, and
+  they drift.
+
+detection_logic: >
+  A model-level check: two or more in-scope elements are internet-facing, excluding
+  humans and client software, and no element in the model has a gateway role. The
+  threshold is two because a single public application is a normal shape and is covered
+  by missing-waf; the finding here is about fan-out without a front door.
+
+risk_assessment: >
+  Likelihood Likely and impact Medium: this is an architectural gap rather than a
+  specific exploitable flaw, and its cost is paid in inconsistency — the endpoint that
+  missed the rate limit, the one that kept TLS 1.0.
+
+false_positives: >
+  Estates that are deliberately decentralised, and those whose edge is a managed
+  service — an API management product or a CDN — that the model has not been told
+  about. Adding one element with the gateway technology settles it.
+
+mitigation: >
+  Funnel public traffic through one gateway that owns TLS termination, authentication,
+  rate limiting and access logging, and make the origins private so the gateway cannot
+  be walked around.
+action: Introduce a shared gateway and make every public route pass through it.
+check: List the public DNS records for the estate and confirm each resolves to the gateway rather than to an origin.
+
+scope: model
+match: |
+  size(model.elements.filter(e, e.internet_facing && !e.human && !e.technology.client)) >= 2
+  && model.elements.none(e, e.technology.gateway)
+
+likelihood: likely
+impact: medium
+
+data_breach_probability: improbable
+risk_title: "{{ model.title }} publishes several assets to the internet with no gateway"
+tags: [architecture, edge]

@@ -1,0 +1,54 @@
+id: ssrf
+title: Server-side request forgery
+stride: information-disclosure
+cwe: 918
+capec: [CAPEC-664]
+asvs: V5.2.6
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html
+function: development
+
+description: >
+  The asset makes outbound requests to addresses influenced by its callers, so an
+  attacker borrows its network position to reach things they cannot reach themselves —
+  the metadata service, an internal admin port, a neighbouring subnet.
+
+detection_logic: >
+  An element on a technology the catalogue marks vulnerable to SSRF, which has at
+  least one outgoing flow of its own, is reachable from an internet-facing asset, and
+  does not record validates_input. Outgoing flows matter because an asset that never
+  calls out has no request for an attacker to redirect; internet reachability matters
+  because the value of SSRF is crossing a boundary the attacker could not cross.
+
+risk_assessment: >
+  Likelihood is Very Likely where the asset faces the internet directly. Impact is
+  driven by the sensitivity of what sits on the far side of the boundary the asset can
+  cross, approximated here by its own confidentiality rating.
+
+false_positives: >
+  Assets whose outbound destinations are entirely fixed in configuration, with no
+  request data reaching a URL, and those already behind an egress proxy with an
+  allow-list. Record validates_input, or model the egress proxy as an element, so the
+  finding retires.
+
+mitigation: >
+  Resolve and check the destination against an allow-list after DNS resolution rather
+  than before it, refuse redirects, block link-local and loopback ranges, and put
+  outbound traffic through a proxy that enforces the same list at the network layer.
+action: Route outbound calls through an egress allow-list rather than validating URLs in code.
+check: Point the feature at 169.254.169.254 and at a loopback port and confirm both are refused.
+
+scope: element
+match: |
+  el.technology.vulnerable_to_ssrf
+  && size(el.outgoing) > 0
+  && el.internet_reachable
+  && !el.controls.validates_input
+
+likelihood: |
+  el.internet_facing ? 'very-likely' : 'likely'
+impact: |
+  el.confidentiality >= 'confidential' ? 'high' : 'medium'
+
+data_breach_probability: possible
+risk_title: "{{ el.name }} may be steered into making attacker-chosen outbound requests"
+tags: [web, input-validation, network]

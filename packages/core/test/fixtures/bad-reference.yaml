@@ -1,0 +1,10 @@
+schema: tmc/1.0
+meta:
+  title: Bad reference
+data_assets:
+  card_data:
+    classification: confidential
+elements:
+  api:
+    technology: web-service-rest
+    processes: [card_dat]

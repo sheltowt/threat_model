@@ -1,0 +1,56 @@
+id: insufficient-log-minimisation
+title: Personal data in operational logging
+stride: information-disclosure
+linddun: identifying
+cwe: 532
+capec: [CAPEC-215]
+asvs: V7.1.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+function: operations
+
+description: >
+  An operational or monitoring asset handles personal data. Logs are the least
+  protected copy of anything: they are replicated to aggregators, kept far longer than
+  the records they describe, and readable by everyone on call.
+
+detection_logic: >
+  An element that is either a monitoring or intrusion-detection technology or is marked
+  as devops usage, which processes or stores a data asset flagged as personal data or
+  receives one over an incoming flow. Devops usage is included because the audit and
+  telemetry stores that accumulate personal data are frequently ordinary databases with
+  an operational label.
+
+risk_assessment: >
+  Impact is High where the personal data carries a named regulation, because retention
+  limits and deletion requests apply to the log copy exactly as they do to the record.
+  Likelihood is Likely: this rarely requires an attack, only access.
+
+false_positives: >
+  Pipelines that redact or hash at the collector before anything is written, and
+  security logs where an identifier is retained deliberately and lawfully for
+  investigation. The second is legitimate and is still worth recording alongside its
+  retention period.
+
+mitigation: >
+  Redact at the point of emission rather than at the point of query, log a pseudonymous
+  subject identifier instead of the person, set a retention period on the log store
+  shorter than the record's, and make sure a deletion request reaches the log tier and
+  its backups.
+action: Redact personal data before it is written, and set a retention limit on the log store.
+check: Search a day of production logs for identifying fields and confirm none appear in the clear.
+
+scope: element
+match: |
+  (el.technology.monitoring || el.technology.ids || el.usage == 'devops')
+  && (
+    el.handles.exists(d, d.pii)
+    || el.incoming.exists(f, f.carries_pii)
+  )
+
+likelihood: likely
+impact: |
+  el.handles.exists(d, d.pii && size(d.regulations) > 0) ? 'high' : 'medium'
+
+data_breach_probability: probable
+risk_title: "{{ el.name }} holds personal data in operational records"
+tags: [privacy, logging, retention]

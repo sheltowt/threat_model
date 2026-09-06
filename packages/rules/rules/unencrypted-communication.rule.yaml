@@ -1,0 +1,54 @@
+id: unencrypted-communication
+title: Unencrypted communication
+stride: information-disclosure
+cwe: 319
+capec: [CAPEC-117, CAPEC-157]
+asvs: V9.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html
+function: operations
+
+description: >
+  Sensitive data crosses a network on a protocol that offers no confidentiality, so
+  anyone positioned on the path can read it and, absent integrity protection, change
+  it.
+
+detection_logic: >
+  A flow whose protocol is not encrypted, is not confined to one process or host, and
+  carries either credentials or data classified confidential or above. Flows into a
+  technology that tolerates plaintext by design, such as an IoT sensor feed, are
+  skipped, as are flows already inside a VPN.
+
+risk_assessment: >
+  Likelihood is Likely when the link crosses a network trust boundary, because the
+  traffic then traverses infrastructure the asset owner does not control, and
+  Unlikely otherwise. Impact follows the most sensitive thing on the wire.
+
+false_positives: >
+  Links inside a single host, over a dedicated hardware channel, or already wrapped
+  by a service mesh that terminates mutual TLS transparently. If a mesh handles it,
+  record the protocol as its encrypted variant rather than suppressing the rule.
+
+mitigation: >
+  Use the encrypted variant of the protocol with TLS 1.2 or better, and prefer mutual
+  authentication where both ends are services you operate.
+action: Terminate TLS at the receiving asset rather than at a proxy in front of it.
+check: Capture traffic on the link and confirm the handshake and cipher suite.
+
+scope: flow
+match: |
+  !flow.protocol.encrypted
+  && !flow.process_local
+  && !flow.vpn
+  && !flow.to.technology.unprotected_communications_tolerated
+  && (flow.carries_credentials || flow.max_classification >= 'confidential')
+
+likelihood: |
+  flow.crosses_network_boundary ? 'likely' : 'unlikely'
+impact: |
+  flow.carries_credentials || flow.max_classification >= 'strictly-confidential'
+    ? 'high'
+    : 'medium'
+
+data_breach_probability: probable
+risk_title: Unencrypted {{ flow.protocol.id }} link from {{ flow.from.name }} to {{ flow.to.name }}
+tags: [transport, confidentiality]

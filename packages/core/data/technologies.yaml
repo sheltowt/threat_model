@@ -1,0 +1,106 @@
+# Technology catalogue. Rules never name a technology directly; they ask about the
+# boolean attributes declared here. That is Threagile's best structural idea, and it
+# means a team can add "our-in-house-esb" in .tmc/technologies.yaml and have every
+# existing rule apply to it correctly.
+#
+# `kind` is the element kind this technology defaults to when the author omits it.
+# All attributes default to false.
+
+technologies:
+  unknown-technology: { kind: process }
+
+  # --- clients -------------------------------------------------------------
+  client-system: { kind: external, client: true }
+  browser: { kind: external, client: true, human_client: true, vulnerable_to_xss: true }
+  desktop: { kind: external, client: true, human_client: true }
+  mobile-app: { kind: external, client: true, human_client: true }
+  devops-client: { kind: external, client: true, human_client: true, devops: true }
+  cli: { kind: process, client: true }
+  iot-device: { kind: process, client: true, unprotected_communications_tolerated: true }
+
+  # --- web tier ------------------------------------------------------------
+  web-server: { kind: process, web_application: true, vulnerable_to_path_traversal: true }
+  web-application:
+    { kind: process, web_application: true, vulnerable_to_xss: true, vulnerable_to_ssrf: true,
+      vulnerable_to_path_traversal: true, high_value_target: true }
+  application-server:
+    { kind: process, web_application: true, vulnerable_to_deserialization: true,
+      vulnerable_to_xxe: true, high_value_target: true }
+  web-service-rest:
+    { kind: process, web_service: true, vulnerable_to_ssrf: true, vulnerable_to_deserialization: true }
+  web-service-soap:
+    { kind: process, web_service: true, vulnerable_to_xxe: true, vulnerable_to_deserialization: true }
+  ejb: { kind: process, vulnerable_to_deserialization: true }
+  gateway:
+    { kind: process, gateway: true, web_service: true, high_value_target: true,
+      vulnerable_to_ssrf: true }
+  reverse-proxy: { kind: process, reverse_proxy: true, gateway: true }
+  load-balancer: { kind: process, load_balancer: true, gateway: true }
+  waf: { kind: process, waf: true, gateway: true }
+  service-mesh: { kind: process, gateway: true }
+  cms: { kind: process, web_application: true, vulnerable_to_xss: true, high_value_target: true }
+  erp: { kind: process, high_value_target: true, vulnerable_to_query_injection: true }
+
+  # --- data ----------------------------------------------------------------
+  database:
+    { kind: datastore, datastore: true, vulnerable_to_query_injection: true, high_value_target: true }
+  file-server: { kind: datastore, datastore: true, vulnerable_to_path_traversal: true }
+  local-file-system:
+    { kind: datastore, datastore: true, embedded_component: true,
+      tolerates_unencrypted_storage: true, vulnerable_to_path_traversal: true }
+  block-storage: { kind: datastore, datastore: true }
+  data-lake: { kind: datastore, datastore: true, high_value_target: true }
+  big-data-platform: { kind: datastore, datastore: true, high_value_target: true }
+  search-index: { kind: datastore, datastore: true, search: true, vulnerable_to_query_injection: true }
+  search-engine: { kind: process, search: true, vulnerable_to_query_injection: true }
+  message-queue: { kind: datastore, message_queue: true, datastore: true }
+  stream-processing: { kind: process, message_queue: true }
+  event-listener: { kind: process }
+  report-engine: { kind: process, vulnerable_to_query_injection: true }
+
+  # --- identity and secrets ------------------------------------------------
+  identity-provider: { kind: process, identity_provider: true, high_value_target: true }
+  ldap-server: { kind: datastore, identity_store: true, datastore: true, high_value_target: true }
+  identity-store-ldap:
+    { kind: datastore, identity_store: true, datastore: true, high_value_target: true }
+  identity-store-database:
+    { kind: datastore, identity_store: true, datastore: true, high_value_target: true,
+      vulnerable_to_query_injection: true }
+  vault: { kind: datastore, vault: true, datastore: true, high_value_target: true }
+  hsm: { kind: datastore, hsm: true, vault: true, high_value_target: true }
+
+  # --- build and operate ---------------------------------------------------
+  build-pipeline: { kind: process, build_pipeline: true, devops: true, high_value_target: true }
+  sourcecode-repository:
+    { kind: datastore, sourcecode_repository: true, datastore: true, devops: true,
+      high_value_target: true }
+  artifact-registry: { kind: datastore, artifact_registry: true, datastore: true, devops: true }
+  code-inspection-platform: { kind: process, devops: true }
+  container-platform:
+    { kind: process, container_platform: true, devops: true, high_value_target: true }
+  monitoring: { kind: process, monitoring: true, devops: true, unnecessary_data_tolerated: true }
+  ids: { kind: process, ids: true, monitoring: true }
+  ips: { kind: process, ips: true, ids: true, monitoring: true }
+  scheduler: { kind: process, devops: true }
+  service-registry: { kind: process, service_registry: true, high_value_target: true }
+  tool: { kind: process, devops: true }
+  task: { kind: process }
+  function: { kind: process }
+  batch-processing: { kind: process }
+  library: { kind: process, embedded_component: true }
+
+  # --- other ---------------------------------------------------------------
+  mail-server: { kind: process }
+  mainframe: { kind: process, high_value_target: true }
+  desktop-application: { kind: process, client: true }
+
+  # --- AI ------------------------------------------------------------------
+  # pytm 1.4.0 added LLM and Agent element types. Modelling them as technologies
+  # rather than classes keeps the element taxonomy flat; see ADR 0004.
+  ai-model:
+    { kind: process, ai: true, high_value_target: true, vulnerable_to_prompt_injection: true }
+  ai-agent:
+    { kind: process, ai: true, ai_agent: true, high_value_target: true,
+      vulnerable_to_prompt_injection: true, vulnerable_to_ssrf: true }
+  vector-database:
+    { kind: datastore, datastore: true, ai: true, vulnerable_to_query_injection: true }

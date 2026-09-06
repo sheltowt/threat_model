@@ -1,0 +1,55 @@
+id: push-instead-of-pull-deployment
+title: Push-based deployment across a network boundary
+stride: elevation-of-privilege
+cwe: 306
+capec: [CAPEC-444]
+asvs: V14.2.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Secure_Product_Design_Cheat_Sheet.html
+function: architecture
+
+description: >
+  The build pipeline reaches into a runtime environment across a network boundary to
+  deploy. That means the pipeline holds standing credentials to that environment, and
+  the environment accepts inbound connections from the build network — two properties
+  an attacker who lands on a runner inherits immediately.
+
+detection_logic: >
+  A non-response flow out of a build pipeline that crosses a network trust boundary
+  into something that is not an artefact registry or a source repository. Pushing an
+  artefact to a registry is the pull model and is fine; pushing to a runtime is the
+  pattern this rule is about.
+
+risk_assessment: >
+  Impact is High because the credential in question deploys code to a production
+  environment. Likelihood is Likely: a compromised runner is the standard first step in
+  published supply-chain intrusions precisely because of what it already holds.
+
+false_positives: >
+  Environments where the push target is a deployment API that authenticates a
+  short-lived, workload-bound token minted per job rather than a standing credential —
+  materially closer to the pull model. Record the flow's authentication as
+  client-certificate or token and note the token lifetime.
+
+mitigation: >
+  Have the environment pull: publish a signed artefact and a desired-state manifest,
+  and let an agent inside the environment reconcile against them. The pipeline then
+  needs write access to a registry and nothing else, and no inbound path into
+  production exists at all.
+action: Move to a pull-based deployment agent and revoke the pipeline's environment credentials.
+check: Remove the pipeline's deployment credential and confirm releases still reach production.
+
+scope: flow
+match: |
+  flow.from.technology.build_pipeline
+  && !flow.is_response
+  && flow.crosses_network_boundary
+  && !flow.to.technology.artifact_registry
+  && !flow.to.technology.sourcecode_repository
+
+likelihood: likely
+impact: |
+  flow.to.confidentiality >= 'confidential' || flow.to.integrity >= 'critical' ? 'high' : 'medium'
+
+data_breach_probability: possible
+risk_title: "{{ flow.from.name }} pushes deployments into {{ flow.to.name }}"
+tags: [supply-chain, deployment, architecture]

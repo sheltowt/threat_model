@@ -1,0 +1,7 @@
+schema: tmc/1.0
+meta:
+  title: Typo
+elements:
+  api:
+    technology: web-service-rest
+    internetFacing: true

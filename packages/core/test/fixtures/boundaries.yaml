@@ -1,0 +1,28 @@
+schema: tmc/1.0
+meta:
+  title: Boundaries
+elements:
+  edge:
+    technology: web-application
+    internet_facing: true
+  mid:
+    technology: web-service-rest
+  deep:
+    technology: database
+flows:
+  - id: edge_to_mid
+    from: edge
+    to: mid
+    protocol: https
+  - id: mid_to_deep
+    from: mid
+    to: deep
+    protocol: sql-access-protocol
+trust_boundaries:
+  outer:
+    type: network-cloud-provider
+    contains: [edge]
+    nested: [inner]
+  inner:
+    type: network-policy-namespace-isolation
+    contains: [mid, deep]

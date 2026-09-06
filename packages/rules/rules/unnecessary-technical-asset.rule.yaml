@@ -1,0 +1,46 @@
+id: unnecessary-technical-asset
+title: Element with no communication at all
+stride: information-disclosure
+cwe: 1059
+capec: [CAPEC-116]
+asvs: V1.1.2
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html
+function: architecture
+
+description: >
+  An element is in the model with no incoming and no outgoing flows. Nothing talks to
+  it and it talks to nothing, so either it is dead weight in the estate or the model
+  is missing the links that make it matter.
+
+detection_logic: >
+  An in-scope element whose incoming and outgoing flow lists are both empty. No
+  judgement is made about which of the two explanations applies, because both are worth
+  the same five minutes.
+
+risk_assessment: >
+  Impact is Low as stated, and rises where the isolated element nonetheless holds
+  sensitive data — an asset that holds confidential data and appears to communicate
+  with nothing is the more interesting version of this finding.
+
+false_positives: >
+  Assets that genuinely communicate out of band — a machine written to by hand, a
+  device read by physically removing media — and elements added to the model as
+  placeholders for a component still being designed.
+
+mitigation: >
+  Draw the flows that exist, or decommission the asset. An asset nobody uses still has
+  credentials, still has an operating system, and still gets forgotten at patch time.
+action: Add the missing flows or remove the element.
+check: Capture traffic on the host for a representative period and compare what you see against the model.
+
+scope: element
+match: |
+  size(el.incoming) == 0 && size(el.outgoing) == 0
+
+likelihood: likely
+impact: |
+  el.confidentiality >= 'confidential' ? 'medium' : 'low'
+
+data_breach_probability: improbable
+risk_title: "{{ el.name }} has no modelled communication"
+tags: [hygiene, architecture]

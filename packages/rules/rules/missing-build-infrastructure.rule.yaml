@@ -1,0 +1,50 @@
+id: missing-build-infrastructure
+title: Custom code with no build pipeline in the model
+stride: tampering
+cwe: 1357
+capec: [CAPEC-444]
+asvs: V14.2.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Vulnerable_Dependency_Management_Cheat_Sheet.html
+function: architecture
+
+description: >
+  The model contains code this team writes and nothing that builds it. Whatever turns
+  that source into what runs in production is outside the review, which means so are
+  its credentials, its dependencies and whoever can trigger it.
+
+detection_logic: >
+  A model-level check: at least one in-scope element is marked as containing custom
+  code, and no element in the model carries the build pipeline role. Build systems are
+  routinely omitted from threat models because they are not part of the running system,
+  which is exactly why they make good targets.
+
+risk_assessment: >
+  Impact is High because a build system holds deploy credentials for everything it
+  ships, so compromising it is equivalent to compromising each of its outputs.
+  Likelihood is set Unlikely: the pipeline probably exists and is probably fine, and
+  the finding is that nobody has looked.
+
+false_positives: >
+  Models scoped deliberately to the runtime, and estates where the build is a shared
+  platform reviewed under its own threat model. Both are reasonable; add the pipeline
+  as an out-of-scope element with a justification so the omission is a decision on the
+  record rather than an oversight.
+
+mitigation: >
+  Model the build system, then treat it as production infrastructure: authenticated and
+  authorised triggers, isolated runners per trust level, signed artefacts, and no
+  standing credentials that a pull request can reach.
+action: Add the build pipeline to the model, in scope or explicitly out of it.
+check: Trace one deployed artefact back to the job that produced it and name every identity that could have triggered that job.
+
+scope: model
+match: |
+  model.elements.exists(e, e.custom_code)
+  && model.elements.none(e, e.technology.build_pipeline)
+
+likelihood: unlikely
+impact: high
+
+data_breach_probability: possible
+risk_title: "{{ model.title }} builds custom code with no build pipeline modelled"
+tags: [supply-chain, completeness, architecture]

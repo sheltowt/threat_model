@@ -1,0 +1,59 @@
+# A model whose free-text fields are full of DOT metacharacters.
+#
+# Every string here is something a model author can legitimately write, and every one
+# of them would break out of a quoted DOT string if it were interpolated raw. Threat
+# Dragon and pytm have both shipped exactly this bug.
+schema: tmc/1.0
+
+meta:
+  title: 'Evil "model" \ {with} <braces>'
+  business_criticality: important
+  description: |
+    Line one
+    Line two "quoted" \escaped\
+
+data_assets:
+  nasty_asset:
+    description: 'label="pwned", shape=box'
+    classification: strictly-confidential
+    credentials: true
+
+elements:
+  evil_actor:
+    name: '" ]; "a" -> "b" [label="injected'
+    kind: actor
+    technology: browser
+    human: true
+    internet_facing: true
+
+  evil_process:
+    name: "Multi\nline \"name\" with {braces} <angles> and \\backslash"
+    technology: web-application
+    custom_code: true
+    processes: [nasty_asset]
+
+  evil_store:
+    name: 'image="/etc/passwd", fontcolor=red'
+    technology: database
+    stores: [nasty_asset]
+
+flows:
+  - id: evil_flow
+    from: evil_actor
+    to: evil_process
+    name: '"; system("rm -rf /"); "'
+    protocol: http
+    sends: [nasty_asset]
+
+  - id: evil_flow_2
+    from: evil_process
+    to: evil_store
+    name: 'label="x" URL="javascript:alert(1)"'
+    protocol: sql-access-protocol
+    sends: [nasty_asset]
+
+trust_boundaries:
+  evil_boundary:
+    name: '} "; digraph evil { a -> b; } // '
+    type: network-untrusted
+    contains: [evil_actor]

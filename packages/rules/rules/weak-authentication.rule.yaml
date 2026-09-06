@@ -1,0 +1,58 @@
+id: weak-authentication
+title: Shared credential authenticating a high-value target
+stride: spoofing
+cwe: 287
+capec: [CAPEC-560, CAPEC-49]
+asvs: V2.2
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
+function: architecture
+
+description: >
+  A caller proves itself to a crown-jewel asset with a static username and password.
+  That secret is replayable, it lives in configuration, and it does not expire when
+  the caller does.
+
+detection_logic: >
+  A non-local, non-response flow authenticating with credentials into a technology the
+  catalogue marks a high-value target, where the link carries data classified
+  confidential or above and the target is reachable from an internet-facing asset. The
+  combination matters: a password is acceptable on a low-value internal link and is
+  not acceptable on the path to the asset an attacker actually wants.
+
+risk_assessment: >
+  Likelihood is Very Likely when the caller itself faces the internet, because a
+  single application compromise then hands over a credential that keeps working.
+  Impact follows what the link carries.
+
+false_positives: >
+  Links where "credentials" stands in for a short-lived, automatically rotated secret
+  issued by the platform — a cloud IAM database password rotated every hour is closer
+  to a token than to a password. Record those as token, or as client-certificate where
+  mutual TLS is in play.
+
+mitigation: >
+  Replace the static secret with a workload identity: mutual TLS between services, or
+  a short-lived token minted per connection. Where the datastore cannot do that, at
+  least sink the password into a vault and rotate it on a schedule the team can prove.
+action: Move this link to certificate or token authentication.
+check: Rotate the credential and confirm the caller keeps working without a redeploy; that is only true when it fetches the secret at runtime.
+
+scope: flow
+match: |
+  flow.authentication == 'credentials'
+  && !flow.process_local
+  && !flow.is_response
+  && flow.to.technology.high_value_target
+  && flow.to.internet_reachable
+  && flow.max_classification >= 'confidential'
+
+likelihood: |
+  flow.from.internet_facing ? 'very-likely' : 'unlikely'
+impact: |
+  flow.max_classification >= 'strictly-confidential' || flow.carries_credentials
+    ? 'high'
+    : 'medium'
+
+data_breach_probability: possible
+risk_title: "{{ flow.from.name }} authenticates to {{ flow.to.name }} with a static credential"
+tags: [authentication, credentials]

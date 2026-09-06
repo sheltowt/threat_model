@@ -1,0 +1,52 @@
+id: code-backdooring
+title: Source or build infrastructure reachable from the internet
+stride: tampering
+cwe: 506
+capec: [CAPEC-444, CAPEC-670]
+asvs: V14.2.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Secure_Product_Design_Cheat_Sheet.html
+function: operations
+
+description: >
+  A source repository or build pipeline can be reached from the internet. Changing what
+  is in one of those changes what runs in production everywhere, without touching
+  production at all.
+
+detection_logic: >
+  An in-scope element whose technology is a source code repository or a build pipeline,
+  which is either internet-facing itself or reachable by following flows from something
+  that is. Reachability is included because the interesting path is usually indirect —
+  a public webhook receiver, or a runner that also serves a status page.
+
+risk_assessment: >
+  Impact is Very High: a change committed here is signed off by your own pipeline and
+  arrives in production looking exactly like a legitimate release. Likelihood is Very
+  Likely for a directly exposed instance, since these products are fingerprinted and
+  scanned continuously.
+
+false_positives: >
+  Hosted source and CI platforms, which are internet-facing by nature and defended by
+  the vendor; model those as external and out of scope. Also self-hosted instances
+  behind an identity-aware proxy that terminates every unauthenticated request — model
+  the proxy so the path is visible.
+
+mitigation: >
+  Keep source and build infrastructure off the public internet, reach it through an
+  identity-aware proxy or VPN with a second factor, require reviewed and signed commits
+  on release branches, and run untrusted-pull-request builds on isolated runners with
+  no deploy credentials.
+action: Remove the public listener and put access behind an identity-aware proxy.
+check: From outside the network, attempt to reach the repository or the pipeline UI and confirm you are stopped before authentication.
+
+scope: element
+match: |
+  (el.technology.sourcecode_repository || el.technology.build_pipeline)
+  && (el.internet_facing || el.internet_reachable)
+
+likelihood: |
+  el.internet_facing ? 'very-likely' : 'likely'
+impact: very-high
+
+data_breach_probability: probable
+risk_title: "{{ el.name }} is reachable from the internet"
+tags: [supply-chain, exposure]

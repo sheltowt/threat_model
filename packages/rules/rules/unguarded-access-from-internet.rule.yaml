@@ -1,0 +1,57 @@
+id: unguarded-access-from-internet
+title: Asset exposed to the internet without a guard in front
+stride: elevation-of-privilege
+cwe: 1327
+capec: [CAPEC-1]
+asvs: V1.1.4
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Secure_Product_Design_Cheat_Sheet.html
+function: architecture
+
+description: >
+  A general-purpose asset is published directly to the internet. Everything it exposes
+  — every endpoint, every parser, every version banner — is a first-line surface, with
+  nothing in front to normalise, filter or absorb traffic.
+
+detection_logic: >
+  An in-scope element marked internet-facing whose technology is not one of the roles
+  built to sit at the edge: gateway, reverse proxy, load balancer or WAF. Clients and
+  humans are excluded, since an internet-facing browser or operator is a description of
+  where the user is, not an exposure you own.
+
+risk_assessment: >
+  Likelihood rises with relative attacker attractiveness, which already accounts for
+  how much sensitive data the asset touches and what it can reach. Impact follows the
+  asset's own confidentiality and integrity, because direct exposure puts all of it in
+  reach rather than only what a single link carries.
+
+false_positives: >
+  Assets that are internet-facing by design and hardened for it — a public CDN origin
+  serving only static files, or a service whose edge is a managed platform the model
+  does not draw as an element. Where a provider's edge is doing the guarding, model it:
+  an unnamed layer nobody can point at tends not to be configured either.
+
+mitigation: >
+  Put a gateway or reverse proxy in front, terminate TLS there, and publish only the
+  routes that need to be public. Keep the asset itself on a private address so the
+  guard cannot be bypassed by anyone who learns the origin.
+action: Move the asset behind an edge component and make its own listener private.
+check: Resolve the asset's own hostname from outside and confirm it does not answer.
+
+scope: element
+match: |
+  el.internet_facing
+  && !el.human
+  && !el.technology.client
+  && !el.technology.gateway
+  && !el.technology.waf
+  && !el.technology.load_balancer
+  && !el.technology.reverse_proxy
+
+likelihood: |
+  el.raa >= 50 ? 'very-likely' : 'likely'
+impact: |
+  el.confidentiality >= 'confidential' || el.integrity >= 'critical' ? 'high' : 'medium'
+
+data_breach_probability: possible
+risk_title: "{{ el.name }} is published to the internet with no edge component in front"
+tags: [architecture, exposure]

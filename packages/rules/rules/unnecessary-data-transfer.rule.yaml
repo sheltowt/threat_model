@@ -1,0 +1,53 @@
+id: unnecessary-data-transfer
+title: Data sent to an asset that neither processes nor stores it
+stride: information-disclosure
+cwe: 1220
+capec: [CAPEC-116]
+asvs: V8.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html
+function: architecture
+
+description: >
+  A link sends a data asset to a receiver that the model says has no use for it. The
+  data still has to be transmitted, buffered, logged and probably retained somewhere in
+  the receiver, and all of that surface exists for nothing.
+
+detection_logic: >
+  A flow whose sends list contains a data asset that does not appear among the
+  receiving element's processed or stored assets. Receivers whose technology tolerates
+  incidental data — monitoring systems, which see everything by nature — are skipped,
+  as are out-of-scope receivers, where the model has no visibility into what they do
+  with it.
+
+risk_assessment: >
+  Impact follows the classification of the surplus data. Likelihood is Likely rather
+  than higher because this describes an unnecessary exposure rather than an attack: the
+  data is in a place with no reason to defend it well.
+
+false_positives: >
+  Incomplete models, which is the main case — the receiver does use the data and nobody
+  updated its processes list. Pass-through and proxy hops are the other: an asset that
+  forwards a payload without opening it genuinely neither processes nor stores it.
+  Fixing the model is usually the right response to this finding, and the fact that the
+  model was wrong is itself worth knowing.
+
+mitigation: >
+  Send the receiver the smallest projection of the data it needs — an identifier, a
+  token, a redacted view — and where a payload is only being forwarded, keep it opaque
+  and encrypted end to end so the intermediary cannot read it.
+action: Trim the payload to the fields the receiver actually uses, or record why it needs them.
+check: Remove the surplus field from one request and confirm the receiver behaves identically.
+
+scope: flow
+match: |
+  !flow.to.out_of_scope
+  && !flow.to.technology.unnecessary_data_tolerated
+  && flow.sends.exists(d, !flow.to.handles.exists(h, h.id == d.id))
+
+likelihood: likely
+impact: |
+  flow.max_classification >= 'confidential' ? 'medium' : 'low'
+
+data_breach_probability: possible
+risk_title: "{{ flow.id }} sends {{ flow.to.name }} data it does not use"
+tags: [data-minimisation, architecture]

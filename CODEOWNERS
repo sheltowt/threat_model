@@ -1,0 +1,6 @@
+# Every change needs a review from the owning team.
+*                       @platform-security
+
+# The evaluator is the sandbox boundary; it gets extra eyes.
+/packages/rules/src/expr/ @platform-security
+/SECURITY.md            @platform-security

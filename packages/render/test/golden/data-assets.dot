@@ -1,0 +1,40 @@
+digraph "Payment Service data assets" {
+  graph [rankdir="LR", bgcolor="transparent", fontname="Helvetica,Arial,sans-serif", fontsize=12, nodesep=0.24, ranksep=2, label="Payment Service — data assets", labelloc="t", fontcolor="#475569"];
+  node [fontname="Helvetica,Arial,sans-serif", fontsize=11, margin="0.16,0.08"];
+  edge [fontname="Helvetica,Arial,sans-serif", fontsize=9, arrowsize=0.6];
+
+  subgraph cluster_elements {
+    graph [label="Elements", style="rounded,filled", fillcolor="#8a8a8a1f", color="#94a3b8", fontcolor="#475569", fontsize=10, labeljust="l"];
+    "el:shopper" [label="Shopper\nbrowser", shape="box", style="filled", fillcolor="#f1f3f5", color="#868e96", fontcolor="#212529", tooltip="Shopper"];
+    "el:storefront" [label="Storefront web app\nweb-application", shape="ellipse", style="filled", fillcolor="#f1f3f5", color="#868e96", fontcolor="#212529", tooltip="Storefront web app"];
+    "el:payment_api" [label="Payment API\nweb-service-rest", shape="ellipse", style="filled", fillcolor="#f1f3f5", color="#868e96", fontcolor="#212529", tooltip="Payment API"];
+    "el:token_store" [label="Token store\ndatabase", shape="cylinder", style="filled", fillcolor="#f1f3f5", color="#868e96", fontcolor="#212529", tooltip="Token store"];
+    "el:audit_store" [label="Audit log store\ndatabase", shape="cylinder", style="filled", fillcolor="#f1f3f5", color="#868e96", fontcolor="#212529", tooltip="Audit log store"];
+    "el:settlement_batch" [label="Nightly settlement batch\nbatch-processing", shape="ellipse", style="filled", fillcolor="#f1f3f5", color="#868e96", fontcolor="#212529", tooltip="Nightly settlement batch"];
+    "el:processor" [label="Card processor\nweb-service-rest", shape="box", style="filled,dashed", fillcolor="#f1f3f5", color="#9aa0a6", fontcolor="#6b7280", tooltip="Card processor"];
+    "el:ops_console" [label="Operations console\ndevops-client", shape="box", style="filled", fillcolor="#f1f3f5", color="#868e96", fontcolor="#212529", tooltip="Operations console"];
+  }
+
+  subgraph cluster_data {
+    graph [label="Data assets", style="rounded,filled", fillcolor="#8a8a8a1f", color="#94a3b8", fontcolor="#475569", fontsize=10, labeljust="l"];
+    "data:card_data" [label="card_data\nstrictly-confidential\nPII · pci-dss", shape="note", style="filled", fillcolor="#f7c9c9", color="#b91c1c", fontcolor="#3d0a0a", penwidth=1.4, tooltip="card_data\nPrimary account number and expiry, in flight only.\nclassification: strictly-confidential\nintegrity: critical\navailability: important"];
+    "data:payment_token" [label="payment_token\nconfidential", shape="note", style="filled", fillcolor="#fde4c8", color="#c87f0a", fontcolor="#4a3000", penwidth=1.4, tooltip="payment_token\nProcessor-issued token standing in for a card.\nclassification: confidential\nintegrity: critical\navailability: critical"];
+    "data:customer_profile" [label="customer_profile\nrestricted\nPII · gdpr", shape="note", style="filled", fillcolor="#e5dbfa", color="#7c3aed", fontcolor="#2a1450", penwidth=1.4, tooltip="customer_profile\nName, billing address and contact details.\nclassification: restricted\nintegrity: important\navailability: important"];
+    "data:processor_credentials" [label="processor_credentials\nstrictly-confidential\ncredentials", shape="note", style="filled", fillcolor="#f7c9c9", color="#b91c1c", fontcolor="#3d0a0a", penwidth=1.4, tooltip="processor_credentials\nAPI key and signing secret for the payment processor.\nclassification: strictly-confidential\nintegrity: mission-critical\navailability: critical"];
+    "data:audit_log" [label="audit_log\ninternal", shape="note", style="filled", fillcolor="#dbeafe", color="#2563eb", fontcolor="#12294a", penwidth=1.4, tooltip="audit_log\nAppend-only record of payment state changes.\nclassification: internal\nintegrity: critical\navailability: important"];
+  }
+
+  "el:storefront" -> "data:card_data" [label="processes", color="#b91c1c", fontcolor="#374151", fontsize=9, penwidth=1];
+  "el:storefront" -> "data:customer_profile" [label="processes", color="#7c3aed", fontcolor="#374151", fontsize=9, penwidth=1];
+  "el:payment_api" -> "data:card_data" [label="processes", color="#b91c1c", fontcolor="#374151", fontsize=9, penwidth=1];
+  "el:payment_api" -> "data:payment_token" [label="processes", color="#c87f0a", fontcolor="#374151", fontsize=9, penwidth=1];
+  "el:payment_api" -> "data:customer_profile" [label="processes", color="#7c3aed", fontcolor="#374151", fontsize=9, penwidth=1];
+  "el:payment_api" -> "data:processor_credentials" [label="processes", color="#b91c1c", fontcolor="#374151", fontsize=9, penwidth=1];
+  "el:token_store" -> "data:payment_token" [label="stores", color="#c87f0a", fontcolor="#374151", fontsize=9, penwidth=2];
+  "el:token_store" -> "data:customer_profile" [label="stores", color="#7c3aed", fontcolor="#374151", fontsize=9, penwidth=2];
+  "el:audit_store" -> "data:audit_log" [label="stores", color="#2563eb", fontcolor="#374151", fontsize=9, penwidth=2];
+  "el:settlement_batch" -> "data:payment_token" [label="processes", color="#c87f0a", fontcolor="#374151", fontsize=9, penwidth=1];
+  "el:settlement_batch" -> "data:audit_log" [label="processes", color="#2563eb", fontcolor="#374151", fontsize=9, penwidth=1];
+  "el:processor" -> "data:card_data" [label="processes", color="#b91c1c", fontcolor="#374151", fontsize=9, penwidth=1, style="dashed"];
+  "el:processor" -> "data:payment_token" [label="processes", color="#c87f0a", fontcolor="#374151", fontsize=9, penwidth=1, style="dashed"];
+}

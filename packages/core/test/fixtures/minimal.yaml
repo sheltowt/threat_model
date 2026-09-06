@@ -1,0 +1,13 @@
+schema: tmc/1.0
+meta:
+  title: Minimal
+elements:
+  a:
+    technology: web-application
+  b:
+    technology: database
+flows:
+  - id: a_to_b
+    from: a
+    to: b
+    protocol: sql-access-protocol

@@ -1,0 +1,58 @@
+id: unguarded-direct-datastore-access
+title: Direct datastore access from an internet-reachable asset
+stride: elevation-of-privilege
+cwe: 1220
+capec: [CAPEC-116]
+asvs: V1.2.2
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Database_Security_Cheat_Sheet.html
+function: architecture
+
+description: >
+  An asset an attacker can reach from the internet talks straight to a sensitive
+  datastore across a network boundary, so one application compromise becomes a database
+  session with the application's full grants.
+
+detection_logic: >
+  A non-response flow into a datastore holding confidential or better data, where the
+  caller is reachable from an internet-facing element, is not itself a datastore or a
+  gateway, and the link crosses a network trust boundary. Reachability rather than
+  direct exposure is the test, because the interesting case is the second hop: a web
+  tier that is not itself public but sits one call away from something that is.
+
+risk_assessment: >
+  Likelihood is Very Likely where the caller faces the internet directly and Likely
+  where it is merely reachable. Impact follows the store's confidentiality, since a
+  hijacked session reads whatever the caller's grants allow rather than only the rows
+  this link normally touches.
+
+false_positives: >
+  Architectures where the caller is the datastore's intended and only client and the
+  boundary crossing is an artefact of coarse modelling — a service and its own database
+  drawn in separate subnets. The finding still asks a fair question there: whether the
+  caller's grants are scoped to the rows it actually needs.
+
+mitigation: >
+  Give the caller a database role limited to the exact tables and operations it uses,
+  restrict the datastore's listener to the caller's addresses or identities, and put
+  reads that do not need to be live behind a cache or a view.
+action: Scope the caller's database grants to least privilege and restrict the listener.
+check: With the caller's credential, attempt a read outside its normal tables and confirm it is denied.
+
+scope: flow
+match: |
+  flow.to.technology.datastore
+  && !flow.is_response
+  && !flow.from.technology.datastore
+  && !flow.from.technology.gateway
+  && flow.from.internet_reachable
+  && flow.crosses_network_boundary
+  && flow.to.confidentiality >= 'confidential'
+
+likelihood: |
+  flow.from.internet_facing ? 'very-likely' : 'likely'
+impact: |
+  flow.to.confidentiality >= 'strictly-confidential' ? 'high' : 'medium'
+
+data_breach_probability: probable
+risk_title: "{{ flow.from.name }} reaches {{ flow.to.name }} directly across a network boundary"
+tags: [architecture, access-control, segmentation]

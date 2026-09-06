@@ -1,0 +1,53 @@
+id: missing-identity-store
+title: Authentication with no identity store in the model
+stride: spoofing
+cwe: 1059
+capec: [CAPEC-593]
+asvs: V2.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
+function: architecture
+
+description: >
+  Links in this model authenticate their callers, but nothing in it is an identity
+  provider or identity store. Something is deciding who these callers are, and the
+  model does not say what, so nobody is reviewing how it does it.
+
+detection_logic: >
+  A model-level check: at least one flow authenticates with credentials, a session id
+  or a token, and no element carries the identity provider or identity store role. This
+  is a completeness finding rather than a vulnerability — the component almost
+  certainly exists, and the risk is that it exists outside the boundary of anything
+  anyone reviews.
+
+risk_assessment: >
+  Deliberately rated low: likelihood Unlikely because the gap is usually documentary,
+  impact Medium because when it is not documentary the thing missing is where every
+  password in the system lives.
+
+false_positives: >
+  Models that scope out authentication on purpose, systems where every credential is
+  verified by a third party covered elsewhere, and mutual-TLS estates where the
+  certificate authority is the identity store and has not been drawn. Model the
+  authority, or scope the omission out explicitly, rather than ignoring it.
+
+mitigation: >
+  Add the component that verifies these credentials to the model — even as an external,
+  out-of-scope element — so the rules about isolation, storage and second factors have
+  something to attach to.
+action: Model the identity provider or store that backs these authenticated links.
+check: For one authenticated flow, name the system that holds the credential it verifies, and confirm that system appears in the model.
+
+scope: model
+match: |
+  model.flows.exists(f,
+    f.authentication == 'credentials'
+    || f.authentication == 'session-id'
+    || f.authentication == 'token')
+  && model.elements.none(e, e.technology.identity_provider || e.technology.identity_store)
+
+likelihood: unlikely
+impact: medium
+
+data_breach_probability: improbable
+risk_title: "{{ model.title }} authenticates callers but models no identity store"
+tags: [identity, completeness, architecture]

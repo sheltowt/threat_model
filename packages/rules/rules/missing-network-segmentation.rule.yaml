@@ -1,0 +1,53 @@
+id: missing-network-segmentation
+title: Sensitive datastore not segmented from application assets
+stride: elevation-of-privilege
+cwe: 1008
+capec: [CAPEC-560]
+asvs: V1.1.4
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Microservices_Security_Cheat_Sheet.html
+function: architecture
+
+description: >
+  A datastore holding sensitive data shares its network with the application tier, so
+  lateral movement from any of those assets reaches the store with no boundary left to
+  cross.
+
+detection_logic: >
+  A datastore rated confidential or above that sits in a trust boundary containing two
+  or more in-scope non-datastore members. One neighbour is normal — a store and the one
+  service that owns it; a crowd of them means the network is doing no separating.
+
+risk_assessment: >
+  Likelihood follows whether anything in the shared boundary is reachable from the
+  internet, since that is what turns a theoretical lateral path into a real one. Impact
+  follows the store's own confidentiality.
+
+false_positives: >
+  Models that draw a single boundary because the real segmentation lives in host
+  firewalls, security groups or a service mesh policy that the model does not describe.
+  Nesting a boundary around the data tier, or recording the mesh as an element, is a
+  better answer than suppressing the rule, because a segmentation nobody has drawn is
+  usually a segmentation nobody has audited either.
+
+mitigation: >
+  Put the datastore in its own subnet or namespace with an ingress policy naming the
+  services allowed to reach it, and deny everything else by default rather than by
+  omission.
+action: Move the datastore into a dedicated segment with an explicit allow-list.
+check: From a shell on an unrelated asset in the same boundary, attempt to open the datastore port and confirm it is refused.
+
+scope: element
+match: |
+  el.technology.datastore
+  && el.confidentiality >= 'confidential'
+  && has(el.boundary)
+  && size(el.boundary.all_members.filter(m, !m.technology.datastore && !m.out_of_scope)) >= 2
+
+likelihood: |
+  el.internet_reachable ? 'likely' : 'unlikely'
+impact: |
+  el.confidentiality >= 'strictly-confidential' ? 'high' : 'medium'
+
+data_breach_probability: probable
+risk_title: "{{ el.name }} shares a network boundary with the application tier"
+tags: [architecture, segmentation]

@@ -1,0 +1,57 @@
+id: incomplete-model
+title: Element with no security controls recorded
+stride: repudiation
+cwe: 1059
+capec: [CAPEC-116]
+asvs: V1.1.2
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html
+function: architecture
+
+description: >
+  Nothing is recorded about this element's security controls. Not that they are absent
+  — that nobody has said either way, so every rule that asks about them can only shrug,
+  and the element passes the analysis by being undescribed rather than by being safe.
+
+detection_logic: >
+  An in-scope, non-human, non-client element for which none of six baseline controls is
+  recorded: validates_input, has_access_control, logs_security_events, hardened,
+  monitored and uses_secure_defaults. The test is known(), not the control's value, so
+  recording any one of them as false — an honest answer — retires the finding, while
+  silence does not. The threshold is all six rather than some, so this fires only on
+  elements nobody has assessed at all.
+
+risk_assessment: >
+  Impact is Low because the finding names an absence of information rather than a
+  weakness. Its value is as a completeness check: an element that trips this is one
+  whose other findings, or lack of them, mean nothing.
+
+false_positives: >
+  Elements deliberately kept coarse because they are somebody else's responsibility,
+  which is better expressed by marking them out of scope with a justification, and
+  trivial components — a static file mount, an embedded library — where the six
+  questions genuinely do not apply.
+
+mitigation: >
+  Answer the six questions for this element, with false where the answer is false. A
+  recorded false produces a confident finding that someone can act on, which is far
+  more useful than a blank that produces nothing.
+action: Fill in the element's controls block, recording false where a control is genuinely absent.
+check: Read the finished controls block back to whoever operates the asset and confirm they agree.
+
+scope: element
+match: |
+  !el.human
+  && !el.technology.client
+  && !known(el.controls.validates_input)
+  && !known(el.controls.has_access_control)
+  && !known(el.controls.logs_security_events)
+  && !known(el.controls.hardened)
+  && !known(el.controls.monitored)
+  && !known(el.controls.uses_secure_defaults)
+
+likelihood: likely
+impact: low
+
+data_breach_probability: improbable
+risk_title: "{{ el.name }} records no security controls at all"
+tags: [hygiene, completeness]

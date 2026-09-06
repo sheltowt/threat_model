@@ -1,0 +1,47 @@
+id: unnecessary-data-asset
+title: Data asset nothing in the model touches
+stride: information-disclosure
+cwe: 1220
+capec: [CAPEC-116]
+asvs: V8.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html
+function: architecture
+
+description: >
+  A data asset is declared and then never used: no element processes or stores it and
+  no flow carries it. Either the model is out of date, or the data exists somewhere
+  nobody has drawn — and data with no owner in the diagram tends to have none in
+  practice either.
+
+detection_logic: >
+  A data asset with no processing element, no storing element, and no flow sending or
+  receiving it. This is a hygiene check on the model rather than a property of the
+  system, and it is deliberately cheap to satisfy.
+
+risk_assessment: >
+  Impact is Low on its own. The reason to keep the rule is that an orphaned asset is
+  usually a symptom: the component that used it was deleted from the model and the
+  data was left, or the data is real and its handlers are missing.
+
+false_positives: >
+  Assets declared ahead of the design that will use them, and catalogue entries
+  maintained centrally and referenced by several models. Both are reasonable; delete
+  the entry or note the intent in its description.
+
+mitigation: >
+  Remove the asset if it no longer exists, or add the elements and flows that handle it
+  so the rest of the rule set can reason about where it lives and how it moves.
+action: Delete the unused data asset, or attach it to the elements that really hold it.
+check: Search the system for the data this entry describes and confirm the model's answer matches.
+
+scope: data
+match: |
+  data.orphaned
+
+likelihood: likely
+impact: |
+  data.classification >= 'confidential' || data.pii ? 'medium' : 'low'
+
+data_breach_probability: improbable
+risk_title: "Data asset {{ data.id }} is declared but never used"
+tags: [hygiene, data-minimisation]

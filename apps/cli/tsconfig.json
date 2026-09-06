@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "rootDir": "src", "outDir": "dist" },
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../../packages/core" },
+    { "path": "../../packages/rules" },
+    { "path": "../../packages/render" },
+    { "path": "../../packages/report" },
+    { "path": "../../packages/importers" }
+  ]
+}

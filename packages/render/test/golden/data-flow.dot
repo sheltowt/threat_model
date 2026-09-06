@@ -1,0 +1,34 @@
+digraph "Payment Service" {
+  graph [rankdir="TB", bgcolor="transparent", fontname="Helvetica,Arial,sans-serif", fontsize=12, splines="spline", nodesep=0.5, ranksep=0.65, compound="true", label="Payment Service", labelloc="t", fontcolor="#475569"];
+  node [fontname="Helvetica,Arial,sans-serif", fontsize=11, margin="0.16,0.08"];
+  edge [fontname="Helvetica,Arial,sans-serif", fontsize=9, arrowsize=0.7];
+
+  subgraph cluster_internet {
+    graph [label="Public internet\nnetwork-untrusted", style="rounded,filled", fillcolor="#8a8a8a1f", color="#94a3b8", fontcolor="#475569", fontsize=10, labeljust="l", penwidth=1.6];
+    "shopper" [label="Shopper\nRAA 21 · browser", shape="box", style="rounded,filled", fillcolor="#d8e3f0", color="#7f9cbb", fontcolor="#1f2937", penwidth=1.4, tooltip="Shopper\nkind: actor\ntechnology: browser\nRAA: 21"];
+    "ops_console" [label="Operations console\nRAA 34 · devops-client", shape="box", style="filled,dashed", fillcolor="#d8e3f0", color="#7f9cbb", fontcolor="#1f2937", penwidth=1.4, tooltip="Operations console\nkind: external\ntechnology: devops-client\nRAA: 34"];
+    "processor" [label="Card processor\nRAA 24 · web-service-rest", shape="box", style="filled,dashed", fillcolor="#f1f3f5", color="#9aa0a6", fontcolor="#6b7280", penwidth=1, tooltip="Card processor\nkind: external\ntechnology: web-service-rest\nRAA: 24"];
+  }
+  subgraph cluster_vpc {
+    graph [label="Production VPC\nnetwork-cloud-provider", style="rounded,filled", fillcolor="#8a8a8a1f", color="#94a3b8", fontcolor="#475569", fontsize=10, labeljust="l", penwidth=1.6];
+    subgraph cluster_web_tier {
+      graph [label="Web tier namespace\nnetwork-policy-namespace-isolation", style="rounded,filled", fillcolor="#8a8a8a1f", color="#94a3b8", fontcolor="#475569", fontsize=10, labeljust="l", penwidth=1.6];
+      "storefront" [label="Storefront web app\nRAA 73 · web-application", shape="ellipse", style="filled", fillcolor="#86aad3", color="#436f9f", fontcolor="#0b1620", penwidth=1.4, tooltip="Storefront web app\nkind: process\ntechnology: web-application\nRAA: 73"];
+      "payment_api" [label="Payment API\nRAA 100 · web-service-rest", shape="ellipse", style="filled", fillcolor="#4a7fbf", color="#2c5a8f", fontcolor="#ffffff", penwidth=1.4, tooltip="Payment API\nkind: process\ntechnology: web-service-rest\nRAA: 100"];
+    }
+    subgraph cluster_data_tier {
+      graph [label="Data tier subnet\nnetwork-cloud-security-group", style="rounded,filled", fillcolor="#8a8a8a1f", color="#94a3b8", fontcolor="#475569", fontsize=10, labeljust="l", penwidth=1.6];
+      "token_store" [label="Token store\nRAA 99 · database", shape="cylinder", style="filled", fillcolor="#4a7fbf", color="#2c5a8f", fontcolor="#ffffff", penwidth=1.4, tooltip="Token store\nkind: datastore\ntechnology: database\nRAA: 99"];
+      "audit_store" [label="Audit log store\nRAA 47 · database", shape="cylinder", style="filled", fillcolor="#b6cce4", color="#5f83ad", fontcolor="#132234", penwidth=1.4, tooltip="Audit log store\nkind: datastore\ntechnology: database\nRAA: 47"];
+    }
+    "settlement_batch" [label="Nightly settlement batch\nRAA 75 · batch-processing", shape="ellipse", style="filled", fillcolor="#86aad3", color="#436f9f", fontcolor="#0b1620", penwidth=1.4, tooltip="Nightly settlement batch\nkind: process\ntechnology: batch-processing\nRAA: 75"];
+  }
+
+  "shopper" -> "storefront" [label="https\nCheckout", color="#4b5563", fontcolor="#374151", fontsize=9, penwidth=2.4, tooltip="Checkout\nprotocol: https (encrypted)\nauth: session-id / end-user-identity\ncarries: card_data, customer_profile, payment_token"];
+  "storefront" -> "payment_api" [label="https\nTokenise", color="#4b5563", fontcolor="#374151", fontsize=9, penwidth=2.4, tooltip="Tokenise\nprotocol: https (encrypted)\nauth: token / end-user-identity\ncarries: card_data, payment_token"];
+  "payment_api" -> "processor" [label="https\nProcessor tokenisation", color="#4b5563", fontcolor="#374151", fontsize=9, penwidth=2.4, tooltip="Processor tokenisation\nprotocol: https (encrypted)\nauth: credentials / technical-user\ncarries: card_data, processor_credentials, payment_token"];
+  "payment_api" -> "token_store" [label="sql-access-protocol\nToken persistence", color="#c0392b", fontcolor="#374151", fontsize=9, penwidth=1, tooltip="Token persistence\nprotocol: sql-access-protocol\nauth: credentials / technical-user\ncarries: payment_token, customer_profile"];
+  "payment_api" -> "audit_store" [label="sql-access-protocol\nAudit write", color="#c0392b", fontcolor="#374151", fontsize=9, penwidth=1, tooltip="Audit write\nprotocol: sql-access-protocol\nauth: credentials / technical-user\ncarries: audit_log"];
+  "settlement_batch" -> "token_store" [label="sql-access-protocol\nNightly read", color="#c0392b", fontcolor="#374151", fontsize=9, penwidth=1, tooltip="Nightly read\nprotocol: sql-access-protocol\nauth: credentials / technical-user\ncarries: payment_token"];
+  "ops_console" -> "payment_api" [label="https\nOperator access", color="#4b5563", fontcolor="#374151", fontsize=9, penwidth=1, tooltip="Operator access\nprotocol: https (encrypted)\nauth: token / technical-user\ncarries: customer_profile"];
+}

@@ -1,0 +1,54 @@
+id: service-registry-poisoning
+title: Service registry poisoning
+stride: spoofing
+cwe: 349
+capec: [CAPEC-141, CAPEC-142]
+asvs: V1.4.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Microservices_Security_Cheat_Sheet.html
+function: architecture
+
+description: >
+  Anyone who can write to the service registry chooses where the rest of the estate
+  sends its traffic. A single forged registration silently reroutes calls through an
+  attacker-controlled endpoint.
+
+detection_logic: >
+  An element whose technology is a service registry that either does not record
+  has_access_control, or accepts an incoming flow with no authentication. Registration
+  and lookup are usually the same API, and it is registration that needs the stronger
+  check; the model has one access-control field for both, so an unrecorded one is worth
+  raising at low confidence.
+
+risk_assessment: >
+  Impact is High because the outcome is a machine-in-the-middle on links that the model
+  otherwise shows as trusted. Likelihood is Very Likely once the registry is reachable
+  from the internet.
+
+false_positives: >
+  Registries whose write path is a platform API secured separately from the read path —
+  a Kubernetes control plane doing service discovery, where registration is a
+  privileged operation already. Model the platform's access control on the element
+  rather than leaving the field blank.
+
+mitigation: >
+  Require an authenticated workload identity to register, sign or attest registrations,
+  restrict which names each identity may claim, and have callers verify the identity of
+  the endpoint they were sent to rather than trusting the answer.
+action: Authenticate and authorise registration separately from lookup.
+check: From an unprivileged workload, attempt to register a service under another workload's name and confirm it is refused.
+
+scope: element
+match: |
+  el.technology.service_registry
+  && (
+    !el.controls.has_access_control
+    || el.incoming.exists(f, f.authentication == 'none' && !f.is_response)
+  )
+
+likelihood: |
+  el.internet_reachable ? 'very-likely' : 'likely'
+impact: high
+
+data_breach_probability: possible
+risk_title: "{{ el.name }} may accept unauthorised service registrations"
+tags: [architecture, spoofing, discovery]

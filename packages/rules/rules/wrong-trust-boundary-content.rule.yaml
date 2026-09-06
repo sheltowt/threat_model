@@ -1,0 +1,52 @@
+id: wrong-trust-boundary-content
+title: Datastore placed in an untrusted network
+stride: information-disclosure
+cwe: 668
+capec: [CAPEC-560]
+asvs: V1.1.4
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Database_Security_Cheat_Sheet.html
+function: architecture
+
+description: >
+  A datastore sits inside a boundary the model itself declares untrusted. Whatever the
+  store's own authentication does, it is doing it alone, on a network where anyone may
+  be listening and anyone may connect.
+
+detection_logic: >
+  An in-scope element whose technology is a datastore, whose innermost trust boundary
+  is typed network-untrusted. The model's own boundary typing is the whole test; no
+  inference is involved, which is what makes this finding worth reading twice — either
+  the placement is wrong or the boundary type is.
+
+risk_assessment: >
+  Impact follows the store's confidentiality. Likelihood is Very Likely when the store
+  holds confidential data, because a datastore on an untrusted network is found by
+  scanning rather than by targeting.
+
+false_positives: >
+  Models that use the untrusted boundary as a catch-all for "not ours", where a
+  third-party managed store has been dropped in for want of a better place. Mark such
+  an element out of scope with a justification, or give it a boundary that describes
+  the provider.
+
+mitigation: >
+  Move the store onto a private network, or if it genuinely must live in an untrusted
+  one, treat every byte as public: encrypt with keys held elsewhere, authenticate
+  mutually, and restrict connections to named identities rather than addresses.
+action: Relocate the datastore to a trusted network segment.
+check: From an arbitrary host on the untrusted network, attempt to open the store's port and confirm it is refused.
+
+scope: element
+match: |
+  el.technology.datastore
+  && has(el.boundary)
+  && el.boundary.type == 'network-untrusted'
+
+likelihood: |
+  el.confidentiality >= 'confidential' ? 'very-likely' : 'likely'
+impact: |
+  el.confidentiality >= 'confidential' ? 'very-high' : 'medium'
+
+data_breach_probability: probable
+risk_title: "{{ el.name }} sits inside the untrusted boundary {{ el.boundary.name }}"
+tags: [architecture, segmentation, modelling]

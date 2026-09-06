@@ -1,0 +1,1453 @@
+{
+  "schema": "tmc/risks/1.0",
+  "generated_at": "2026-09-06T12:00:00Z",
+  "model": {
+    "title": "Payment Service",
+    "business_criticality": "critical",
+    "description": "Card-present checkout API for the storefront, plus its settlement batch.",
+    "owner": "platform-security",
+    "author": "B. Shelton",
+    "date": "2026-09-06",
+    "version": "3"
+  },
+  "stats": {
+    "rules_run": 53,
+    "rules_skipped": 0,
+    "candidates_evaluated": 344,
+    "elements": 8,
+    "elements_in_scope": 7,
+    "elements_out_of_scope": 1,
+    "internet_facing": 2,
+    "flows": 7,
+    "trust_boundaries": 4,
+    "shared_runtimes": 1,
+    "data_assets": 5,
+    "orphaned_data_assets": 0,
+    "risks": 31,
+    "open_risks": 31,
+    "low_confidence_risks": 11,
+    "suppressed_risks": 0,
+    "risks_by_severity": {
+      "critical": 0,
+      "high": 5,
+      "elevated": 20,
+      "medium": 6,
+      "low": 0
+    },
+    "open_risks_by_severity": {
+      "critical": 0,
+      "high": 5,
+      "elevated": 20,
+      "medium": 6,
+      "low": 0
+    },
+    "risks_by_status": {
+      "unchecked": 31
+    },
+    "risks_by_stride": {
+      "denial-of-service": 3,
+      "elevation-of-privilege": 5,
+      "information-disclosure": 8,
+      "repudiation": 3,
+      "spoofing": 5,
+      "tampering": 7
+    },
+    "risks_by_function": {
+      "architecture": 8,
+      "business-side": 8,
+      "development": 3,
+      "operations": 12
+    },
+    "risks_by_rule": {
+      "clickjacking": 1,
+      "container-baseimage-backdooring": 2,
+      "dos-risky-access-across-trust-boundary": 3,
+      "excessive-pii-collection": 2,
+      "incomplete-model": 1,
+      "manual": 1,
+      "missing-authentication-second-factor": 2,
+      "missing-build-infrastructure": 1,
+      "missing-cloud-hardening": 1,
+      "missing-consent-record": 2,
+      "missing-content-security-policy": 1,
+      "missing-hardening": 2,
+      "missing-identity-store": 1,
+      "missing-pii-encryption-at-rest": 1,
+      "missing-waf": 1,
+      "pii-crossing-untrusted-boundary": 1,
+      "pii-retention-unbounded": 1,
+      "sql-nosql-injection": 1,
+      "unencrypted-communication": 2,
+      "unguarded-access-from-internet": 1,
+      "unguarded-direct-datastore-access": 1,
+      "weak-authentication": 2
+    },
+    "warnings": 0
+  },
+  "risks": [
+    {
+      "id": "excessive-pii-collection@storefront",
+      "rule": "excessive-pii-collection",
+      "title": "Storefront web app aggregates several categories of personal data",
+      "severity": "high",
+      "likelihood": "very-likely",
+      "impact": "high",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "information-disclosure",
+      "function": "business-side",
+      "subject": {
+        "kind": "element",
+        "id": "storefront",
+        "name": "Storefront web app"
+      },
+      "data_breach_probability": "probable",
+      "data_breach_elements": [
+        "storefront"
+      ],
+      "detection_logic": "An in-scope element that is not itself a datastore, which processes or stores two or more data assets flagged as personal data, at least one of them with a quantity of many or more. Datastores are excluded because a system of record is supposed to hold the whole picture; the finding is about processing tiers and edge services that have accumulated one.\n",
+      "false_positives": "Assets that hold the categories only in transit, never together in one record, and services whose access to several categories is real but strictly segregated per request. If the aggregation is genuinely necessary, the finding is still the right place to write down why.\n",
+      "mitigation": "Split the categories across assets that do not share a compromise, replace direct identifiers with tokens resolvable only by the asset that must resolve them, and narrow each service's read scope to the fields it uses rather than the record it sits on.\n",
+      "tags": [
+        "data-minimisation",
+        "privacy"
+      ],
+      "description": "One processing asset holds several distinct categories of personal data at once, at least one of them in volume. The categories are more dangerous together than apart: joining them is what turns records into people.\n",
+      "linddun": "linking",
+      "cwe": 359,
+      "capec": [
+        "CAPEC-118"
+      ],
+      "asvs": "V8.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html",
+      "action": "Reduce this asset to the personal data fields it actually needs, and tokenise the rest.",
+      "check": "List every personal data field the asset can read, and for each one name the feature that requires it.",
+      "most_relevant_element": "storefront",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile"
+      ]
+    },
+    {
+      "id": "manual@T-001",
+      "rule": "manual",
+      "title": "Settlement batch retains card data in temporary files",
+      "severity": "high",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "information-disclosure",
+      "function": "architecture",
+      "subject": {
+        "kind": "element",
+        "id": "settlement_batch",
+        "name": "Nightly settlement batch"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "settlement_batch"
+      ],
+      "detection_logic": "Recorded by hand in the model file.",
+      "false_positives": "Reviewed by a person, so judge it on its own terms.",
+      "mitigation": "Write intermediates to a tmpfs and delete on completion.",
+      "tags": [],
+      "description": "The batch writes intermediate CSV files to local disk. Nobody has confirmed those files are shredded after a run.\n",
+      "cwe": 459
+    },
+    {
+      "id": "missing-authentication-second-factor@ops_to_api",
+      "rule": "missing-authentication-second-factor",
+      "title": "Operations console signs in to Payment API with a single factor",
+      "severity": "high",
+      "likelihood": "very-likely",
+      "impact": "high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "spoofing",
+      "function": "business-side",
+      "subject": {
+        "kind": "flow",
+        "id": "ops_to_api",
+        "name": "Operator access"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "ops_console",
+        "payment_api"
+      ],
+      "detection_logic": "A flow whose source is a human, arriving at a technology the catalogue marks a high-value target or carrying devops usage, where the recorded authentication is something weaker than two-factor and the link does not record uses_mfa. Flows with no authentication at all are left to missing-authentication, which says something stronger. Where uses_mfa is simply unrecorded the finding is raised at low confidence and names that field, because \"nobody wrote it down\" is not the same as \"there is no second factor\".\n",
+      "false_positives": "Consumer flows where a second factor is a deliberate, documented business trade-off, and sessions established behind an SSO portal that already enforced MFA upstream — in the latter case the second factor exists, it is just on a hop the model does not draw. Record uses_mfa on the link to settle it either way.\n",
+      "mitigation": "Require a phishing-resistant second factor — a passkey or a hardware authenticator — for administrative access without exception, and step it up on sensitive actions for everyone else.\n",
+      "tags": [
+        "authentication",
+        "mfa"
+      ],
+      "description": "A person signs in to something valuable with one factor, so every credential-stuffing list, phishing kit and shoulder-surf is a complete authentication bypass.\n",
+      "cwe": 308,
+      "capec": [
+        "CAPEC-560",
+        "CAPEC-600"
+      ],
+      "asvs": "V2.8",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html",
+      "action": "Enforce MFA on this login path and record it on the flow.",
+      "check": "Attempt the login with a valid password alone and confirm it is refused.",
+      "unknowns": [
+        "flow.controls.uses_mfa"
+      ],
+      "most_relevant_element": "payment_api",
+      "most_relevant_flow": "ops_to_api",
+      "most_relevant_data": [
+        "customer_profile"
+      ]
+    },
+    {
+      "id": "missing-authentication-second-factor@shopper_to_storefront",
+      "rule": "missing-authentication-second-factor",
+      "title": "Shopper signs in to Storefront web app with a single factor",
+      "severity": "high",
+      "likelihood": "very-likely",
+      "impact": "high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "spoofing",
+      "function": "business-side",
+      "subject": {
+        "kind": "flow",
+        "id": "shopper_to_storefront",
+        "name": "Checkout"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "shopper",
+        "storefront"
+      ],
+      "detection_logic": "A flow whose source is a human, arriving at a technology the catalogue marks a high-value target or carrying devops usage, where the recorded authentication is something weaker than two-factor and the link does not record uses_mfa. Flows with no authentication at all are left to missing-authentication, which says something stronger. Where uses_mfa is simply unrecorded the finding is raised at low confidence and names that field, because \"nobody wrote it down\" is not the same as \"there is no second factor\".\n",
+      "false_positives": "Consumer flows where a second factor is a deliberate, documented business trade-off, and sessions established behind an SSO portal that already enforced MFA upstream — in the latter case the second factor exists, it is just on a hop the model does not draw. Record uses_mfa on the link to settle it either way.\n",
+      "mitigation": "Require a phishing-resistant second factor — a passkey or a hardware authenticator — for administrative access without exception, and step it up on sensitive actions for everyone else.\n",
+      "tags": [
+        "authentication",
+        "mfa"
+      ],
+      "description": "A person signs in to something valuable with one factor, so every credential-stuffing list, phishing kit and shoulder-surf is a complete authentication bypass.\n",
+      "cwe": 308,
+      "capec": [
+        "CAPEC-560",
+        "CAPEC-600"
+      ],
+      "asvs": "V2.8",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html",
+      "action": "Enforce MFA on this login path and record it on the flow.",
+      "check": "Attempt the login with a valid password alone and confirm it is refused.",
+      "unknowns": [
+        "flow.controls.uses_mfa"
+      ],
+      "most_relevant_element": "storefront",
+      "most_relevant_flow": "shopper_to_storefront",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile",
+        "payment_token"
+      ]
+    },
+    {
+      "id": "unguarded-access-from-internet@storefront",
+      "rule": "unguarded-access-from-internet",
+      "title": "Storefront web app is published to the internet with no edge component in front",
+      "severity": "high",
+      "likelihood": "very-likely",
+      "impact": "high",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "elevation-of-privilege",
+      "function": "architecture",
+      "subject": {
+        "kind": "element",
+        "id": "storefront",
+        "name": "Storefront web app"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "storefront"
+      ],
+      "detection_logic": "An in-scope element marked internet-facing whose technology is not one of the roles built to sit at the edge: gateway, reverse proxy, load balancer or WAF. Clients and humans are excluded, since an internet-facing browser or operator is a description of where the user is, not an exposure you own.\n",
+      "false_positives": "Assets that are internet-facing by design and hardened for it — a public CDN origin serving only static files, or a service whose edge is a managed platform the model does not draw as an element. Where a provider's edge is doing the guarding, model it: an unnamed layer nobody can point at tends not to be configured either.\n",
+      "mitigation": "Put a gateway or reverse proxy in front, terminate TLS there, and publish only the routes that need to be public. Keep the asset itself on a private address so the guard cannot be bypassed by anyone who learns the origin.\n",
+      "tags": [
+        "architecture",
+        "exposure"
+      ],
+      "description": "A general-purpose asset is published directly to the internet. Everything it exposes — every endpoint, every parser, every version banner — is a first-line surface, with nothing in front to normalise, filter or absorb traffic.\n",
+      "cwe": 1327,
+      "capec": [
+        "CAPEC-1"
+      ],
+      "asvs": "V1.1.4",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Secure_Product_Design_Cheat_Sheet.html",
+      "action": "Move the asset behind an edge component and make its own listener private.",
+      "check": "Resolve the asset's own hostname from outside and confirm it does not answer.",
+      "most_relevant_element": "storefront",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile"
+      ]
+    },
+    {
+      "id": "clickjacking@storefront",
+      "rule": "clickjacking",
+      "title": "Storefront web app can be framed by another origin",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "tampering",
+      "function": "development",
+      "subject": {
+        "kind": "element",
+        "id": "storefront",
+        "name": "Storefront web app"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "storefront"
+      ],
+      "detection_logic": "An internet-facing web application that does not record uses_content_security_policy, which is where frame-ancestors would be declared. This shares a control with missing-content-security-policy and is reported separately because the fix and the consequence are different: frame-ancestors is a one-line directive, and its absence is exploitable on its own rather than only in combination with another flaw.\n",
+      "false_positives": "Applications with no clickable state-changing controls, applications that are deliberately embeddable — a payment widget, an embedded map — and those whose proxy sets frame-ancestors on the way out. Embeddable by design is the common case; record the control as true and add a note.\n",
+      "mitigation": "Set frame-ancestors in the content security policy to the exact origins allowed to embed the page, using 'none' when that is nobody, and require re-authentication or a typed confirmation for the actions worth stealing a click for.\n",
+      "tags": [
+        "hardening",
+        "web"
+      ],
+      "description": "Nothing stops another site from loading this application in a frame, so a user can be induced to click a control they cannot see, in a session they are already authenticated for.\n",
+      "cwe": 1021,
+      "capec": [
+        "CAPEC-103",
+        "CAPEC-181"
+      ],
+      "asvs": "V14.4.7",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking_Defense_Cheat_Sheet.html",
+      "action": "Add a frame-ancestors directive to the application's policy.",
+      "check": "Load the application inside an iframe on a foreign origin and confirm the browser blocks it.",
+      "most_relevant_element": "storefront",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile"
+      ]
+    },
+    {
+      "id": "container-baseimage-backdooring@payment_api",
+      "rule": "container-baseimage-backdooring",
+      "title": "Payment API runs a container image with no recorded provenance check",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "tampering",
+      "function": "operations",
+      "subject": {
+        "kind": "element",
+        "id": "payment_api",
+        "name": "Payment API"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "payment_api"
+      ],
+      "detection_logic": "An in-scope element whose machine is recorded as container, which records neither uses_code_signing nor verifies_dependencies. An unrecorded machine is treated as not a container rather than as unknown, because that is a deployment fact the author either wrote down or did not, unlike a security control.\n",
+      "false_positives": "Estates where an admission controller enforces signatures cluster-wide, so the control is true for every workload and written on none of them, and images built entirely from source in your own pipeline. Record uses_code_signing on the workloads, or add the admission controller as an element.\n",
+      "mitigation": "Pin base images by digest rather than by tag, sign images at build time and verify the signature at admission, rebuild on base image updates rather than on a schedule, and scan the final image rather than only the manifest.\n",
+      "tags": [
+        "container",
+        "supply-chain"
+      ],
+      "description": "The asset runs as a container and nothing records that the image it runs was signed or that its contents were verified. A base image is code you did not write, pulled by a tag that can be moved under you.\n",
+      "cwe": 1357,
+      "capec": [
+        "CAPEC-444"
+      ],
+      "asvs": "V14.2.1",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html",
+      "action": "Pin base images by digest and require a valid signature at admission.",
+      "check": "Attempt to deploy an unsigned image and confirm the cluster refuses it.",
+      "unknowns": [
+        "el.controls.uses_code_signing",
+        "el.controls.verifies_dependencies"
+      ],
+      "most_relevant_element": "payment_api",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile",
+        "payment_token",
+        "processor_credentials"
+      ]
+    },
+    {
+      "id": "container-baseimage-backdooring@storefront",
+      "rule": "container-baseimage-backdooring",
+      "title": "Storefront web app runs a container image with no recorded provenance check",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "tampering",
+      "function": "operations",
+      "subject": {
+        "kind": "element",
+        "id": "storefront",
+        "name": "Storefront web app"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "storefront"
+      ],
+      "detection_logic": "An in-scope element whose machine is recorded as container, which records neither uses_code_signing nor verifies_dependencies. An unrecorded machine is treated as not a container rather than as unknown, because that is a deployment fact the author either wrote down or did not, unlike a security control.\n",
+      "false_positives": "Estates where an admission controller enforces signatures cluster-wide, so the control is true for every workload and written on none of them, and images built entirely from source in your own pipeline. Record uses_code_signing on the workloads, or add the admission controller as an element.\n",
+      "mitigation": "Pin base images by digest rather than by tag, sign images at build time and verify the signature at admission, rebuild on base image updates rather than on a schedule, and scan the final image rather than only the manifest.\n",
+      "tags": [
+        "container",
+        "supply-chain"
+      ],
+      "description": "The asset runs as a container and nothing records that the image it runs was signed or that its contents were verified. A base image is code you did not write, pulled by a tag that can be moved under you.\n",
+      "cwe": 1357,
+      "capec": [
+        "CAPEC-444"
+      ],
+      "asvs": "V14.2.1",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html",
+      "action": "Pin base images by digest and require a valid signature at admission.",
+      "check": "Attempt to deploy an unsigned image and confirm the cluster refuses it.",
+      "unknowns": [
+        "el.controls.uses_code_signing",
+        "el.controls.verifies_dependencies"
+      ],
+      "most_relevant_element": "storefront",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile"
+      ]
+    },
+    {
+      "id": "dos-risky-access-across-trust-boundary@ops_to_api",
+      "rule": "dos-risky-access-across-trust-boundary",
+      "title": "Payment API accepts unthrottled traffic over ops_to_api",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "denial-of-service",
+      "function": "operations",
+      "subject": {
+        "kind": "flow",
+        "id": "ops_to_api",
+        "name": "Operator access"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "ops_console",
+        "payment_api"
+      ],
+      "detection_logic": "A non-response flow crossing a network trust boundary into an in-scope asset rated critical or better for availability, where the caller either comes from an untrusted network or is reachable from an internet-facing element, and neither the link nor the target records rate_limited. When neither has been recorded the finding is raised at low confidence and names the missing fields.\n",
+      "false_positives": "Links whose volume is bounded by construction — a scheduled batch, a queue consumer pulling at its own pace — and paths already throttled by a platform layer the model does not draw, such as a mesh or an ingress controller. Record rate_limited on the flow in that case.\n",
+      "mitigation": "Rate limit per caller identity rather than per address, set concurrency and payload size caps, and shed load at the edge so the pressure never reaches the asset you care about. Load shedding that returns quickly beats a queue that grows.\n",
+      "tags": [
+        "availability",
+        "rate-limiting"
+      ],
+      "description": "Traffic crosses a network boundary into an asset the business needs available, and nothing on either the link or the target records a limit on how much of it there can be.\n",
+      "cwe": 770,
+      "capec": [
+        "CAPEC-125",
+        "CAPEC-227"
+      ],
+      "asvs": "V11.1.4",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+      "action": "Apply a per-identity rate limit and a concurrency cap on this path.",
+      "check": "Drive the endpoint past the intended limit and confirm it returns a throttling response rather than degrading.",
+      "unknowns": [
+        "flow.controls.rate_limited"
+      ],
+      "most_relevant_element": "payment_api",
+      "most_relevant_flow": "ops_to_api",
+      "most_relevant_data": [
+        "customer_profile"
+      ]
+    },
+    {
+      "id": "dos-risky-access-across-trust-boundary@storefront_to_api",
+      "rule": "dos-risky-access-across-trust-boundary",
+      "title": "Payment API accepts unthrottled traffic over storefront_to_api",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "denial-of-service",
+      "function": "operations",
+      "subject": {
+        "kind": "flow",
+        "id": "storefront_to_api",
+        "name": "Tokenise"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "payment_api",
+        "storefront"
+      ],
+      "detection_logic": "A non-response flow crossing a network trust boundary into an in-scope asset rated critical or better for availability, where the caller either comes from an untrusted network or is reachable from an internet-facing element, and neither the link nor the target records rate_limited. When neither has been recorded the finding is raised at low confidence and names the missing fields.\n",
+      "false_positives": "Links whose volume is bounded by construction — a scheduled batch, a queue consumer pulling at its own pace — and paths already throttled by a platform layer the model does not draw, such as a mesh or an ingress controller. Record rate_limited on the flow in that case.\n",
+      "mitigation": "Rate limit per caller identity rather than per address, set concurrency and payload size caps, and shed load at the edge so the pressure never reaches the asset you care about. Load shedding that returns quickly beats a queue that grows.\n",
+      "tags": [
+        "availability",
+        "rate-limiting"
+      ],
+      "description": "Traffic crosses a network boundary into an asset the business needs available, and nothing on either the link or the target records a limit on how much of it there can be.\n",
+      "cwe": 770,
+      "capec": [
+        "CAPEC-125",
+        "CAPEC-227"
+      ],
+      "asvs": "V11.1.4",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+      "action": "Apply a per-identity rate limit and a concurrency cap on this path.",
+      "check": "Drive the endpoint past the intended limit and confirm it returns a throttling response rather than degrading.",
+      "unknowns": [
+        "flow.controls.rate_limited"
+      ],
+      "most_relevant_element": "payment_api",
+      "most_relevant_flow": "storefront_to_api",
+      "most_relevant_data": [
+        "card_data",
+        "payment_token"
+      ]
+    },
+    {
+      "id": "excessive-pii-collection@payment_api",
+      "rule": "excessive-pii-collection",
+      "title": "Payment API aggregates several categories of personal data",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "information-disclosure",
+      "function": "business-side",
+      "subject": {
+        "kind": "element",
+        "id": "payment_api",
+        "name": "Payment API"
+      },
+      "data_breach_probability": "probable",
+      "data_breach_elements": [
+        "payment_api"
+      ],
+      "detection_logic": "An in-scope element that is not itself a datastore, which processes or stores two or more data assets flagged as personal data, at least one of them with a quantity of many or more. Datastores are excluded because a system of record is supposed to hold the whole picture; the finding is about processing tiers and edge services that have accumulated one.\n",
+      "false_positives": "Assets that hold the categories only in transit, never together in one record, and services whose access to several categories is real but strictly segregated per request. If the aggregation is genuinely necessary, the finding is still the right place to write down why.\n",
+      "mitigation": "Split the categories across assets that do not share a compromise, replace direct identifiers with tokens resolvable only by the asset that must resolve them, and narrow each service's read scope to the fields it uses rather than the record it sits on.\n",
+      "tags": [
+        "data-minimisation",
+        "privacy"
+      ],
+      "description": "One processing asset holds several distinct categories of personal data at once, at least one of them in volume. The categories are more dangerous together than apart: joining them is what turns records into people.\n",
+      "linddun": "linking",
+      "cwe": 359,
+      "capec": [
+        "CAPEC-118"
+      ],
+      "asvs": "V8.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html",
+      "action": "Reduce this asset to the personal data fields it actually needs, and tokenise the rest.",
+      "check": "List every personal data field the asset can read, and for each one name the feature that requires it.",
+      "most_relevant_element": "payment_api",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile",
+        "payment_token",
+        "processor_credentials"
+      ]
+    },
+    {
+      "id": "missing-cloud-hardening@vpc",
+      "rule": "missing-cloud-hardening",
+      "title": "Production VPC has no recorded cloud hardening baseline",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "elevation-of-privilege",
+      "function": "operations",
+      "subject": {
+        "kind": "boundary",
+        "id": "vpc",
+        "name": "Production VPC"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "audit_store",
+        "payment_api",
+        "settlement_batch",
+        "storefront",
+        "token_store"
+      ],
+      "detection_logic": "A trust boundary typed as a cloud provider network containing at least one in-scope member that does not record the hardened control. The boundary is the subject rather than any one asset, because cloud misconfiguration is an account-level property that no single element owns.\n",
+      "false_positives": "Accounts governed by policy-as-code with a passing posture report, where the control is true for the whole boundary and simply not written on each element. Record hardened on the members, or add an assumption naming the posture tool and its last run.\n",
+      "mitigation": "Apply the provider's benchmark at the account level, enforce it with policy-as-code in the deployment pipeline rather than by review, turn on the audit trail before anything else, and scope roles to the actions they actually use.\n",
+      "tags": [
+        "cloud",
+        "hardening",
+        "operations"
+      ],
+      "description": "A cloud-provider trust boundary holds assets, and nothing inside it records that it has been hardened. In a cloud account the defaults that matter are the account's — public storage, permissive security groups, over-scoped roles, no logging — and they are set once and inherited by everything.\n",
+      "cwe": 1188,
+      "capec": [
+        "CAPEC-1"
+      ],
+      "asvs": "V14.1.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Infrastructure_as_Code_Security_Cheat_Sheet.html",
+      "action": "Adopt a cloud benchmark and enforce it in the pipeline that creates these resources.",
+      "check": "Run a posture assessment against the account and confirm no high findings remain open.",
+      "unknowns": [
+        "m.controls.hardened"
+      ]
+    },
+    {
+      "id": "missing-consent-record@card_data",
+      "rule": "missing-consent-record",
+      "title": "Personal data card_data has no recorded origin",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "repudiation",
+      "function": "business-side",
+      "subject": {
+        "kind": "data",
+        "id": "card_data",
+        "name": "card_data"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "payment_api",
+        "processor",
+        "storefront"
+      ],
+      "detection_logic": "A data asset flagged as personal data whose origin field is not set. Origin stands in for provenance and lawful basis together — collected from the subject, derived from behaviour, purchased from a broker, inferred by a model — because those four have very different consent stories and the difference is invisible once the data is in a table.\n",
+      "false_positives": "Data whose provenance is recorded thoroughly in a separate register that the model simply references elsewhere, and derived assets whose origin is obvious from the pipeline that produces them. Writing one line in origin is cheaper than explaining either.\n",
+      "mitigation": "Record the origin and the lawful basis on the data asset, then check that the basis actually covers every use the model shows — a basis for collection is not a basis for every downstream transfer this diagram contains.\n",
+      "tags": [
+        "compliance",
+        "hygiene",
+        "privacy"
+      ],
+      "description": "The model holds personal data and does not say where it came from. Without that, nobody can answer the two questions every privacy review starts with: on what basis do we hold this, and were the people it describes told.\n",
+      "linddun": "unawareness",
+      "cwe": 359,
+      "capec": [
+        "CAPEC-118"
+      ],
+      "asvs": "V8.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html",
+      "action": "Set origin on the data asset and name the lawful basis for holding it.",
+      "check": "Pick one record and trace it back to the collection point and the notice shown there.",
+      "most_relevant_data": [
+        "card_data"
+      ]
+    },
+    {
+      "id": "missing-consent-record@customer_profile",
+      "rule": "missing-consent-record",
+      "title": "Personal data customer_profile has no recorded origin",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "repudiation",
+      "function": "business-side",
+      "subject": {
+        "kind": "data",
+        "id": "customer_profile",
+        "name": "customer_profile"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "payment_api",
+        "storefront",
+        "token_store"
+      ],
+      "detection_logic": "A data asset flagged as personal data whose origin field is not set. Origin stands in for provenance and lawful basis together — collected from the subject, derived from behaviour, purchased from a broker, inferred by a model — because those four have very different consent stories and the difference is invisible once the data is in a table.\n",
+      "false_positives": "Data whose provenance is recorded thoroughly in a separate register that the model simply references elsewhere, and derived assets whose origin is obvious from the pipeline that produces them. Writing one line in origin is cheaper than explaining either.\n",
+      "mitigation": "Record the origin and the lawful basis on the data asset, then check that the basis actually covers every use the model shows — a basis for collection is not a basis for every downstream transfer this diagram contains.\n",
+      "tags": [
+        "compliance",
+        "hygiene",
+        "privacy"
+      ],
+      "description": "The model holds personal data and does not say where it came from. Without that, nobody can answer the two questions every privacy review starts with: on what basis do we hold this, and were the people it describes told.\n",
+      "linddun": "unawareness",
+      "cwe": 359,
+      "capec": [
+        "CAPEC-118"
+      ],
+      "asvs": "V8.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html",
+      "action": "Set origin on the data asset and name the lawful basis for holding it.",
+      "check": "Pick one record and trace it back to the collection point and the notice shown there.",
+      "most_relevant_data": [
+        "customer_profile"
+      ]
+    },
+    {
+      "id": "missing-content-security-policy@storefront",
+      "rule": "missing-content-security-policy",
+      "title": "Storefront web app serves pages without a content security policy",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "tampering",
+      "function": "development",
+      "subject": {
+        "kind": "element",
+        "id": "storefront",
+        "name": "Storefront web app"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "storefront"
+      ],
+      "detection_logic": "An in-scope web application that does not record uses_content_security_policy. This is a defence-in-depth control, so it fires independently of whether output encoding is in place; the two mitigate the same class of bug at different layers and both are worth having.\n",
+      "false_positives": "APIs that never return HTML, single-purpose endpoints with no browser surface, and applications where the policy is set by a reverse proxy the model does not draw. The first two are better modelled as a web service than as a web application.\n",
+      "mitigation": "Serve a policy with a nonce-based script-src and no unsafe-inline, then tighten frame-ancestors, base-uri and form-action. Start in report-only mode against real traffic rather than guessing at the directive set.\n",
+      "tags": [
+        "hardening",
+        "web"
+      ],
+      "description": "The application ships no policy telling the browser where script may come from, so a single injection flaw anywhere in the page turns straight into code execution in the user's session.\n",
+      "cwe": 1021,
+      "capec": [
+        "CAPEC-63"
+      ],
+      "asvs": "V14.4.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html",
+      "action": "Add a Content-Security-Policy header with a nonce-based script-src.",
+      "check": "Load the application and confirm the header is present, then check the report endpoint for violations from normal use.",
+      "most_relevant_element": "storefront",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile"
+      ]
+    },
+    {
+      "id": "missing-hardening@payment_api",
+      "rule": "missing-hardening",
+      "title": "Payment API is an attractive target with no recorded hardening",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "elevation-of-privilege",
+      "function": "operations",
+      "subject": {
+        "kind": "element",
+        "id": "payment_api",
+        "name": "Payment API"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "payment_api"
+      ],
+      "detection_logic": "An in-scope, non-human, non-client element that does not record the hardened control, is among the most attractive assets in the model, and is independently worth hardening: it either holds data classified confidential or above, is rated critical for integrity, or is reachable from the internet.\nThe second test is what stops this rule scaling with the model rather than with the risk. Attractiveness is normalised across the model, so some asset always scores 100 and a bare rank threshold would select roughly the same fraction of every model it ever runs on, however benign. Pairing rank with an absolute property means a system of uniformly low-value assets produces no finding at all.\n",
+      "false_positives": "Assets built from an image that is hardened centrally, where the control is true and simply unrecorded, and managed services where the provider owns the configuration. Record hardened: true with a pointer to the benchmark, which is more useful to the next reader than a suppression.\n",
+      "mitigation": "Apply a published benchmark — CIS, the vendor's, your own written one — remove packages and listeners the asset does not need, run as a non-root user with a read-only root filesystem, and re-check the configuration on every deploy rather than once at build time.\n",
+      "tags": [
+        "hardening",
+        "operations"
+      ],
+      "description": "One of the most attractive assets in the model does not record that it has been hardened, so it is probably running whatever its base image, package manager and framework defaults gave it.\n",
+      "cwe": 1188,
+      "capec": [
+        "CAPEC-1"
+      ],
+      "asvs": "V14.1.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Secure_Product_Design_Cheat_Sheet.html",
+      "action": "Apply and record a hardening baseline for this asset.",
+      "check": "Run the benchmark's scoring tool against a running instance and keep the report.",
+      "unknowns": [
+        "el.controls.hardened"
+      ],
+      "most_relevant_element": "payment_api",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile",
+        "payment_token",
+        "processor_credentials"
+      ]
+    },
+    {
+      "id": "missing-hardening@token_store",
+      "rule": "missing-hardening",
+      "title": "Token store is an attractive target with no recorded hardening",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "elevation-of-privilege",
+      "function": "operations",
+      "subject": {
+        "kind": "element",
+        "id": "token_store",
+        "name": "Token store"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "token_store"
+      ],
+      "detection_logic": "An in-scope, non-human, non-client element that does not record the hardened control, is among the most attractive assets in the model, and is independently worth hardening: it either holds data classified confidential or above, is rated critical for integrity, or is reachable from the internet.\nThe second test is what stops this rule scaling with the model rather than with the risk. Attractiveness is normalised across the model, so some asset always scores 100 and a bare rank threshold would select roughly the same fraction of every model it ever runs on, however benign. Pairing rank with an absolute property means a system of uniformly low-value assets produces no finding at all.\n",
+      "false_positives": "Assets built from an image that is hardened centrally, where the control is true and simply unrecorded, and managed services where the provider owns the configuration. Record hardened: true with a pointer to the benchmark, which is more useful to the next reader than a suppression.\n",
+      "mitigation": "Apply a published benchmark — CIS, the vendor's, your own written one — remove packages and listeners the asset does not need, run as a non-root user with a read-only root filesystem, and re-check the configuration on every deploy rather than once at build time.\n",
+      "tags": [
+        "hardening",
+        "operations"
+      ],
+      "description": "One of the most attractive assets in the model does not record that it has been hardened, so it is probably running whatever its base image, package manager and framework defaults gave it.\n",
+      "cwe": 1188,
+      "capec": [
+        "CAPEC-1"
+      ],
+      "asvs": "V14.1.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Secure_Product_Design_Cheat_Sheet.html",
+      "action": "Apply and record a hardening baseline for this asset.",
+      "check": "Run the benchmark's scoring tool against a running instance and keep the report.",
+      "unknowns": [
+        "el.controls.hardened"
+      ],
+      "most_relevant_element": "token_store",
+      "most_relevant_data": [
+        "customer_profile",
+        "payment_token"
+      ]
+    },
+    {
+      "id": "missing-pii-encryption-at-rest@token_store",
+      "rule": "missing-pii-encryption-at-rest",
+      "title": "Token store stores personal data with transparent encryption only",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "information-disclosure",
+      "function": "operations",
+      "subject": {
+        "kind": "element",
+        "id": "token_store",
+        "name": "Token store"
+      },
+      "data_breach_probability": "probable",
+      "data_breach_elements": [
+        "token_store"
+      ],
+      "detection_logic": "A datastore storing at least one data asset flagged as personal data, whose recorded encryption is none or transparent, on a technology that does not declare unencrypted storage tolerated. The threshold is deliberately above transparent, unlike unencrypted-asset which fires only on none, because a regulator asking whether personal data was encrypted is not asking about the disk.\n",
+      "false_positives": "Stores where field-level encryption is applied by the application and not recorded on the element, and datasets already pseudonymised such that the stored values do not identify anyone. In the second case model the stored asset as the pseudonymised one rather than the original.\n",
+      "mitigation": "Encrypt the identifying fields in the application with keys the datastore's own credentials cannot reach, and prefer tokenisation where the value only needs to be compared rather than read. Then decide who can decrypt, which is the question the disk-level answer never asks.\n",
+      "tags": [
+        "crypto",
+        "privacy",
+        "storage"
+      ],
+      "description": "A datastore holds personal data protected by nothing stronger than transparent encryption. Transparent encryption defends against a stolen disk and against nothing else: any process holding a valid connection reads plaintext, which is the case in every application compromise.\n",
+      "linddun": "data-disclosure",
+      "cwe": 311,
+      "capec": [
+        "CAPEC-37"
+      ],
+      "asvs": "V6.2",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html",
+      "action": "Apply field-level encryption or tokenisation to the identifying columns.",
+      "check": "Read the identifying columns directly with the datastore's own client and confirm they are unreadable.",
+      "most_relevant_element": "token_store",
+      "most_relevant_data": [
+        "customer_profile",
+        "payment_token"
+      ]
+    },
+    {
+      "id": "missing-waf@storefront",
+      "rule": "missing-waf",
+      "title": "Storefront web app faces the internet with no web application firewall in front",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "tampering",
+      "function": "operations",
+      "subject": {
+        "kind": "element",
+        "id": "storefront",
+        "name": "Storefront web app"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "storefront"
+      ],
+      "detection_logic": "An internet-facing element that is a web application or web service, is not itself a WAF, and has no incoming flow originating from one. A WAF is compensating rather than primary, so this rule is deliberately independent of whether the application's own input handling is recorded.\n",
+      "false_positives": "Applications behind a managed edge — a CDN with rules enabled, a cloud load balancer with a policy attached — that the model does not draw as an element, and APIs where a schema-validating gateway does the same job under a different name. Add the edge as an element with the waf or gateway technology and the finding retires.\n",
+      "mitigation": "Put a WAF or schema-validating gateway in front, run it in blocking mode against known signatures, and treat the rules as a place to apply a virtual patch quickly rather than as a permanent substitute for fixing the code.\n",
+      "tags": [
+        "defence-in-depth",
+        "edge",
+        "operations"
+      ],
+      "description": "A publicly reachable application takes web traffic with nothing in front to filter it, so a newly published exploit reaches the code the day it is released and stays reachable until the code ships.\n",
+      "cwe": 693,
+      "capec": [
+        "CAPEC-1"
+      ],
+      "asvs": "V1.14.6",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Virtual_Patching_Cheat_Sheet.html",
+      "action": "Deploy a WAF or gateway in front of the application and record it in the model.",
+      "check": "Send a request that the rule set should block and confirm it never reaches the application log.",
+      "most_relevant_element": "storefront",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile"
+      ]
+    },
+    {
+      "id": "pii-crossing-untrusted-boundary@api_to_processor",
+      "rule": "pii-crossing-untrusted-boundary",
+      "title": "api_to_processor carries personal data to Card processor outside the estate",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "information-disclosure",
+      "function": "business-side",
+      "subject": {
+        "kind": "flow",
+        "id": "api_to_processor",
+        "name": "Processor tokenisation"
+      },
+      "data_breach_probability": "probable",
+      "data_breach_elements": [
+        "payment_api",
+        "processor"
+      ],
+      "detection_logic": "A non-response flow carrying at least one data asset flagged as personal data, whose destination is internet-facing or sits in a boundary typed network-untrusted, where the source is not itself internet-facing. Excluding internet-facing sources keeps the ordinary case — a user's own browser sending their own data in — out of the results.\n",
+      "false_positives": "Transfers to a processor under a contract that already covers them, and destinations modelled as untrusted only because the model has one boundary for everything external. In the first case the finding is still the right anchor for recording the contract and the lawful basis.\n",
+      "mitigation": "Send the least you can: a token or a hashed identifier rather than the record, fields the recipient actually uses rather than the object you happen to have. Encrypt in transit, pin the recipient, and record the lawful basis, the retention period and the deletion path before the first transfer rather than after the first question.\n",
+      "tags": [
+        "compliance",
+        "privacy",
+        "transport"
+      ],
+      "description": "Personal data leaves the estate for an asset on an untrusted network. Once it lands there, what happens to it is governed by someone else's retention policy, someone else's access control and someone else's breach notification.\n",
+      "linddun": "data-disclosure",
+      "cwe": 359,
+      "capec": [
+        "CAPEC-117"
+      ],
+      "asvs": "V8.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html",
+      "action": "Minimise and tokenise the payload, and record the basis for this transfer.",
+      "check": "Capture one real request and confirm every personal data field in it is needed by the recipient.",
+      "most_relevant_element": "processor",
+      "most_relevant_flow": "api_to_processor",
+      "most_relevant_data": [
+        "card_data",
+        "payment_token",
+        "processor_credentials"
+      ]
+    },
+    {
+      "id": "pii-retention-unbounded@customer_profile",
+      "rule": "pii-retention-unbounded",
+      "title": "Personal data customer_profile is stored in volume with no owner",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "information-disclosure",
+      "function": "business-side",
+      "subject": {
+        "kind": "data",
+        "id": "customer_profile",
+        "name": "customer_profile"
+      },
+      "data_breach_probability": "probable",
+      "data_breach_elements": [
+        "payment_api",
+        "storefront",
+        "token_store"
+      ],
+      "detection_logic": "A data asset flagged as personal data, stored by at least one in-scope element, with a quantity of many or more and no owner recorded. Durable storage is what makes retention a question at all — data that only passes through has no retention period to exceed — and volume is what makes the accumulated liability material.\n",
+      "false_positives": "Assets governed by a retention policy held outside the model, and stores where deletion is automatic at the platform level — a TTL on the table, a lifecycle rule on the bucket. Naming an owner on the data asset costs one line and makes the next reviewer's job possible.\n",
+      "mitigation": "Name an owner, set a retention period in the store rather than in a document, and implement deletion as a scheduled job that proves it ran. Confirm that a deletion request reaches replicas, exports, caches, analytics copies and backups, since those are where the data survives the policy.\n",
+      "tags": [
+        "compliance",
+        "privacy",
+        "retention"
+      ],
+      "description": "A large body of personal data is held durably and no owner is recorded. Retention periods do not enforce themselves; they are enforced by someone whose job it is, and the model does not say who that is.\n",
+      "linddun": "non-compliance",
+      "cwe": 359,
+      "capec": [
+        "CAPEC-118"
+      ],
+      "asvs": "V8.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html",
+      "action": "Assign an owner and enforce a retention period in the storage layer.",
+      "check": "Confirm records older than the intended period are absent from the store and from its backups.",
+      "most_relevant_data": [
+        "customer_profile"
+      ]
+    },
+    {
+      "id": "sql-nosql-injection@batch_to_token_store",
+      "rule": "sql-nosql-injection",
+      "title": "Nightly settlement batch may build injectable queries against Token store",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "very-high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "tampering",
+      "function": "development",
+      "subject": {
+        "kind": "flow",
+        "id": "batch_to_token_store",
+        "name": "Nightly read"
+      },
+      "data_breach_probability": "probable",
+      "data_breach_elements": [
+        "settlement_batch",
+        "token_store"
+      ],
+      "detection_logic": "A flow to a datastore over a query protocol, where the calling asset contains custom-developed code and does not record that it uses parameterised queries. The rule fires as a confirmed finding when the control is recorded absent, and as a low-confidence finding when nobody has recorded it either way.\n",
+      "false_positives": "Callers that only ever issue static queries with no interpolated values, and callers whose data layer is a mature ORM used without raw query escapes. Record uses_parameterized_queries on the caller to settle it.\n",
+      "mitigation": "Use parameterised statements or an ORM binding for every query, and never build one by string concatenation.\n",
+      "tags": [
+        "injection",
+        "input-validation"
+      ],
+      "description": "Custom code builds a query for a datastore from data it received, so a caller who controls that data controls the query.\n",
+      "cwe": 89,
+      "capec": [
+        "CAPEC-66",
+        "CAPEC-7"
+      ],
+      "asvs": "V5.3.4",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+      "action": "Replace concatenated query construction in the calling service.",
+      "check": "Search the caller for string-built queries and confirm each uses bound parameters.",
+      "unknowns": [
+        "flow.from.controls.uses_parameterized_queries"
+      ],
+      "most_relevant_element": "token_store",
+      "most_relevant_flow": "batch_to_token_store",
+      "most_relevant_data": [
+        "payment_token"
+      ]
+    },
+    {
+      "id": "unencrypted-communication@api_to_token_store",
+      "rule": "unencrypted-communication",
+      "title": "Unencrypted sql-access-protocol link from Payment API to Token store",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "information-disclosure",
+      "function": "operations",
+      "subject": {
+        "kind": "flow",
+        "id": "api_to_token_store",
+        "name": "Token persistence"
+      },
+      "data_breach_probability": "probable",
+      "data_breach_elements": [
+        "payment_api",
+        "token_store"
+      ],
+      "detection_logic": "A flow whose protocol is not encrypted, is not confined to one process or host, and carries either credentials or data classified confidential or above. Flows into a technology that tolerates plaintext by design, such as an IoT sensor feed, are skipped, as are flows already inside a VPN.\n",
+      "false_positives": "Links inside a single host, over a dedicated hardware channel, or already wrapped by a service mesh that terminates mutual TLS transparently. If a mesh handles it, record the protocol as its encrypted variant rather than suppressing the rule.\n",
+      "mitigation": "Use the encrypted variant of the protocol with TLS 1.2 or better, and prefer mutual authentication where both ends are services you operate.\n",
+      "tags": [
+        "confidentiality",
+        "transport"
+      ],
+      "description": "Sensitive data crosses a network on a protocol that offers no confidentiality, so anyone positioned on the path can read it and, absent integrity protection, change it.\n",
+      "cwe": 319,
+      "capec": [
+        "CAPEC-117",
+        "CAPEC-157"
+      ],
+      "asvs": "V9.1",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html",
+      "action": "Terminate TLS at the receiving asset rather than at a proxy in front of it.",
+      "check": "Capture traffic on the link and confirm the handshake and cipher suite.",
+      "most_relevant_element": "token_store",
+      "most_relevant_flow": "api_to_token_store",
+      "most_relevant_data": [
+        "customer_profile",
+        "payment_token"
+      ]
+    },
+    {
+      "id": "unencrypted-communication@batch_to_token_store",
+      "rule": "unencrypted-communication",
+      "title": "Unencrypted sql-access-protocol link from Nightly settlement batch to Token store",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "information-disclosure",
+      "function": "operations",
+      "subject": {
+        "kind": "flow",
+        "id": "batch_to_token_store",
+        "name": "Nightly read"
+      },
+      "data_breach_probability": "probable",
+      "data_breach_elements": [
+        "settlement_batch",
+        "token_store"
+      ],
+      "detection_logic": "A flow whose protocol is not encrypted, is not confined to one process or host, and carries either credentials or data classified confidential or above. Flows into a technology that tolerates plaintext by design, such as an IoT sensor feed, are skipped, as are flows already inside a VPN.\n",
+      "false_positives": "Links inside a single host, over a dedicated hardware channel, or already wrapped by a service mesh that terminates mutual TLS transparently. If a mesh handles it, record the protocol as its encrypted variant rather than suppressing the rule.\n",
+      "mitigation": "Use the encrypted variant of the protocol with TLS 1.2 or better, and prefer mutual authentication where both ends are services you operate.\n",
+      "tags": [
+        "confidentiality",
+        "transport"
+      ],
+      "description": "Sensitive data crosses a network on a protocol that offers no confidentiality, so anyone positioned on the path can read it and, absent integrity protection, change it.\n",
+      "cwe": 319,
+      "capec": [
+        "CAPEC-117",
+        "CAPEC-157"
+      ],
+      "asvs": "V9.1",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html",
+      "action": "Terminate TLS at the receiving asset rather than at a proxy in front of it.",
+      "check": "Capture traffic on the link and confirm the handshake and cipher suite.",
+      "most_relevant_element": "token_store",
+      "most_relevant_flow": "batch_to_token_store",
+      "most_relevant_data": [
+        "payment_token"
+      ]
+    },
+    {
+      "id": "unguarded-direct-datastore-access@api_to_token_store",
+      "rule": "unguarded-direct-datastore-access",
+      "title": "Payment API reaches Token store directly across a network boundary",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "elevation-of-privilege",
+      "function": "architecture",
+      "subject": {
+        "kind": "flow",
+        "id": "api_to_token_store",
+        "name": "Token persistence"
+      },
+      "data_breach_probability": "probable",
+      "data_breach_elements": [
+        "payment_api",
+        "token_store"
+      ],
+      "detection_logic": "A non-response flow into a datastore holding confidential or better data, where the caller is reachable from an internet-facing element, is not itself a datastore or a gateway, and the link crosses a network trust boundary. Reachability rather than direct exposure is the test, because the interesting case is the second hop: a web tier that is not itself public but sits one call away from something that is.\n",
+      "false_positives": "Architectures where the caller is the datastore's intended and only client and the boundary crossing is an artefact of coarse modelling — a service and its own database drawn in separate subnets. The finding still asks a fair question there: whether the caller's grants are scoped to the rows it actually needs.\n",
+      "mitigation": "Give the caller a database role limited to the exact tables and operations it uses, restrict the datastore's listener to the caller's addresses or identities, and put reads that do not need to be live behind a cache or a view.\n",
+      "tags": [
+        "access-control",
+        "architecture",
+        "segmentation"
+      ],
+      "description": "An asset an attacker can reach from the internet talks straight to a sensitive datastore across a network boundary, so one application compromise becomes a database session with the application's full grants.\n",
+      "cwe": 1220,
+      "capec": [
+        "CAPEC-116"
+      ],
+      "asvs": "V1.2.2",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Database_Security_Cheat_Sheet.html",
+      "action": "Scope the caller's database grants to least privilege and restrict the listener.",
+      "check": "With the caller's credential, attempt a read outside its normal tables and confirm it is denied.",
+      "most_relevant_element": "token_store",
+      "most_relevant_flow": "api_to_token_store",
+      "most_relevant_data": [
+        "customer_profile",
+        "payment_token"
+      ]
+    },
+    {
+      "id": "dos-risky-access-across-trust-boundary@api_to_token_store",
+      "rule": "dos-risky-access-across-trust-boundary",
+      "title": "Token store accepts unthrottled traffic over api_to_token_store",
+      "severity": "medium",
+      "likelihood": "unlikely",
+      "impact": "medium",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "denial-of-service",
+      "function": "operations",
+      "subject": {
+        "kind": "flow",
+        "id": "api_to_token_store",
+        "name": "Token persistence"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "payment_api",
+        "token_store"
+      ],
+      "detection_logic": "A non-response flow crossing a network trust boundary into an in-scope asset rated critical or better for availability, where the caller either comes from an untrusted network or is reachable from an internet-facing element, and neither the link nor the target records rate_limited. When neither has been recorded the finding is raised at low confidence and names the missing fields.\n",
+      "false_positives": "Links whose volume is bounded by construction — a scheduled batch, a queue consumer pulling at its own pace — and paths already throttled by a platform layer the model does not draw, such as a mesh or an ingress controller. Record rate_limited on the flow in that case.\n",
+      "mitigation": "Rate limit per caller identity rather than per address, set concurrency and payload size caps, and shed load at the edge so the pressure never reaches the asset you care about. Load shedding that returns quickly beats a queue that grows.\n",
+      "tags": [
+        "availability",
+        "rate-limiting"
+      ],
+      "description": "Traffic crosses a network boundary into an asset the business needs available, and nothing on either the link or the target records a limit on how much of it there can be.\n",
+      "cwe": 770,
+      "capec": [
+        "CAPEC-125",
+        "CAPEC-227"
+      ],
+      "asvs": "V11.1.4",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+      "action": "Apply a per-identity rate limit and a concurrency cap on this path.",
+      "check": "Drive the endpoint past the intended limit and confirm it returns a throttling response rather than degrading.",
+      "unknowns": [
+        "flow.controls.rate_limited",
+        "flow.to.controls.rate_limited"
+      ],
+      "most_relevant_element": "token_store",
+      "most_relevant_flow": "api_to_token_store",
+      "most_relevant_data": [
+        "customer_profile",
+        "payment_token"
+      ]
+    },
+    {
+      "id": "incomplete-model@settlement_batch",
+      "rule": "incomplete-model",
+      "title": "Nightly settlement batch records no security controls at all",
+      "severity": "medium",
+      "likelihood": "likely",
+      "impact": "low",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "repudiation",
+      "function": "architecture",
+      "subject": {
+        "kind": "element",
+        "id": "settlement_batch",
+        "name": "Nightly settlement batch"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "settlement_batch"
+      ],
+      "detection_logic": "An in-scope, non-human, non-client element for which none of six baseline controls is recorded: validates_input, has_access_control, logs_security_events, hardened, monitored and uses_secure_defaults. The test is known(), not the control's value, so recording any one of them as false — an honest answer — retires the finding, while silence does not. The threshold is all six rather than some, so this fires only on elements nobody has assessed at all.\n",
+      "false_positives": "Elements deliberately kept coarse because they are somebody else's responsibility, which is better expressed by marking them out of scope with a justification, and trivial components — a static file mount, an embedded library — where the six questions genuinely do not apply.\n",
+      "mitigation": "Answer the six questions for this element, with false where the answer is false. A recorded false produces a confident finding that someone can act on, which is far more useful than a blank that produces nothing.\n",
+      "tags": [
+        "completeness",
+        "hygiene"
+      ],
+      "description": "Nothing is recorded about this element's security controls. Not that they are absent — that nobody has said either way, so every rule that asks about them can only shrug, and the element passes the analysis by being undescribed rather than by being safe.\n",
+      "cwe": 1059,
+      "capec": [
+        "CAPEC-116"
+      ],
+      "asvs": "V1.1.2",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html",
+      "action": "Fill in the element's controls block, recording false where a control is genuinely absent.",
+      "check": "Read the finished controls block back to whoever operates the asset and confirm they agree.",
+      "most_relevant_element": "settlement_batch",
+      "most_relevant_data": [
+        "audit_log",
+        "payment_token"
+      ]
+    },
+    {
+      "id": "missing-build-infrastructure@model",
+      "rule": "missing-build-infrastructure",
+      "title": "Payment Service builds custom code with no build pipeline modelled",
+      "severity": "medium",
+      "likelihood": "unlikely",
+      "impact": "high",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "tampering",
+      "function": "architecture",
+      "subject": {
+        "kind": "model",
+        "id": "model",
+        "name": "Payment Service"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [],
+      "detection_logic": "A model-level check: at least one in-scope element is marked as containing custom code, and no element in the model carries the build pipeline role. Build systems are routinely omitted from threat models because they are not part of the running system, which is exactly why they make good targets.\n",
+      "false_positives": "Models scoped deliberately to the runtime, and estates where the build is a shared platform reviewed under its own threat model. Both are reasonable; add the pipeline as an out-of-scope element with a justification so the omission is a decision on the record rather than an oversight.\n",
+      "mitigation": "Model the build system, then treat it as production infrastructure: authenticated and authorised triggers, isolated runners per trust level, signed artefacts, and no standing credentials that a pull request can reach.\n",
+      "tags": [
+        "architecture",
+        "completeness",
+        "supply-chain"
+      ],
+      "description": "The model contains code this team writes and nothing that builds it. Whatever turns that source into what runs in production is outside the review, which means so are its credentials, its dependencies and whoever can trigger it.\n",
+      "cwe": 1357,
+      "capec": [
+        "CAPEC-444"
+      ],
+      "asvs": "V14.2.1",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Vulnerable_Dependency_Management_Cheat_Sheet.html",
+      "action": "Add the build pipeline to the model, in scope or explicitly out of it.",
+      "check": "Trace one deployed artefact back to the job that produced it and name every identity that could have triggered that job."
+    },
+    {
+      "id": "missing-identity-store@model",
+      "rule": "missing-identity-store",
+      "title": "Payment Service authenticates callers but models no identity store",
+      "severity": "medium",
+      "likelihood": "unlikely",
+      "impact": "medium",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "spoofing",
+      "function": "architecture",
+      "subject": {
+        "kind": "model",
+        "id": "model",
+        "name": "Payment Service"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [],
+      "detection_logic": "A model-level check: at least one flow authenticates with credentials, a session id or a token, and no element carries the identity provider or identity store role. This is a completeness finding rather than a vulnerability — the component almost certainly exists, and the risk is that it exists outside the boundary of anything anyone reviews.\n",
+      "false_positives": "Models that scope out authentication on purpose, systems where every credential is verified by a third party covered elsewhere, and mutual-TLS estates where the certificate authority is the identity store and has not been drawn. Model the authority, or scope the omission out explicitly, rather than ignoring it.\n",
+      "mitigation": "Add the component that verifies these credentials to the model — even as an external, out-of-scope element — so the rules about isolation, storage and second factors have something to attach to.\n",
+      "tags": [
+        "architecture",
+        "completeness",
+        "identity"
+      ],
+      "description": "Links in this model authenticate their callers, but nothing in it is an identity provider or identity store. Something is deciding who these callers are, and the model does not say what, so nobody is reviewing how it does it.\n",
+      "cwe": 1059,
+      "capec": [
+        "CAPEC-593"
+      ],
+      "asvs": "V2.1",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html",
+      "action": "Model the identity provider or store that backs these authenticated links.",
+      "check": "For one authenticated flow, name the system that holds the credential it verifies, and confirm that system appears in the model."
+    },
+    {
+      "id": "weak-authentication@api_to_token_store",
+      "rule": "weak-authentication",
+      "title": "Payment API authenticates to Token store with a static credential",
+      "severity": "medium",
+      "likelihood": "unlikely",
+      "impact": "medium",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "spoofing",
+      "function": "architecture",
+      "subject": {
+        "kind": "flow",
+        "id": "api_to_token_store",
+        "name": "Token persistence"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "payment_api",
+        "token_store"
+      ],
+      "detection_logic": "A non-local, non-response flow authenticating with credentials into a technology the catalogue marks a high-value target, where the link carries data classified confidential or above and the target is reachable from an internet-facing asset. The combination matters: a password is acceptable on a low-value internal link and is not acceptable on the path to the asset an attacker actually wants.\n",
+      "false_positives": "Links where \"credentials\" stands in for a short-lived, automatically rotated secret issued by the platform — a cloud IAM database password rotated every hour is closer to a token than to a password. Record those as token, or as client-certificate where mutual TLS is in play.\n",
+      "mitigation": "Replace the static secret with a workload identity: mutual TLS between services, or a short-lived token minted per connection. Where the datastore cannot do that, at least sink the password into a vault and rotate it on a schedule the team can prove.\n",
+      "tags": [
+        "authentication",
+        "credentials"
+      ],
+      "description": "A caller proves itself to a crown-jewel asset with a static username and password. That secret is replayable, it lives in configuration, and it does not expire when the caller does.\n",
+      "cwe": 287,
+      "capec": [
+        "CAPEC-49",
+        "CAPEC-560"
+      ],
+      "asvs": "V2.2",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html",
+      "action": "Move this link to certificate or token authentication.",
+      "check": "Rotate the credential and confirm the caller keeps working without a redeploy; that is only true when it fetches the secret at runtime.",
+      "most_relevant_element": "token_store",
+      "most_relevant_flow": "api_to_token_store",
+      "most_relevant_data": [
+        "customer_profile",
+        "payment_token"
+      ]
+    },
+    {
+      "id": "weak-authentication@batch_to_token_store",
+      "rule": "weak-authentication",
+      "title": "Nightly settlement batch authenticates to Token store with a static credential",
+      "severity": "medium",
+      "likelihood": "unlikely",
+      "impact": "medium",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "spoofing",
+      "function": "architecture",
+      "subject": {
+        "kind": "flow",
+        "id": "batch_to_token_store",
+        "name": "Nightly read"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "settlement_batch",
+        "token_store"
+      ],
+      "detection_logic": "A non-local, non-response flow authenticating with credentials into a technology the catalogue marks a high-value target, where the link carries data classified confidential or above and the target is reachable from an internet-facing asset. The combination matters: a password is acceptable on a low-value internal link and is not acceptable on the path to the asset an attacker actually wants.\n",
+      "false_positives": "Links where \"credentials\" stands in for a short-lived, automatically rotated secret issued by the platform — a cloud IAM database password rotated every hour is closer to a token than to a password. Record those as token, or as client-certificate where mutual TLS is in play.\n",
+      "mitigation": "Replace the static secret with a workload identity: mutual TLS between services, or a short-lived token minted per connection. Where the datastore cannot do that, at least sink the password into a vault and rotate it on a schedule the team can prove.\n",
+      "tags": [
+        "authentication",
+        "credentials"
+      ],
+      "description": "A caller proves itself to a crown-jewel asset with a static username and password. That secret is replayable, it lives in configuration, and it does not expire when the caller does.\n",
+      "cwe": 287,
+      "capec": [
+        "CAPEC-49",
+        "CAPEC-560"
+      ],
+      "asvs": "V2.2",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html",
+      "action": "Move this link to certificate or token authentication.",
+      "check": "Rotate the credential and confirm the caller keeps working without a redeploy; that is only true when it fetches the secret at runtime.",
+      "most_relevant_element": "token_store",
+      "most_relevant_flow": "batch_to_token_store",
+      "most_relevant_data": [
+        "payment_token"
+      ]
+    }
+  ],
+  "warnings": []
+}

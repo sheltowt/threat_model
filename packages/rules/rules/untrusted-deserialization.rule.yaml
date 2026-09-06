@@ -1,0 +1,51 @@
+id: untrusted-deserialization
+title: Deserialization of untrusted data
+stride: elevation-of-privilege
+cwe: 502
+capec: [CAPEC-586]
+asvs: V5.5.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html
+function: development
+
+description: >
+  The asset accepts a serialized object graph from its callers. Reconstructing that
+  graph runs code chosen by whoever wrote the bytes, which is remote code execution
+  with extra steps.
+
+detection_logic: >
+  An element that lists serialization among the formats it accepts and does not record
+  validates_schema. The format declaration is what drives this, not the technology,
+  because a native serialization endpoint is dangerous on any stack; the catalogue's
+  vulnerable_to_deserialization attribute is used only to raise the likelihood on the
+  runtimes with published gadget chains.
+
+risk_assessment: >
+  Impact is Very High: successful deserialization attacks do not disclose data, they
+  execute code as the service. Likelihood is Very Likely on runtimes with public gadget
+  chains, because there the attacker does not need to find one.
+
+false_positives: >
+  Endpoints that deserialize only into a fixed, closed set of types with a resolver
+  that refuses everything else, and formats modelled as serialization that are really
+  data-only — Protocol Buffers or MessagePack without a type field. Model those as
+  protobuf, or record validates_schema where a strict resolver is in place.
+
+mitigation: >
+  Do not accept serialized objects across a trust boundary. Where the format cannot be
+  changed, pin an allow-list resolver to the exact types expected, and sign the payload
+  so anything not produced by you is rejected before parsing.
+action: Replace the serialized interface with a data-only format and a schema.
+check: Send a payload naming a type outside the expected set and confirm the resolver rejects it before any constructor runs.
+
+scope: element
+match: |
+  'serialization' in el.accepts_formats
+  && !el.controls.validates_schema
+
+likelihood: |
+  el.technology.vulnerable_to_deserialization ? 'very-likely' : 'likely'
+impact: very-high
+
+data_breach_probability: probable
+risk_title: "{{ el.name }} deserializes caller-supplied object graphs"
+tags: [input-validation, rce]

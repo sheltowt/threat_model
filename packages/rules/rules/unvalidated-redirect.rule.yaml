@@ -1,0 +1,49 @@
+id: unvalidated-redirect
+title: Unvalidated redirect
+stride: spoofing
+cwe: 601
+capec: [CAPEC-194]
+asvs: V5.1.5
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html
+function: development
+
+description: >
+  An internet-facing application forwards users to a destination taken from the
+  request, so a link that genuinely starts on your domain finishes on the attacker's —
+  which is what makes the phishing mail convincing.
+
+detection_logic: >
+  An internet-facing web application containing custom code that does not record
+  validates_input. Redirect targets are the most common unvalidated string in a login
+  or checkout flow, and the model has no separate field for them, so input validation
+  stands in as the control.
+
+risk_assessment: >
+  Impact is Medium: the flaw does not by itself disclose or alter data, it lends your
+  domain's reputation to someone else. Likelihood is Likely because open redirects are
+  found by automated scanning rather than by targeted effort.
+
+false_positives: >
+  Applications with no redirect parameter at all, and those that only ever redirect to
+  relative paths. If every redirect target is a path rather than a URL, this rule has
+  nothing to say; record validates_input to retire it.
+
+mitigation: >
+  Redirect only to a fixed table of destinations selected by key, or to relative paths
+  with the host forced to your own. Never pass a full URL through the request.
+action: Replace redirect URL parameters with an index into a server-side table.
+check: Set the redirect parameter to an external host, and to a protocol-relative //host, and confirm both land on your own domain.
+
+scope: element
+match: |
+  el.technology.web_application
+  && el.custom_code
+  && el.internet_facing
+  && !el.controls.validates_input
+
+likelihood: likely
+impact: medium
+
+data_breach_probability: improbable
+risk_title: "{{ el.name }} may redirect users to caller-supplied destinations"
+tags: [web, input-validation, phishing]

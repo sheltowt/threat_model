@@ -1,0 +1,53 @@
+id: container-baseimage-backdooring
+title: Container image with no recorded provenance check
+stride: tampering
+cwe: 1357
+capec: [CAPEC-444]
+asvs: V14.2.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html
+function: operations
+
+description: >
+  The asset runs as a container and nothing records that the image it runs was signed
+  or that its contents were verified. A base image is code you did not write, pulled by
+  a tag that can be moved under you.
+
+detection_logic: >
+  An in-scope element whose machine is recorded as container, which records neither
+  uses_code_signing nor verifies_dependencies. An unrecorded machine is treated as not
+  a container rather than as unknown, because that is a deployment fact the author
+  either wrote down or did not, unlike a security control.
+
+risk_assessment: >
+  Impact follows the asset's own confidentiality and integrity, since a backdoored
+  image runs with exactly the asset's privileges and network position. Likelihood is
+  Likely where the asset is internet-reachable and the attacker has a reason to have
+  gone looking.
+
+false_positives: >
+  Estates where an admission controller enforces signatures cluster-wide, so the
+  control is true for every workload and written on none of them, and images built
+  entirely from source in your own pipeline. Record uses_code_signing on the workloads,
+  or add the admission controller as an element.
+
+mitigation: >
+  Pin base images by digest rather than by tag, sign images at build time and verify the
+  signature at admission, rebuild on base image updates rather than on a schedule, and
+  scan the final image rather than only the manifest.
+action: Pin base images by digest and require a valid signature at admission.
+check: Attempt to deploy an unsigned image and confirm the cluster refuses it.
+
+scope: element
+match: |
+  default(el.machine, '') == 'container'
+  && !el.controls.uses_code_signing
+  && !el.controls.verifies_dependencies
+
+likelihood: |
+  el.internet_reachable ? 'likely' : 'unlikely'
+impact: |
+  el.confidentiality >= 'confidential' || el.integrity >= 'critical' ? 'high' : 'medium'
+
+data_breach_probability: possible
+risk_title: "{{ el.name }} runs a container image with no recorded provenance check"
+tags: [supply-chain, container]

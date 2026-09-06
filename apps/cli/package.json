@@ -1,0 +1,21 @@
+{
+  "name": "@tmc/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "tmc command line interface",
+  "license": "Apache-2.0",
+  "bin": { "tmc": "./dist/index.js" },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "scaffold"],
+  "scripts": { "build": "tsc --build" },
+  "dependencies": {
+    "@tmc/core": "0.1.0",
+    "@tmc/importers": "0.1.0",
+    "@tmc/render": "0.1.0",
+    "@tmc/report": "0.1.0",
+    "@tmc/rules": "0.1.0",
+    "commander": "^12.1.0",
+    "yaml": "^2.9.0"
+  }
+}

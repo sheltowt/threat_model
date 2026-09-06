@@ -1,0 +1,57 @@
+id: missing-pii-encryption-at-rest
+title: Personal data at rest without application-level encryption
+stride: information-disclosure
+linddun: data-disclosure
+cwe: 311
+capec: [CAPEC-37]
+asvs: V6.2
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html
+function: operations
+
+description: >
+  A datastore holds personal data protected by nothing stronger than transparent
+  encryption. Transparent encryption defends against a stolen disk and against nothing
+  else: any process holding a valid connection reads plaintext, which is the case in
+  every application compromise.
+
+detection_logic: >
+  A datastore storing at least one data asset flagged as personal data, whose recorded
+  encryption is none or transparent, on a technology that does not declare unencrypted
+  storage tolerated. The threshold is deliberately above transparent, unlike
+  unencrypted-asset which fires only on none, because a regulator asking whether
+  personal data was encrypted is not asking about the disk.
+
+risk_assessment: >
+  Likelihood is Likely when the store is reachable from an internet-facing asset, since
+  that is the path by which a valid connection ends up in the wrong hands. Impact is
+  High where any of the personal data carries a named regulation.
+
+false_positives: >
+  Stores where field-level encryption is applied by the application and not recorded on
+  the element, and datasets already pseudonymised such that the stored values do not
+  identify anyone. In the second case model the stored asset as the pseudonymised one
+  rather than the original.
+
+mitigation: >
+  Encrypt the identifying fields in the application with keys the datastore's own
+  credentials cannot reach, and prefer tokenisation where the value only needs to be
+  compared rather than read. Then decide who can decrypt, which is the question the
+  disk-level answer never asks.
+action: Apply field-level encryption or tokenisation to the identifying columns.
+check: Read the identifying columns directly with the datastore's own client and confirm they are unreadable.
+
+scope: element
+match: |
+  el.technology.datastore
+  && el.stores.exists(d, d.pii)
+  && el.encryption <= 'transparent'
+  && !el.technology.tolerates_unencrypted_storage
+
+likelihood: |
+  el.internet_reachable ? 'likely' : 'unlikely'
+impact: |
+  el.stores.exists(d, d.pii && size(d.regulations) > 0) ? 'high' : 'medium'
+
+data_breach_probability: probable
+risk_title: "{{ el.name }} stores personal data with {{ el.encryption }} encryption only"
+tags: [privacy, crypto, storage]

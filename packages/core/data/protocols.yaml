@@ -1,0 +1,63 @@
+# Protocol catalogue. Every attribute a rule can ask about a protocol is declared
+# here rather than hard-coded in a rule, so a team can add an in-house protocol
+# without patching the engine. Ported from Threagile's protocol list.
+#
+# Attributes (all default false):
+#   encrypted        transport is confidentiality-protected
+#   process_local    never leaves the process or host, so network rules skip it
+#   database_access  a datastore query protocol, so injection rules apply
+#   web_access       a browser-reachable protocol, so web rules apply
+#   file_transfer    moves whole files
+
+protocols:
+  unknown-protocol: {}
+  http: { web_access: true }
+  https: { encrypted: true, web_access: true }
+  ws: { web_access: true }
+  wss: { encrypted: true, web_access: true }
+  reverse-proxy-web-protocol: { web_access: true }
+  reverse-proxy-web-protocol-encrypted: { encrypted: true, web_access: true }
+  mqtt: {}
+  mqtts: { encrypted: true }
+  jdbc: { database_access: true }
+  jdbc-encrypted: { encrypted: true, database_access: true }
+  odbc: { database_access: true }
+  odbc-encrypted: { encrypted: true, database_access: true }
+  sql-access-protocol: { database_access: true }
+  sql-access-protocol-encrypted: { encrypted: true, database_access: true }
+  nosql-access-protocol: { database_access: true }
+  nosql-access-protocol-encrypted: { encrypted: true, database_access: true }
+  binary: {}
+  binary-encrypted: { encrypted: true }
+  text: {}
+  text-encrypted: { encrypted: true }
+  ssh: { encrypted: true }
+  ssh-tunnel: { encrypted: true }
+  smtp: {}
+  smtp-encrypted: { encrypted: true }
+  pop3: {}
+  pop3-encrypted: { encrypted: true }
+  imap: {}
+  imap-encrypted: { encrypted: true }
+  ftp: { file_transfer: true }
+  ftps: { encrypted: true, file_transfer: true }
+  sftp: { encrypted: true, file_transfer: true }
+  scp: { encrypted: true, file_transfer: true }
+  ldap: {}
+  ldaps: { encrypted: true }
+  jms: {}
+  nfs: { file_transfer: true }
+  smb: { file_transfer: true }
+  smb-encrypted: { encrypted: true, file_transfer: true }
+  local-file-access: { process_local: true, file_transfer: true }
+  nrpe: {}
+  xmpp: {}
+  iiop: {}
+  iiop-encrypted: { encrypted: true }
+  jrmp: {}
+  jrmp-encrypted: { encrypted: true }
+  in-process-library-call: { process_local: true }
+  inter-process-communication: { process_local: true }
+  container-spawning: { process_local: true }
+  grpc: {}
+  grpc-encrypted: { encrypted: true }

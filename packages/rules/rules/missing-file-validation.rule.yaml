@@ -1,0 +1,49 @@
+id: missing-file-validation
+title: Unvalidated file upload
+stride: tampering
+cwe: 434
+capec: [CAPEC-17]
+asvs: V12.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html
+function: development
+
+description: >
+  The asset takes whole files from its callers without recording that it checks what
+  they are, so the upload becomes a way to plant executable content, oversize the
+  storage, or feed a parser something it cannot survive.
+
+detection_logic: >
+  An element that lists file among the formats it accepts and does not record
+  validates_file_uploads. Fires at low confidence when the control is simply absent
+  from the model, which on an upload endpoint is itself worth a conversation.
+
+risk_assessment: >
+  Impact follows the integrity rating of the receiving asset, because the dominant
+  outcome is unwanted content coming to rest inside it rather than data leaving.
+  Likelihood is Very Likely for an internet-facing endpoint.
+
+false_positives: >
+  Endpoints where the file never leaves quarantine storage and is only ever read back
+  as an opaque blob, and pipelines where a downstream scanner does the validation. The
+  second is common and worth modelling as its own element so the control is visible.
+
+mitigation: >
+  Check the declared content type against the actual bytes, cap size before reading,
+  give the stored object a generated name and no execute permission, and scan it out of
+  band before anything else touches it.
+action: Add type, size and content checks at the upload endpoint and store files outside the web root.
+check: Upload a file whose extension and magic bytes disagree, and one over the intended size cap, and confirm both are rejected.
+
+scope: element
+match: |
+  'file' in el.accepts_formats
+  && !el.controls.validates_file_uploads
+
+likelihood: |
+  el.internet_facing ? 'very-likely' : 'likely'
+impact: |
+  el.integrity >= 'critical' ? 'high' : 'medium'
+
+data_breach_probability: possible
+risk_title: "{{ el.name }} accepts file uploads without recorded validation"
+tags: [input-validation, upload]

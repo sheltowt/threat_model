@@ -1,0 +1,460 @@
+{
+  "schema": "tmc/technical-assets/1.0",
+  "generated_at": "2026-09-06T12:00:00Z",
+  "model": {
+    "title": "Payment Service",
+    "business_criticality": "critical",
+    "description": "Card-present checkout API for the storefront, plus its settlement batch.",
+    "owner": "platform-security",
+    "author": "B. Shelton",
+    "date": "2026-09-06",
+    "version": "3"
+  },
+  "assets": [
+    {
+      "id": "audit_store",
+      "name": "Audit log store",
+      "kind": "datastore",
+      "technology": "database",
+      "size": "service",
+      "usage": "devops",
+      "raa": 47,
+      "confidentiality": "internal",
+      "integrity": "critical",
+      "availability": "important",
+      "internet_facing": false,
+      "internet_reachable": true,
+      "human": false,
+      "custom_code": false,
+      "multi_tenant": false,
+      "out_of_scope": false,
+      "encryption": "none",
+      "processes": [],
+      "stores": [
+        "audit_log"
+      ],
+      "incoming": [
+        "api_to_audit"
+      ],
+      "outgoing": [],
+      "boundaries": [
+        "data_tier",
+        "vpc"
+      ],
+      "shared_runtimes": [],
+      "tags": [],
+      "machine": "virtual",
+      "controls": {
+        "has_access_control": true
+      }
+    },
+    {
+      "id": "ops_console",
+      "name": "Operations console",
+      "kind": "external",
+      "technology": "devops-client",
+      "size": "application",
+      "usage": "business",
+      "raa": 34,
+      "confidentiality": "public",
+      "integrity": "archive",
+      "availability": "archive",
+      "internet_facing": false,
+      "internet_reachable": false,
+      "human": true,
+      "custom_code": false,
+      "multi_tenant": false,
+      "out_of_scope": false,
+      "encryption": "none",
+      "processes": [],
+      "stores": [],
+      "incoming": [],
+      "outgoing": [
+        "ops_to_api"
+      ],
+      "boundaries": [
+        "internet"
+      ],
+      "shared_runtimes": [],
+      "tags": []
+    },
+    {
+      "id": "payment_api",
+      "name": "Payment API",
+      "kind": "process",
+      "technology": "web-service-rest",
+      "size": "service",
+      "usage": "business",
+      "raa": 100,
+      "confidentiality": "strictly-confidential",
+      "integrity": "mission-critical",
+      "availability": "critical",
+      "internet_facing": false,
+      "internet_reachable": true,
+      "human": false,
+      "custom_code": true,
+      "multi_tenant": true,
+      "out_of_scope": false,
+      "encryption": "none",
+      "processes": [
+        "card_data",
+        "customer_profile",
+        "payment_token",
+        "processor_credentials"
+      ],
+      "stores": [],
+      "incoming": [
+        "ops_to_api",
+        "storefront_to_api"
+      ],
+      "outgoing": [
+        "api_to_audit",
+        "api_to_processor",
+        "api_to_token_store"
+      ],
+      "boundaries": [
+        "web_tier",
+        "vpc"
+      ],
+      "shared_runtimes": [
+        "payments_cluster"
+      ],
+      "tags": [],
+      "machine": "container",
+      "controls": {
+        "has_access_control": true,
+        "logs_security_events": true,
+        "rate_limited": false,
+        "uses_parameterized_queries": true,
+        "validates_input": true,
+        "validates_schema": true
+      }
+    },
+    {
+      "id": "processor",
+      "name": "Card processor",
+      "kind": "external",
+      "technology": "web-service-rest",
+      "size": "application",
+      "usage": "business",
+      "raa": 24,
+      "confidentiality": "strictly-confidential",
+      "integrity": "critical",
+      "availability": "critical",
+      "internet_facing": false,
+      "internet_reachable": true,
+      "human": false,
+      "custom_code": false,
+      "multi_tenant": false,
+      "out_of_scope": true,
+      "encryption": "none",
+      "processes": [
+        "card_data",
+        "payment_token"
+      ],
+      "stores": [],
+      "incoming": [
+        "api_to_processor"
+      ],
+      "outgoing": [],
+      "boundaries": [
+        "internet"
+      ],
+      "shared_runtimes": [],
+      "tags": []
+    },
+    {
+      "id": "settlement_batch",
+      "name": "Nightly settlement batch",
+      "kind": "process",
+      "technology": "batch-processing",
+      "size": "application",
+      "usage": "business",
+      "raa": 75,
+      "confidentiality": "confidential",
+      "integrity": "critical",
+      "availability": "critical",
+      "internet_facing": false,
+      "internet_reachable": false,
+      "human": false,
+      "custom_code": true,
+      "multi_tenant": false,
+      "out_of_scope": false,
+      "encryption": "none",
+      "processes": [
+        "audit_log",
+        "payment_token"
+      ],
+      "stores": [],
+      "incoming": [],
+      "outgoing": [
+        "batch_to_token_store"
+      ],
+      "boundaries": [
+        "vpc"
+      ],
+      "shared_runtimes": [
+        "payments_cluster"
+      ],
+      "tags": [],
+      "machine": "virtual"
+    },
+    {
+      "id": "shopper",
+      "name": "Shopper",
+      "kind": "actor",
+      "technology": "browser",
+      "size": "application",
+      "usage": "business",
+      "raa": 21,
+      "confidentiality": "public",
+      "integrity": "archive",
+      "availability": "archive",
+      "internet_facing": true,
+      "internet_reachable": true,
+      "human": true,
+      "custom_code": false,
+      "multi_tenant": false,
+      "out_of_scope": false,
+      "encryption": "none",
+      "processes": [],
+      "stores": [],
+      "incoming": [],
+      "outgoing": [
+        "shopper_to_storefront"
+      ],
+      "boundaries": [
+        "internet"
+      ],
+      "shared_runtimes": [],
+      "tags": []
+    },
+    {
+      "id": "storefront",
+      "name": "Storefront web app",
+      "kind": "process",
+      "technology": "web-application",
+      "size": "application",
+      "usage": "business",
+      "raa": 73,
+      "confidentiality": "strictly-confidential",
+      "integrity": "critical",
+      "availability": "important",
+      "internet_facing": true,
+      "internet_reachable": true,
+      "human": false,
+      "custom_code": true,
+      "multi_tenant": false,
+      "out_of_scope": false,
+      "encryption": "none",
+      "processes": [
+        "card_data",
+        "customer_profile"
+      ],
+      "stores": [],
+      "incoming": [
+        "shopper_to_storefront"
+      ],
+      "outgoing": [
+        "storefront_to_api"
+      ],
+      "boundaries": [
+        "web_tier",
+        "vpc"
+      ],
+      "shared_runtimes": [
+        "payments_cluster"
+      ],
+      "tags": [],
+      "machine": "container",
+      "controls": {
+        "encodes_output": true,
+        "implements_csrf_token": true,
+        "uses_content_security_policy": false,
+        "uses_strong_session_ids": true,
+        "validates_input": true
+      }
+    },
+    {
+      "id": "token_store",
+      "name": "Token store",
+      "kind": "datastore",
+      "technology": "database",
+      "size": "service",
+      "usage": "business",
+      "raa": 99,
+      "confidentiality": "confidential",
+      "integrity": "critical",
+      "availability": "critical",
+      "internet_facing": false,
+      "internet_reachable": true,
+      "human": false,
+      "custom_code": false,
+      "multi_tenant": false,
+      "out_of_scope": false,
+      "encryption": "transparent",
+      "processes": [],
+      "stores": [
+        "customer_profile",
+        "payment_token"
+      ],
+      "incoming": [
+        "api_to_token_store",
+        "batch_to_token_store"
+      ],
+      "outgoing": [],
+      "boundaries": [
+        "data_tier",
+        "vpc"
+      ],
+      "shared_runtimes": [],
+      "tags": [],
+      "machine": "virtual",
+      "controls": {
+        "has_access_control": true
+      }
+    }
+  ],
+  "data_assets": [
+    {
+      "id": "audit_log",
+      "classification": "internal",
+      "integrity": "critical",
+      "availability": "important",
+      "quantity": "very-many",
+      "usage": "devops",
+      "pii": false,
+      "credentials": false,
+      "orphaned": false,
+      "regulations": [],
+      "processed_by": [
+        "settlement_batch"
+      ],
+      "stored_by": [
+        "audit_store"
+      ],
+      "sent_via": [
+        "api_to_audit"
+      ],
+      "received_via": [],
+      "tags": [],
+      "description": "Append-only record of payment state changes."
+    },
+    {
+      "id": "card_data",
+      "classification": "strictly-confidential",
+      "integrity": "critical",
+      "availability": "important",
+      "quantity": "many",
+      "usage": "business",
+      "pii": true,
+      "credentials": false,
+      "orphaned": false,
+      "regulations": [
+        "pci-dss"
+      ],
+      "processed_by": [
+        "payment_api",
+        "processor",
+        "storefront"
+      ],
+      "stored_by": [],
+      "sent_via": [
+        "api_to_processor",
+        "shopper_to_storefront",
+        "storefront_to_api"
+      ],
+      "received_via": [],
+      "tags": [],
+      "description": "Primary account number and expiry, in flight only.",
+      "owner": "payments",
+      "justification": "A pan is the archetypal regulated identifier."
+    },
+    {
+      "id": "customer_profile",
+      "classification": "restricted",
+      "integrity": "important",
+      "availability": "important",
+      "quantity": "many",
+      "usage": "business",
+      "pii": true,
+      "credentials": false,
+      "orphaned": false,
+      "regulations": [
+        "gdpr"
+      ],
+      "processed_by": [
+        "payment_api",
+        "storefront"
+      ],
+      "stored_by": [
+        "token_store"
+      ],
+      "sent_via": [
+        "api_to_token_store",
+        "ops_to_api",
+        "shopper_to_storefront"
+      ],
+      "received_via": [
+        "api_to_token_store"
+      ],
+      "tags": [],
+      "description": "Name, billing address and contact details."
+    },
+    {
+      "id": "payment_token",
+      "classification": "confidential",
+      "integrity": "critical",
+      "availability": "critical",
+      "quantity": "very-many",
+      "usage": "business",
+      "pii": false,
+      "credentials": false,
+      "orphaned": false,
+      "regulations": [],
+      "processed_by": [
+        "payment_api",
+        "processor",
+        "settlement_batch"
+      ],
+      "stored_by": [
+        "token_store"
+      ],
+      "sent_via": [
+        "api_to_token_store"
+      ],
+      "received_via": [
+        "api_to_processor",
+        "api_to_token_store",
+        "batch_to_token_store",
+        "shopper_to_storefront",
+        "storefront_to_api"
+      ],
+      "tags": [],
+      "description": "Processor-issued token standing in for a card.",
+      "owner": "payments"
+    },
+    {
+      "id": "processor_credentials",
+      "classification": "strictly-confidential",
+      "integrity": "mission-critical",
+      "availability": "critical",
+      "quantity": "very-few",
+      "usage": "business",
+      "pii": false,
+      "credentials": true,
+      "orphaned": false,
+      "regulations": [],
+      "processed_by": [
+        "payment_api"
+      ],
+      "stored_by": [],
+      "sent_via": [
+        "api_to_processor"
+      ],
+      "received_via": [],
+      "tags": [],
+      "description": "API key and signing secret for the payment processor."
+    }
+  ]
+}

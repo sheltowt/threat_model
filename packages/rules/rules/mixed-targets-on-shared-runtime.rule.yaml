@@ -1,0 +1,53 @@
+id: mixed-targets-on-shared-runtime
+title: Assets of very different sensitivity on one runtime
+stride: elevation-of-privilege
+cwe: 1189
+capec: [CAPEC-233]
+asvs: V1.1.4
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Kubernetes_Security_Cheat_Sheet.html
+function: architecture
+
+description: >
+  A sensitive asset shares a runtime — a cluster, a host, a hypervisor — with something
+  much less sensitive, so the weakest workload on that runtime sets the standard for
+  the strongest.
+
+detection_logic: >
+  An in-scope element rated confidential or above that shares a declared runtime with
+  at least one other element rated below restricted. The gap is what matters, not the
+  sharing: two confidential services on one cluster are a normal deployment, while a
+  confidential service beside a public one means the public one's compromise is a
+  runtime-level neighbour of the confidential one.
+
+risk_assessment: >
+  Likelihood depends on a container or hypervisor escape, or on a shared credential or
+  volume, so it is judged Likely only when one of the neighbours is reachable from the
+  internet. Impact follows the sensitive asset.
+
+false_positives: >
+  Platforms whose isolation is genuinely strong and well configured — separate node
+  pools, distinct service accounts, no shared secrets — where sharing a control plane
+  is not sharing a security domain. If that is true, say so in an assumption; if nobody
+  can confirm it, this finding is the reason to ask.
+
+mitigation: >
+  Separate the workloads onto different node pools or clusters, or at minimum give each
+  its own service account, namespace policy and secret scope so nothing but the control
+  plane is common.
+action: Move the low-sensitivity workloads off the runtime that carries the sensitive one.
+check: From the low-sensitivity workload, attempt to read the sensitive workload's service account token and mounted secrets.
+
+scope: element
+match: |
+  el.confidentiality >= 'confidential'
+  && el.shared_runtimes.exists(r,
+       r.runs.exists(other, other.id != el.id && other.confidentiality < 'restricted'))
+
+likelihood: |
+  el.internet_reachable ? 'likely' : 'unlikely'
+impact: |
+  el.confidentiality >= 'strictly-confidential' ? 'high' : 'medium'
+
+data_breach_probability: possible
+risk_title: "{{ el.name }} shares a runtime with markedly less sensitive workloads"
+tags: [architecture, isolation, runtime]

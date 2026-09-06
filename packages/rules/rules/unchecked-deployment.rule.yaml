@@ -1,0 +1,49 @@
+id: unchecked-deployment
+title: Build pipeline that does not verify what it ships
+stride: tampering
+cwe: 1104
+capec: [CAPEC-444, CAPEC-538]
+asvs: V14.2.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Vulnerable_Dependency_Management_Cheat_Sheet.html
+function: development
+
+description: >
+  The pipeline assembles third-party code into the artefact it deploys without
+  recording that it checks where that code came from, so a compromised or
+  typosquatted dependency reaches production on the next green build.
+
+detection_logic: >
+  An element whose technology is a build pipeline that does not record
+  verifies_dependencies. This covers both halves of the same question: whether the
+  pipeline pins and verifies what it pulls in, and whether it knows what it shipped
+  afterwards.
+
+risk_assessment: >
+  Impact is Very High because the pipeline's output runs with production privileges
+  everywhere it is deployed; a bad dependency is not contained to one asset. Likelihood
+  is Likely, since registry attacks are cheap, automated and continuous.
+
+false_positives: >
+  Pipelines building from a curated internal mirror where every package was vetted on
+  the way in, and fully vendored builds with no network access at all. Both genuinely
+  verify dependencies, just not at the step this control names; record it as true.
+
+mitigation: >
+  Pin dependencies by content hash rather than by version range, verify signatures or
+  provenance attestations before use, build from an internal mirror, and produce a bill
+  of materials for every artefact so a later disclosure can be answered without
+  guessing.
+action: Add signature or hash verification and lockfile enforcement to the build.
+check: Alter a lockfile hash and confirm the build fails rather than resolving to the new artefact.
+
+scope: element
+match: |
+  el.technology.build_pipeline
+  && !el.controls.verifies_dependencies
+
+likelihood: likely
+impact: very-high
+
+data_breach_probability: possible
+risk_title: "{{ el.name }} deploys artefacts without verifying their dependencies"
+tags: [supply-chain, build]

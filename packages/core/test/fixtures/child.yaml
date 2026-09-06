@@ -1,0 +1,13 @@
+schema: tmc/1.0
+meta:
+  title: ignored, the parent wins
+elements:
+  db:
+    technology: database
+    stores: [secret]
+flows:
+  - id: api_to_db
+    from: api
+    to: db
+    protocol: sql-access-protocol
+    sends: [secret]

@@ -1,0 +1,66 @@
+id: missing-hardening
+title: High-value asset with no recorded hardening
+stride: elevation-of-privilege
+cwe: 1188
+capec: [CAPEC-1]
+asvs: V14.1.3
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Secure_Product_Design_Cheat_Sheet.html
+function: operations
+
+description: >
+  One of the most attractive assets in the model does not record that it has been
+  hardened, so it is probably running whatever its base image, package manager and
+  framework defaults gave it.
+
+detection_logic: >
+  An in-scope, non-human, non-client element that does not record the hardened
+  control, is among the most attractive assets in the model, and is independently
+  worth hardening: it either holds data classified confidential or above, is rated
+  critical for integrity, or is reachable from the internet.
+
+  The second test is what stops this rule scaling with the model rather than with the
+  risk. Attractiveness is normalised across the model, so some asset always scores
+  100 and a bare rank threshold would select roughly the same fraction of every model
+  it ever runs on, however benign. Pairing rank with an absolute property means a
+  system of uniformly low-value assets produces no finding at all.
+
+risk_assessment: >
+  Likelihood scales with attractiveness, because these are the targets worth an
+  attacker's effort, and rises again when the asset is reachable from the internet.
+  Impact follows the asset's own confidentiality and integrity. A finding raised only
+  because nobody recorded the control arrives at low confidence and names it.
+
+false_positives: >
+  Assets built from an image that is hardened centrally, where the control is true and
+  simply unrecorded, and managed services where the provider owns the configuration.
+  Record hardened: true with a pointer to the benchmark, which is more useful to the
+  next reader than a suppression.
+
+mitigation: >
+  Apply a published benchmark — CIS, the vendor's, your own written one — remove
+  packages and listeners the asset does not need, run as a non-root user with a
+  read-only root filesystem, and re-check the configuration on every deploy rather than
+  once at build time.
+action: Apply and record a hardening baseline for this asset.
+check: Run the benchmark's scoring tool against a running instance and keep the report.
+
+scope: element
+match: |
+  el.raa >= 80
+  && !el.human
+  && !el.technology.client
+  && (
+    el.confidentiality >= 'confidential'
+    || el.integrity >= 'critical'
+    || el.internet_reachable
+  )
+  && !el.controls.hardened
+
+likelihood: |
+  el.raa >= 90 && el.internet_reachable ? 'likely' : 'unlikely'
+impact: |
+  el.confidentiality >= 'confidential' || el.integrity >= 'critical' ? 'high' : 'medium'
+
+data_breach_probability: possible
+risk_title: "{{ el.name }} is an attractive target with no recorded hardening"
+tags: [operations, hardening]
