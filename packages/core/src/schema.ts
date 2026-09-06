@@ -58,7 +58,6 @@ export const CONTROL_NAMES = [
   'uses_parameterized_queries',
   'uses_secure_defaults',
   'uses_strong_session_ids',
-  'uses_vpn',
   'validates_content_type',
   'validates_file_uploads',
   'validates_input',
@@ -138,6 +137,12 @@ export const flowSchema = z
     authentication: z.enum(AUTHENTICATION).default('none'),
     authorization: z.enum(AUTHORIZATION).default('none'),
     usage: z.enum(USAGE).default('business'),
+    /**
+     * The link runs over a private tunnel. This lives on the flow rather than in
+     * `controls` because a tunnel is a property of a route, not of an asset, and
+     * having both spellings meant two ways to say one thing and no way to tell
+     * which a rule should read.
+     */
     vpn: z.boolean().default(false),
     ip_filtered: z.boolean().default(false),
     readonly: z.boolean().default(false),

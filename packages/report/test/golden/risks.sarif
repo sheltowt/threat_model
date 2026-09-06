@@ -180,6 +180,40 @@
               "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html"
             },
             {
+              "id": "excessive-privilege",
+              "name": "excessive-privilege",
+              "shortDescription": {
+                "text": "High-value asset with no recorded least-privilege constraint"
+              },
+              "fullDescription": {
+                "text": "An asset worth attacking does not record that its own privileges are constrained. What matters after a compromise is not whether the asset was breached but how far the attacker travels from it, and that is decided by what it was allowed to do."
+              },
+              "help": {
+                "text": "Give the asset only the permissions it uses, scoped to the resources it touches, and review them when its job changes. Separate the identity it runs as from the identity it uses to reach anything else.\n\nFalse positives: Assets whose privileges are constrained by a platform rather than by their own configuration, such as a workload with a narrowly scoped cloud role. That is least privilege; record it as true and name where the constraint lives, so the next reader does not have to go looking.",
+                "markdown": "**Mitigation.** Give the asset only the permissions it uses, scoped to the resources it touches, and review them when its job changes. Separate the identity it runs as from the identity it uses to reach anything else.\n\n**Action.** Scope this asset's credentials to what it actually uses.\n\n**How to check.** Remove one permission the asset should not need and confirm nothing breaks.\n\n**When this is a false positive.** Assets whose privileges are constrained by a platform rather than by their own configuration, such as a workload with a narrowly scoped cloud role. That is least privilege; record it as true and name where the constraint lives, so the next reader does not have to go looking.\n\n[OWASP cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "CWE-250",
+                  "access-control",
+                  "external/cwe/cwe-250",
+                  "function/operations",
+                  "least-privilege",
+                  "security",
+                  "stride/elevation-of-privilege"
+                ],
+                "security-severity": "6.0",
+                "precision": "medium",
+                "problem.severity": "warning",
+                "cwe": "CWE-250",
+                "asvs": "V1.4.5"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html"
+            },
+            {
               "id": "incomplete-model",
               "name": "incomplete-model",
               "shortDescription": {
@@ -451,6 +485,40 @@
               "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html"
             },
             {
+              "id": "missing-content-type-validation",
+              "name": "missing-content-type-validation",
+              "shortDescription": {
+                "text": "Request bodies parsed without checking what they claim to be"
+              },
+              "fullDescription": {
+                "text": "The asset accepts more than one body format and does not record that it checks which one it was actually given. A parser chosen from an attacker-supplied header, or a file whose declared type does not match its contents, lets input reach a parser it was never meant to reach."
+              },
+              "help": {
+                "text": "Accept an explicit allowlist of content types per endpoint, reject anything else before parsing, and for uploads verify the contents rather than trusting the declared type or the file extension.\n\nFalse positives: Assets behind a gateway that pins the content type before they see it, and frameworks that route strictly on a declared type. Record validates_content_type and note where the check happens.",
+                "markdown": "**Mitigation.** Accept an explicit allowlist of content types per endpoint, reject anything else before parsing, and for uploads verify the contents rather than trusting the declared type or the file extension.\n\n**Action.** Pin the accepted content types per endpoint and reject the rest.\n\n**How to check.** Send a body with a mismatched content type and confirm it is refused.\n\n**When this is a false positive.** Assets behind a gateway that pins the content type before they see it, and frameworks that route strictly on a declared type. Record validates_content_type and note where the check happens.\n\n[OWASP cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html)"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "CWE-434",
+                  "external/cwe/cwe-434",
+                  "function/development",
+                  "input-validation",
+                  "parsing",
+                  "security",
+                  "stride/tampering"
+                ],
+                "security-severity": "6.0",
+                "precision": "medium",
+                "problem.severity": "warning",
+                "cwe": "CWE-434",
+                "asvs": "V13.1.5"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html"
+            },
+            {
               "id": "missing-hardening",
               "name": "missing-hardening",
               "shortDescription": {
@@ -518,6 +586,41 @@
                 "asvs": "V2.1"
               },
               "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html"
+            },
+            {
+              "id": "missing-mutual-authentication",
+              "name": "missing-mutual-authentication",
+              "shortDescription": {
+                "text": "Service-to-service call that does not verify the caller"
+              },
+              "fullDescription": {
+                "text": "One service calls another across a network boundary and the receiving side does not record that it verifies which service called. Anything that reaches the port is treated as the caller, so a foothold anywhere on that network is a foothold on this asset."
+              },
+              "help": {
+                "text": "Give each workload its own identity and verify it on the receiving side, with mutual TLS or signed tokens. Network position is not identity: treat reachability and authorisation as separate questions.\n\nFalse positives: Meshes that apply mutual TLS transparently, and networks where an authenticating proxy sits in front of every listener. Both are real; record authenticates_source on the receiving asset and name the layer, because a network control nobody has written down is one nobody will notice being turned off.",
+                "markdown": "**Mitigation.** Give each workload its own identity and verify it on the receiving side, with mutual TLS or signed tokens. Network position is not identity: treat reachability and authorisation as separate questions.\n\n**Action.** Verify the calling workload's identity on the receiving asset.\n\n**How to check.** Call the endpoint from an unrelated workload on the same network and confirm refusal.\n\n**When this is a false positive.** Meshes that apply mutual TLS transparently, and networks where an authenticating proxy sits in front of every listener. Both are real; record authenticates_source on the receiving asset and name the layer, because a network control nobody has written down is one nobody will notice being turned off.\n\n[OWASP cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Microservices_Security_Cheat_Sheet.html)"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "CWE-287",
+                  "authentication",
+                  "external/cwe/cwe-287",
+                  "function/architecture",
+                  "identity",
+                  "security",
+                  "stride/spoofing",
+                  "zero-trust"
+                ],
+                "security-severity": "6.0",
+                "precision": "medium",
+                "problem.severity": "warning",
+                "cwe": "CWE-287",
+                "asvs": "V2.10.3"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Microservices_Security_Cheat_Sheet.html"
             },
             {
               "id": "missing-pii-encryption-at-rest",
@@ -899,6 +1002,41 @@
               "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html"
             },
             {
+              "id": "unverified-server-identity",
+              "name": "unverified-server-identity",
+              "shortDescription": {
+                "text": "Encrypted link that does not verify who it is talking to"
+              },
+              "fullDescription": {
+                "text": "The link is encrypted but the caller does not record that it checks who answered. Encryption without identity verification protects the traffic from a passive listener and not at all from someone who answers in the callee's place, which is the attack that matters on an untrusted path."
+              },
+              "help": {
+                "text": "Verify the certificate chain and the hostname, and fail closed when either does not check out. Disabling verification to get past a certificate problem in a test environment is how this reaches production.\n\nFalse positives: Links where the platform pins and verifies for you, such as a service mesh doing mutual TLS, and clients using a runtime whose defaults cannot be turned off. Record authenticates_destination: true and say which layer does it, because \"the library does it by default\" stops being true the moment somebody sets a flag.",
+                "markdown": "**Mitigation.** Verify the certificate chain and the hostname, and fail closed when either does not check out. Disabling verification to get past a certificate problem in a test environment is how this reaches production.\n\n**Action.** Turn on certificate and hostname verification for this client.\n\n**How to check.** Point the caller at a host presenting a valid certificate for a different name and confirm it refuses.\n\n**When this is a false positive.** Links where the platform pins and verifies for you, such as a service mesh doing mutual TLS, and clients using a runtime whose defaults cannot be turned off. Record authenticates_destination: true and say which layer does it, because \"the library does it by default\" stops being true the moment somebody sets a flag.\n\n[OWASP cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html)"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "CWE-295",
+                  "external/cwe/cwe-295",
+                  "function/development",
+                  "identity",
+                  "security",
+                  "stride/spoofing",
+                  "tls",
+                  "transport"
+                ],
+                "security-severity": "6.0",
+                "precision": "medium",
+                "problem.severity": "warning",
+                "cwe": "CWE-295",
+                "asvs": "V9.2.1"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html"
+            },
+            {
               "id": "weak-authentication",
               "name": "weak-authentication",
               "shortDescription": {
@@ -980,7 +1118,7 @@
         },
         {
           "ruleId": "manual",
-          "ruleIndex": 6,
+          "ruleIndex": 7,
           "level": "error",
           "message": {
             "text": "Settlement batch retains card data in temporary files Write intermediates to a tmpfs and delete on completion."
@@ -1022,7 +1160,7 @@
         },
         {
           "ruleId": "missing-authentication-second-factor",
-          "ruleIndex": 8,
+          "ruleIndex": 9,
           "level": "error",
           "message": {
             "text": "Operations console signs in to Payment API with a single factor Reported at low confidence because the model does not record flow.controls.uses_mfa. Require a phishing-resistant second factor — a passkey or a hardware authenticator — for administrative access without exception, and step it up on sensitive actions for everyone else."
@@ -1067,7 +1205,7 @@
         },
         {
           "ruleId": "missing-authentication-second-factor",
-          "ruleIndex": 8,
+          "ruleIndex": 9,
           "level": "error",
           "message": {
             "text": "Shopper signs in to Storefront web app with a single factor Reported at low confidence because the model does not record flow.controls.uses_mfa. Require a phishing-resistant second factor — a passkey or a hardware authenticator — for administrative access without exception, and step it up on sensitive actions for everyone else."
@@ -1112,7 +1250,7 @@
         },
         {
           "ruleId": "unguarded-access-from-internet",
-          "ruleIndex": 23,
+          "ruleIndex": 26,
           "level": "error",
           "message": {
             "text": "Storefront web app is published to the internet with no edge component in front Put a gateway or reverse proxy in front, terminate TLS there, and publish only the routes that need to be public. Keep the asset itself on a private address so the guard cannot be bypassed by anyone who learns the origin."
@@ -1461,8 +1599,98 @@
           }
         },
         {
+          "ruleId": "excessive-privilege",
+          "ruleIndex": 5,
+          "level": "warning",
+          "message": {
+            "text": "Payment API has no recorded limit on its own privileges Reported at low confidence because the model does not record el.controls.implements_least_privilege. Give the asset only the permissions it uses, scoped to the resources it touches, and review them when its job changes. Separate the identity it runs as from the identity it uses to reach anything else."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 94
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Payment API",
+                  "fullyQualifiedName": "element/payment_api",
+                  "kind": "element"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "excessive-privilege@payment_api"
+          },
+          "properties": {
+            "security-severity": "6.0",
+            "severity": "elevated",
+            "likelihood": "unlikely",
+            "impact": "very-high",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "elevation-of-privilege",
+            "function": "operations",
+            "subject": "element/payment_api",
+            "tmcRiskId": "excessive-privilege@payment_api",
+            "unknowns": [
+              "el.controls.implements_least_privilege"
+            ]
+          }
+        },
+        {
+          "ruleId": "excessive-privilege",
+          "ruleIndex": 5,
+          "level": "warning",
+          "message": {
+            "text": "Storefront web app has no recorded limit on its own privileges Reported at low confidence because the model does not record el.controls.implements_least_privilege. Give the asset only the permissions it uses, scoped to the resources it touches, and review them when its job changes. Separate the identity it runs as from the identity it uses to reach anything else."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 78
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Storefront web app",
+                  "fullyQualifiedName": "element/storefront",
+                  "kind": "element"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "excessive-privilege@storefront"
+          },
+          "properties": {
+            "security-severity": "6.0",
+            "severity": "elevated",
+            "likelihood": "unlikely",
+            "impact": "very-high",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "elevation-of-privilege",
+            "function": "operations",
+            "subject": "element/storefront",
+            "tmcRiskId": "excessive-privilege@storefront",
+            "unknowns": [
+              "el.controls.implements_least_privilege"
+            ]
+          }
+        },
+        {
           "ruleId": "missing-audit-log",
-          "ruleIndex": 7,
+          "ruleIndex": 8,
           "level": "warning",
           "message": {
             "text": "Nightly settlement batch changes critical data without an audit trail Reported at low confidence because the model does not record el.controls.logs_security_events. Log the actor, the action, the subject and the time for every state change, to a destination the acting asset cannot rewrite. Log the decision, not just the request: \"denied, insufficient scope\" is worth more later than the bare call."
@@ -1507,7 +1735,7 @@
         },
         {
           "ruleId": "missing-audit-log",
-          "ruleIndex": 7,
+          "ruleIndex": 8,
           "level": "warning",
           "message": {
             "text": "Storefront web app changes critical data without an audit trail Reported at low confidence because the model does not record el.controls.logs_security_events. Log the actor, the action, the subject and the time for every state change, to a destination the acting asset cannot rewrite. Log the decision, not just the request: \"denied, insufficient scope\" is worth more later than the bare call."
@@ -1552,7 +1780,7 @@
         },
         {
           "ruleId": "missing-cloud-hardening",
-          "ruleIndex": 10,
+          "ruleIndex": 11,
           "level": "warning",
           "message": {
             "text": "Production VPC has no recorded cloud hardening baseline Reported at low confidence because the model does not record m.controls.hardened. Apply the provider's benchmark at the account level, enforce it with policy-as-code in the deployment pipeline rather than by review, turn on the audit trail before anything else, and scope roles to the actions they actually use."
@@ -1597,7 +1825,7 @@
         },
         {
           "ruleId": "missing-consent-record",
-          "ruleIndex": 11,
+          "ruleIndex": 12,
           "level": "warning",
           "message": {
             "text": "Personal data card_data has no recorded origin Record the origin and the lawful basis on the data asset, then check that the basis actually covers every use the model shows — a basis for collection is not a basis for every downstream transfer this diagram contains."
@@ -1639,7 +1867,7 @@
         },
         {
           "ruleId": "missing-consent-record",
-          "ruleIndex": 11,
+          "ruleIndex": 12,
           "level": "warning",
           "message": {
             "text": "Personal data customer_profile has no recorded origin Record the origin and the lawful basis on the data asset, then check that the basis actually covers every use the model shows — a basis for collection is not a basis for every downstream transfer this diagram contains."
@@ -1681,7 +1909,7 @@
         },
         {
           "ruleId": "missing-content-security-policy",
-          "ruleIndex": 12,
+          "ruleIndex": 13,
           "level": "warning",
           "message": {
             "text": "Storefront web app serves pages without a content security policy Serve a policy with a nonce-based script-src and no unsafe-inline, then tighten frame-ancestors, base-uri and form-action. Start in report-only mode against real traffic rather than guessing at the directive set."
@@ -1722,8 +1950,53 @@
           }
         },
         {
+          "ruleId": "missing-content-type-validation",
+          "ruleIndex": 14,
+          "level": "warning",
+          "message": {
+            "text": "Storefront web app parses several formats without checking which it was sent Reported at low confidence because the model does not record el.controls.validates_content_type. Accept an explicit allowlist of content types per endpoint, reject anything else before parsing, and for uploads verify the contents rather than trusting the declared type or the file extension."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 78
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Storefront web app",
+                  "fullyQualifiedName": "element/storefront",
+                  "kind": "element"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "missing-content-type-validation@storefront"
+          },
+          "properties": {
+            "security-severity": "6.0",
+            "severity": "elevated",
+            "likelihood": "likely",
+            "impact": "high",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "tampering",
+            "function": "development",
+            "subject": "element/storefront",
+            "tmcRiskId": "missing-content-type-validation@storefront",
+            "unknowns": [
+              "el.controls.validates_content_type"
+            ]
+          }
+        },
+        {
           "ruleId": "missing-hardening",
-          "ruleIndex": 13,
+          "ruleIndex": 15,
           "level": "warning",
           "message": {
             "text": "Payment API is an attractive target with no recorded hardening Reported at low confidence because the model does not record el.controls.hardened. Apply a published benchmark — CIS, the vendor's, your own written one — remove packages and listeners the asset does not need, run as a non-root user with a read-only root filesystem, and re-check the configuration on every deploy rather than once at build time."
@@ -1768,7 +2041,7 @@
         },
         {
           "ruleId": "missing-hardening",
-          "ruleIndex": 13,
+          "ruleIndex": 15,
           "level": "warning",
           "message": {
             "text": "Token store is an attractive target with no recorded hardening Reported at low confidence because the model does not record el.controls.hardened. Apply a published benchmark — CIS, the vendor's, your own written one — remove packages and listeners the asset does not need, run as a non-root user with a read-only root filesystem, and re-check the configuration on every deploy rather than once at build time."
@@ -1812,8 +2085,100 @@
           }
         },
         {
+          "ruleId": "missing-mutual-authentication",
+          "ruleIndex": 17,
+          "level": "warning",
+          "message": {
+            "text": "Token store does not verify which service calls it on api_to_token_store Reported at low confidence because the model does not record flow.controls.authenticates_source, flow.to.controls.authenticates_source. Give each workload its own identity and verify it on the receiving side, with mutual TLS or signed tokens. Network position is not identity: treat reachability and authorisation as separate questions."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 189
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Token persistence",
+                  "fullyQualifiedName": "flow/api_to_token_store",
+                  "kind": "flow"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "missing-mutual-authentication@api_to_token_store"
+          },
+          "properties": {
+            "security-severity": "6.0",
+            "severity": "elevated",
+            "likelihood": "likely",
+            "impact": "medium",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "spoofing",
+            "function": "architecture",
+            "subject": "flow/api_to_token_store",
+            "tmcRiskId": "missing-mutual-authentication@api_to_token_store",
+            "unknowns": [
+              "flow.controls.authenticates_source",
+              "flow.to.controls.authenticates_source"
+            ]
+          }
+        },
+        {
+          "ruleId": "missing-mutual-authentication",
+          "ruleIndex": 17,
+          "level": "warning",
+          "message": {
+            "text": "Payment API does not verify which service calls it on storefront_to_api Reported at low confidence because the model does not record flow.controls.authenticates_source, flow.to.controls.authenticates_source. Give each workload its own identity and verify it on the receiving side, with mutual TLS or signed tokens. Network position is not identity: treat reachability and authorisation as separate questions."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 169
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Tokenise",
+                  "fullyQualifiedName": "flow/storefront_to_api",
+                  "kind": "flow"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "missing-mutual-authentication@storefront_to_api"
+          },
+          "properties": {
+            "security-severity": "6.0",
+            "severity": "elevated",
+            "likelihood": "likely",
+            "impact": "high",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "spoofing",
+            "function": "architecture",
+            "subject": "flow/storefront_to_api",
+            "tmcRiskId": "missing-mutual-authentication@storefront_to_api",
+            "unknowns": [
+              "flow.controls.authenticates_source",
+              "flow.to.controls.authenticates_source"
+            ]
+          }
+        },
+        {
           "ruleId": "missing-pii-encryption-at-rest",
-          "ruleIndex": 15,
+          "ruleIndex": 18,
           "level": "warning",
           "message": {
             "text": "Token store stores personal data with transparent encryption only Encrypt the identifying fields in the application with keys the datastore's own credentials cannot reach, and prefer tokenisation where the value only needs to be compared rather than read. Then decide who can decrypt, which is the question the disk-level answer never asks."
@@ -1855,7 +2220,7 @@
         },
         {
           "ruleId": "missing-waf",
-          "ruleIndex": 16,
+          "ruleIndex": 19,
           "level": "warning",
           "message": {
             "text": "Storefront web app faces the internet with no web application firewall in front Put a WAF or schema-validating gateway in front, run it in blocking mode against known signatures, and treat the rules as a place to apply a virtual patch quickly rather than as a permanent substitute for fixing the code."
@@ -1897,7 +2262,7 @@
         },
         {
           "ruleId": "pii-crossing-untrusted-boundary",
-          "ruleIndex": 17,
+          "ruleIndex": 20,
           "level": "warning",
           "message": {
             "text": "api_to_processor carries personal data to Card processor outside the estate Send the least you can: a token or a hashed identifier rather than the record, fields the recipient actually uses rather than the object you happen to have. Encrypt in transit, pin the recipient, and record the lawful basis, the retention period and the deletion path before the first transfer rather than after the first question."
@@ -1939,7 +2304,7 @@
         },
         {
           "ruleId": "pii-retention-unbounded",
-          "ruleIndex": 18,
+          "ruleIndex": 21,
           "level": "warning",
           "message": {
             "text": "Personal data customer_profile is stored in volume with no owner Name an owner, set a retention period in the store rather than in a document, and implement deletion as a scheduled job that proves it ran. Confirm that a deletion request reaches replicas, exports, caches, analytics copies and backups, since those are where the data survives the policy."
@@ -1981,7 +2346,7 @@
         },
         {
           "ruleId": "single-point-of-failure",
-          "ruleIndex": 19,
+          "ruleIndex": 22,
           "level": "warning",
           "message": {
             "text": "Nightly settlement batch is availability-critical with no recorded redundancy Reported at low confidence because the model does not record el.controls.redundant. Run more than one instance across more than one failure domain, and check that a failover actually happens rather than assuming it. Where redundancy is genuinely not affordable, lower the availability rating so the model stops claiming the service needs something it does not have."
@@ -2026,7 +2391,7 @@
         },
         {
           "ruleId": "sql-nosql-injection",
-          "ruleIndex": 20,
+          "ruleIndex": 23,
           "level": "warning",
           "message": {
             "text": "Nightly settlement batch may build injectable queries against Token store Reported at low confidence because the model does not record flow.from.controls.uses_parameterized_queries. Use parameterised statements or an ORM binding for every query, and never build one by string concatenation."
@@ -2071,7 +2436,7 @@
         },
         {
           "ruleId": "unbounded-input-size",
-          "ruleIndex": 21,
+          "ruleIndex": 24,
           "level": "warning",
           "message": {
             "text": "Storefront web app parses attacker-sized input with no recorded bound Reported at low confidence because the model does not record el.controls.checks_input_bounds. Cap request body size, parse depth and element count at the edge and again in the asset, and stream large uploads rather than buffering them. Reject early, before allocating."
@@ -2116,7 +2481,7 @@
         },
         {
           "ruleId": "unencrypted-communication",
-          "ruleIndex": 22,
+          "ruleIndex": 25,
           "level": "warning",
           "message": {
             "text": "Unencrypted sql-access-protocol link from Payment API to Token store Use the encrypted variant of the protocol with TLS 1.2 or better, and prefer mutual authentication where both ends are services you operate."
@@ -2158,7 +2523,7 @@
         },
         {
           "ruleId": "unencrypted-communication",
-          "ruleIndex": 22,
+          "ruleIndex": 25,
           "level": "warning",
           "message": {
             "text": "Unencrypted sql-access-protocol link from Nightly settlement batch to Token store Use the encrypted variant of the protocol with TLS 1.2 or better, and prefer mutual authentication where both ends are services you operate."
@@ -2200,7 +2565,7 @@
         },
         {
           "ruleId": "unguarded-direct-datastore-access",
-          "ruleIndex": 24,
+          "ruleIndex": 27,
           "level": "warning",
           "message": {
             "text": "Payment API reaches Token store directly across a network boundary Give the caller a database role limited to the exact tables and operations it uses, restrict the datastore's listener to the caller's addresses or identities, and put reads that do not need to be live behind a cache or a view."
@@ -2242,7 +2607,7 @@
         },
         {
           "ruleId": "unprotected-audit-log",
-          "ruleIndex": 25,
+          "ruleIndex": 28,
           "level": "warning",
           "message": {
             "text": "Payment API logs security events but nothing protects the log Reported at low confidence because the model does not record el.controls.log_integrity_protected. Ship logs off the asset as they are written, to a store the asset can append to and not rewrite. Where the record has to stand up to dispute, sign or chain the entries so a gap is detectable rather than invisible."
@@ -2282,6 +2647,141 @@
             "tmcRiskId": "unprotected-audit-log@payment_api",
             "unknowns": [
               "el.controls.log_integrity_protected"
+            ]
+          }
+        },
+        {
+          "ruleId": "unverified-server-identity",
+          "ruleIndex": 29,
+          "level": "warning",
+          "message": {
+            "text": "Payment API does not verify who answers on api_to_processor Reported at low confidence because the model does not record flow.controls.authenticates_destination. Verify the certificate chain and the hostname, and fail closed when either does not check out. Disabling verification to get past a certificate problem in a test environment is how this reaches production."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 179
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Processor tokenisation",
+                  "fullyQualifiedName": "flow/api_to_processor",
+                  "kind": "flow"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "unverified-server-identity@api_to_processor"
+          },
+          "properties": {
+            "security-severity": "6.0",
+            "severity": "elevated",
+            "likelihood": "likely",
+            "impact": "high",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "spoofing",
+            "function": "development",
+            "subject": "flow/api_to_processor",
+            "tmcRiskId": "unverified-server-identity@api_to_processor",
+            "unknowns": [
+              "flow.controls.authenticates_destination"
+            ]
+          }
+        },
+        {
+          "ruleId": "unverified-server-identity",
+          "ruleIndex": 29,
+          "level": "warning",
+          "message": {
+            "text": "Shopper does not verify who answers on shopper_to_storefront Reported at low confidence because the model does not record flow.controls.authenticates_destination. Verify the certificate chain and the hostname, and fail closed when either does not check out. Disabling verification to get past a certificate problem in a test environment is how this reaches production."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 159
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Checkout",
+                  "fullyQualifiedName": "flow/shopper_to_storefront",
+                  "kind": "flow"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "unverified-server-identity@shopper_to_storefront"
+          },
+          "properties": {
+            "security-severity": "6.0",
+            "severity": "elevated",
+            "likelihood": "likely",
+            "impact": "high",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "spoofing",
+            "function": "development",
+            "subject": "flow/shopper_to_storefront",
+            "tmcRiskId": "unverified-server-identity@shopper_to_storefront",
+            "unknowns": [
+              "flow.controls.authenticates_destination"
+            ]
+          }
+        },
+        {
+          "ruleId": "unverified-server-identity",
+          "ruleIndex": 29,
+          "level": "warning",
+          "message": {
+            "text": "Storefront web app does not verify who answers on storefront_to_api Reported at low confidence because the model does not record flow.controls.authenticates_destination. Verify the certificate chain and the hostname, and fail closed when either does not check out. Disabling verification to get past a certificate problem in a test environment is how this reaches production."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 169
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Tokenise",
+                  "fullyQualifiedName": "flow/storefront_to_api",
+                  "kind": "flow"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "unverified-server-identity@storefront_to_api"
+          },
+          "properties": {
+            "security-severity": "6.0",
+            "severity": "elevated",
+            "likelihood": "likely",
+            "impact": "high",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "spoofing",
+            "function": "development",
+            "subject": "flow/storefront_to_api",
+            "tmcRiskId": "unverified-server-identity@storefront_to_api",
+            "unknowns": [
+              "flow.controls.authenticates_destination"
             ]
           }
         },
@@ -2332,8 +2832,53 @@
           }
         },
         {
-          "ruleId": "incomplete-model",
+          "ruleId": "excessive-privilege",
           "ruleIndex": 5,
+          "level": "note",
+          "message": {
+            "text": "Nightly settlement batch has no recorded limit on its own privileges Reported at low confidence because the model does not record el.controls.implements_least_privilege. Give the asset only the permissions it uses, scoped to the resources it touches, and review them when its job changes. Separate the identity it runs as from the identity it uses to reach anything else."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 134
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Nightly settlement batch",
+                  "fullyQualifiedName": "element/settlement_batch",
+                  "kind": "element"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "excessive-privilege@settlement_batch"
+          },
+          "properties": {
+            "security-severity": "4.0",
+            "severity": "medium",
+            "likelihood": "unlikely",
+            "impact": "high",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "elevation-of-privilege",
+            "function": "operations",
+            "subject": "element/settlement_batch",
+            "tmcRiskId": "excessive-privilege@settlement_batch",
+            "unknowns": [
+              "el.controls.implements_least_privilege"
+            ]
+          }
+        },
+        {
+          "ruleId": "incomplete-model",
+          "ruleIndex": 6,
           "level": "note",
           "message": {
             "text": "Nightly settlement batch records no security controls at all Answer the six questions for this element, with false where the answer is false. A recorded false produces a confident finding that someone can act on, which is far more useful than a blank that produces nothing."
@@ -2375,7 +2920,7 @@
         },
         {
           "ruleId": "missing-build-infrastructure",
-          "ruleIndex": 9,
+          "ruleIndex": 10,
           "level": "note",
           "message": {
             "text": "Payment Service builds custom code with no build pipeline modelled Model the build system, then treat it as production infrastructure: authenticated and authorised triggers, isolated runners per trust level, signed artefacts, and no standing credentials that a pull request can reach."
@@ -2414,7 +2959,7 @@
         },
         {
           "ruleId": "missing-identity-store",
-          "ruleIndex": 14,
+          "ruleIndex": 16,
           "level": "note",
           "message": {
             "text": "Payment Service authenticates callers but models no identity store Add the component that verifies these credentials to the model — even as an external, out-of-scope element — so the rules about isolation, storage and second factors have something to attach to."
@@ -2452,8 +2997,54 @@
           }
         },
         {
+          "ruleId": "missing-mutual-authentication",
+          "ruleIndex": 17,
+          "level": "note",
+          "message": {
+            "text": "Token store does not verify which service calls it on batch_to_token_store Reported at low confidence because the model does not record flow.controls.authenticates_source, flow.to.controls.authenticates_source. Give each workload its own identity and verify it on the receiving side, with mutual TLS or signed tokens. Network position is not identity: treat reachability and authorisation as separate questions."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 209
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Nightly read",
+                  "fullyQualifiedName": "flow/batch_to_token_store",
+                  "kind": "flow"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "missing-mutual-authentication@batch_to_token_store"
+          },
+          "properties": {
+            "security-severity": "4.0",
+            "severity": "medium",
+            "likelihood": "unlikely",
+            "impact": "medium",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "spoofing",
+            "function": "architecture",
+            "subject": "flow/batch_to_token_store",
+            "tmcRiskId": "missing-mutual-authentication@batch_to_token_store",
+            "unknowns": [
+              "flow.controls.authenticates_source",
+              "flow.to.controls.authenticates_source"
+            ]
+          }
+        },
+        {
           "ruleId": "weak-authentication",
-          "ruleIndex": 26,
+          "ruleIndex": 30,
           "level": "note",
           "message": {
             "text": "Payment API authenticates to Token store with a static credential Replace the static secret with a workload identity: mutual TLS between services, or a short-lived token minted per connection. Where the datastore cannot do that, at least sink the password into a vault and rotate it on a schedule the team can prove."
@@ -2495,7 +3086,7 @@
         },
         {
           "ruleId": "weak-authentication",
-          "ruleIndex": 26,
+          "ruleIndex": 30,
           "level": "note",
           "message": {
             "text": "Nightly settlement batch authenticates to Token store with a static credential Replace the static secret with a workload identity: mutual TLS between services, or a short-lived token minted per connection. Where the datastore cannot do that, at least sink the password into a vault and rotate it on a schedule the team can prove."
@@ -2539,8 +3130,8 @@
       "properties": {
         "model": "Payment Service",
         "businessCriticality": "critical",
-        "openRisks": 37,
-        "lowConfidenceRisks": 16
+        "openRisks": 47,
+        "lowConfidenceRisks": 26
       }
     }
   ]

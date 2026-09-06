@@ -1,0 +1,52 @@
+id: unverified-server-identity
+title: Encrypted link that does not verify who it is talking to
+stride: spoofing
+cwe: 295
+capec: [CAPEC-94, CAPEC-459]
+asvs: V9.2.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html
+function: development
+
+description: >
+  The link is encrypted but the caller does not record that it checks who answered.
+  Encryption without identity verification protects the traffic from a passive
+  listener and not at all from someone who answers in the callee's place, which is
+  the attack that matters on an untrusted path.
+
+detection_logic: >
+  A non-response flow over an encrypted protocol, crossing a network trust boundary,
+  carrying credentials or data classified confidential or above, where the flow does
+  not record authenticates_destination.
+
+risk_assessment: >
+  Likelihood is Likely rather than higher: it needs a position on the path, which is
+  a real prerequisite. Impact is High, because a caller that cannot tell who answered
+  will hand over exactly what it was going to send, credentials included.
+
+false_positives: >
+  Links where the platform pins and verifies for you, such as a service mesh doing
+  mutual TLS, and clients using a runtime whose defaults cannot be turned off.
+  Record authenticates_destination: true and say which layer does it, because
+  "the library does it by default" stops being true the moment somebody sets a flag.
+
+mitigation: >
+  Verify the certificate chain and the hostname, and fail closed when either does not
+  check out. Disabling verification to get past a certificate problem in a test
+  environment is how this reaches production.
+action: Turn on certificate and hostname verification for this client.
+check: Point the caller at a host presenting a valid certificate for a different name and confirm it refuses.
+
+scope: flow
+match: |
+  !flow.is_response
+  && flow.protocol.encrypted
+  && flow.crosses_network_boundary
+  && (flow.carries_credentials || flow.max_classification >= 'confidential')
+  && !flow.controls.authenticates_destination
+
+likelihood: likely
+impact: high
+
+data_breach_probability: probable
+risk_title: "{{ flow.from.name }} does not verify who answers on {{ flow.id }}"
+tags: [transport, identity, tls]

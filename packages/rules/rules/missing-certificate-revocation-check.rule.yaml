@@ -1,0 +1,48 @@
+id: missing-certificate-revocation-check
+title: Client certificates accepted without a revocation check
+stride: spoofing
+cwe: 299
+capec: [CAPEC-475]
+asvs: V9.2.4
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html
+function: operations
+
+description: >
+  The link authenticates with a client certificate but nothing records that
+  revocation is checked. A certificate that has been withdrawn, because a key leaked
+  or a service was decommissioned, keeps working until it expires.
+
+detection_logic: >
+  A flow authenticating with a client certificate, to an in-scope asset, that does
+  not record checks_certificate_revocation.
+
+risk_assessment: >
+  Likelihood is Unlikely, because it needs a certificate to have leaked in the first
+  place. Impact is High: a revoked certificate is one somebody has already decided
+  should not work, so the failure is of a control that was consciously applied.
+
+false_positives: >
+  Deployments using short-lived certificates measured in hours, where expiry does the
+  job revocation would. That is a legitimate design; record
+  checks_certificate_revocation: true and note the lifetime, since the argument only
+  holds while the lifetime stays short.
+
+mitigation: >
+  Check OCSP or a CRL at handshake time and fail closed when the answer cannot be
+  obtained, or issue certificates short-lived enough that revocation is unnecessary.
+  Decide which, and write down which.
+action: Enable revocation checking, or shorten certificate lifetimes deliberately.
+check: Revoke a test certificate and confirm the connection is refused.
+
+scope: flow
+match: |
+  flow.authentication == 'client-certificate'
+  && !flow.to.out_of_scope
+  && !flow.controls.checks_certificate_revocation
+
+likelihood: unlikely
+impact: high
+
+data_breach_probability: possible
+risk_title: "{{ flow.id }} accepts client certificates without checking revocation"
+tags: [identity, tls, pki]

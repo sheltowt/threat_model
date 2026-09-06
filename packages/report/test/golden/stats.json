@@ -11,9 +11,9 @@
     "version": "3"
   },
   "stats": {
-    "rules_run": 59,
+    "rules_run": 67,
     "rules_skipped": 0,
-    "candidates_evaluated": 386,
+    "candidates_evaluated": 442,
     "elements": 8,
     "elements_in_scope": 7,
     "elements_out_of_scope": 1,
@@ -23,40 +23,40 @@
     "shared_runtimes": 1,
     "data_assets": 5,
     "orphaned_data_assets": 0,
-    "risks": 37,
-    "open_risks": 37,
-    "low_confidence_risks": 16,
+    "risks": 47,
+    "open_risks": 47,
+    "low_confidence_risks": 26,
     "suppressed_risks": 0,
     "risks_by_severity": {
       "critical": 0,
       "high": 5,
-      "elevated": 26,
-      "medium": 6,
+      "elevated": 34,
+      "medium": 8,
       "low": 0
     },
     "open_risks_by_severity": {
       "critical": 0,
       "high": 5,
-      "elevated": 26,
-      "medium": 6,
+      "elevated": 34,
+      "medium": 8,
       "low": 0
     },
     "risks_by_status": {
-      "unchecked": 37
+      "unchecked": 47
     },
     "risks_by_stride": {
       "denial-of-service": 6,
-      "elevation-of-privilege": 5,
+      "elevation-of-privilege": 8,
       "information-disclosure": 8,
       "repudiation": 6,
-      "spoofing": 5,
-      "tampering": 7
+      "spoofing": 11,
+      "tampering": 8
     },
     "risks_by_function": {
-      "architecture": 9,
+      "architecture": 12,
       "business-side": 8,
-      "development": 6,
-      "operations": 14
+      "development": 10,
+      "operations": 17
     },
     "risks_by_rule": {
       "availability-dependency-inversion": 1,
@@ -64,6 +64,7 @@
       "container-baseimage-backdooring": 2,
       "dos-risky-access-across-trust-boundary": 3,
       "excessive-pii-collection": 2,
+      "excessive-privilege": 3,
       "incomplete-model": 1,
       "manual": 1,
       "missing-audit-log": 2,
@@ -72,8 +73,10 @@
       "missing-cloud-hardening": 1,
       "missing-consent-record": 2,
       "missing-content-security-policy": 1,
+      "missing-content-type-validation": 1,
       "missing-hardening": 2,
       "missing-identity-store": 1,
+      "missing-mutual-authentication": 3,
       "missing-pii-encryption-at-rest": 1,
       "missing-waf": 1,
       "pii-crossing-untrusted-boundary": 1,
@@ -85,6 +88,7 @@
       "unguarded-access-from-internet": 1,
       "unguarded-direct-datastore-access": 1,
       "unprotected-audit-log": 1,
+      "unverified-server-identity": 3,
       "weak-authentication": 2
     },
     "warnings": 0

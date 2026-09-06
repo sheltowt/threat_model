@@ -10,16 +10,16 @@ Card-present checkout API for the storefront, plus its settlement batch.
 | Model date | 2026-09-06 |
 | Model version | 3 |
 | Generated | 2026-09-06T12:00:00Z |
-| Rules run | 59 (0 skipped) |
+| Rules run | 67 (0 skipped) |
 | Scope | 7 of 8 elements, 7 flows, 4 trust boundaries, 5 data assets |
 
 ## Management summary
 
 The payment service accepts card data from the storefront, tokenises it through the processor, and stores only tokens. The open questions are whether the settlement batch needs the full pan and who owns key rotation.
 
-The analysis found **37 risks** across 8 elements and 7 flows, of which **37 remain open**, the worst at **high** severity. 0 have been dealt with and 0 are suppressed by a recorded assumption.
+The analysis found **47 risks** across 8 elements and 7 flows, of which **47 remain open**, the worst at **high** severity. 0 have been dealt with and 0 are suppressed by a recorded assumption.
 
-16 of these are low-confidence findings, meaning the rule could not settle its condition because the model does not record the control it asks about. They are model gaps first and risks second — see [Low-confidence findings](#low-confidence-findings).
+26 of these are low-confidence findings, meaning the rule could not settle its condition because the model does not record the control it asks about. They are model gaps first and risks second — see [Low-confidence findings](#low-confidence-findings).
 
 ## Severity summary
 
@@ -27,10 +27,10 @@ The analysis found **37 risks** across 8 elements and 7 flows, of which **37 rem
 | --- | --- | --- | --- | --- | --- |
 | 🟥 critical | 0 | 0 | 0 | 0 | 0 |
 | 🟧 high | 5 | 5 | 0 | 0 | 2 |
-| 🟨 elevated | 26 | 26 | 0 | 0 | 13 |
-| 🟦 medium | 6 | 6 | 0 | 0 | 1 |
+| 🟨 elevated | 34 | 34 | 0 | 0 | 21 |
+| 🟦 medium | 8 | 8 | 0 | 0 | 3 |
 | ⬜ low | 0 | 0 | 0 | 0 | 0 |
-| **Total** | 37 | 37 | 0 | 0 | 16 |
+| **Total** | 47 | 47 | 0 | 0 | 26 |
 
 ## Attention first
 
@@ -192,7 +192,7 @@ A general-purpose asset is published directly to the internet. Everything it exp
 
 </details>
 
-### 🟨 elevated (26)
+### 🟨 elevated (34)
 
 | ID | Title | Subject | STRIDE | CWE | Status | Confidence |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -203,14 +203,19 @@ A general-purpose asset is published directly to the internet. Everything it exp
 | `dos-risky-access-across-trust-boundary@ops_to_api` | Payment API accepts unthrottled traffic over ops_to_api | Operator access (flow) | denial-of-service | CWE-770 | unchecked | low |
 | `dos-risky-access-across-trust-boundary@storefront_to_api` | Payment API accepts unthrottled traffic over storefront_to_api | Tokenise (flow) | denial-of-service | CWE-770 | unchecked | low |
 | `excessive-pii-collection@payment_api` | Payment API aggregates several categories of personal data | Payment API (element) | information-disclosure | CWE-359 | unchecked | high |
+| `excessive-privilege@payment_api` | Payment API has no recorded limit on its own privileges | Payment API (element) | elevation-of-privilege | CWE-250 | unchecked | low |
+| `excessive-privilege@storefront` | Storefront web app has no recorded limit on its own privileges | Storefront web app (element) | elevation-of-privilege | CWE-250 | unchecked | low |
 | `missing-audit-log@settlement_batch` | Nightly settlement batch changes critical data without an audit trail | Nightly settlement batch (element) | repudiation | CWE-778 | unchecked | low |
 | `missing-audit-log@storefront` | Storefront web app changes critical data without an audit trail | Storefront web app (element) | repudiation | CWE-778 | unchecked | low |
 | `missing-cloud-hardening@vpc` | Production VPC has no recorded cloud hardening baseline | Production VPC (boundary) | elevation-of-privilege | CWE-1188 | unchecked | low |
 | `missing-consent-record@card_data` | Personal data card_data has no recorded origin | card_data (data) | repudiation | CWE-359 | unchecked | high |
 | `missing-consent-record@customer_profile` | Personal data customer_profile has no recorded origin | customer_profile (data) | repudiation | CWE-359 | unchecked | high |
 | `missing-content-security-policy@storefront` | Storefront web app serves pages without a content security policy | Storefront web app (element) | tampering | CWE-1021 | unchecked | high |
+| `missing-content-type-validation@storefront` | Storefront web app parses several formats without checking which it was sent | Storefront web app (element) | tampering | CWE-434 | unchecked | low |
 | `missing-hardening@payment_api` | Payment API is an attractive target with no recorded hardening | Payment API (element) | elevation-of-privilege | CWE-1188 | unchecked | low |
 | `missing-hardening@token_store` | Token store is an attractive target with no recorded hardening | Token store (element) | elevation-of-privilege | CWE-1188 | unchecked | low |
+| `missing-mutual-authentication@api_to_token_store` | Token store does not verify which service calls it on api_to_token_store | Token persistence (flow) | spoofing | CWE-287 | unchecked | low |
+| `missing-mutual-authentication@storefront_to_api` | Payment API does not verify which service calls it on storefront_to_api | Tokenise (flow) | spoofing | CWE-287 | unchecked | low |
 | `missing-pii-encryption-at-rest@token_store` | Token store stores personal data with transparent encryption only | Token store (element) | information-disclosure | CWE-311 | unchecked | high |
 | `missing-waf@storefront` | Storefront web app faces the internet with no web application firewall in front | Storefront web app (element) | tampering | CWE-693 | unchecked | high |
 | `pii-crossing-untrusted-boundary@api_to_processor` | api_to_processor carries personal data to Card processor outside the estate | Processor tokenisation (flow) | information-disclosure | CWE-359 | unchecked | high |
@@ -222,6 +227,9 @@ A general-purpose asset is published directly to the internet. Everything it exp
 | `unencrypted-communication@batch_to_token_store` | Unencrypted sql-access-protocol link from Nightly settlement batch to Token store | Nightly read (flow) | information-disclosure | CWE-319 | unchecked | high |
 | `unguarded-direct-datastore-access@api_to_token_store` | Payment API reaches Token store directly across a network boundary | Token persistence (flow) | elevation-of-privilege | CWE-1220 | unchecked | high |
 | `unprotected-audit-log@payment_api` | Payment API logs security events but nothing protects the log | Payment API (element) | repudiation | CWE-117 | unchecked | low |
+| `unverified-server-identity@api_to_processor` | Payment API does not verify who answers on api_to_processor | Processor tokenisation (flow) | spoofing | CWE-295 | unchecked | low |
+| `unverified-server-identity@shopper_to_storefront` | Shopper does not verify who answers on shopper_to_storefront | Checkout (flow) | spoofing | CWE-295 | unchecked | low |
+| `unverified-server-identity@storefront_to_api` | Storefront web app does not verify who answers on storefront_to_api | Tokenise (flow) | spoofing | CWE-295 | unchecked | low |
 
 <details><summary><code>availability-dependency-inversion@payment_api</code> — Payment API depends on something rated less available than itself</summary>
 
@@ -363,6 +371,46 @@ One processing asset holds several distinct categories of personal data at once,
 
 </details>
 
+<details><summary><code>excessive-privilege@payment_api</code> — Payment API has no recorded limit on its own privileges</summary>
+
+An asset worth attacking does not record that its own privileges are constrained. What matters after a compromise is not whether the asset was breached but how far the attacker travels from it, and that is decided by what it was allowed to do.
+
+**Why it fired.** An in-scope, non-human, non-client element that either holds data classified confidential or above or is a technology the catalogue marks as a high-value target, that makes outbound calls of its own, and does not record implements_least_privilege. The outbound requirement is what keeps this from becoming wallpaper. Least privilege matters for what an asset can reach from where it stands; a leaf datastore that calls nothing has no onward journey to constrain, and asking the question of every asset in the model is how a rule stops being read.
+
+**Mitigation.** Give the asset only the permissions it uses, scoped to the resources it touches, and review them when its job changes. Separate the identity it runs as from the identity it uses to reach anything else.
+
+**Action.** Scope this asset's credentials to what it actually uses.
+
+**Check.** Remove one permission the asset should not need and confirm nothing breaks.
+
+**When this is wrong.** Assets whose privileges are constrained by a platform rather than by their own configuration, such as a workload with a narrowly scoped cloud role. That is least privilege; record it as true and name where the constraint lives, so the next reader does not have to go looking.
+
+**References.** CWE-250 · CAPEC-69, CAPEC-233 · ASVS V1.4.5 · https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
+
+**Rating.** likelihood unlikely × impact very-high = elevated; data breach possible via payment_api
+
+</details>
+
+<details><summary><code>excessive-privilege@storefront</code> — Storefront web app has no recorded limit on its own privileges</summary>
+
+An asset worth attacking does not record that its own privileges are constrained. What matters after a compromise is not whether the asset was breached but how far the attacker travels from it, and that is decided by what it was allowed to do.
+
+**Why it fired.** An in-scope, non-human, non-client element that either holds data classified confidential or above or is a technology the catalogue marks as a high-value target, that makes outbound calls of its own, and does not record implements_least_privilege. The outbound requirement is what keeps this from becoming wallpaper. Least privilege matters for what an asset can reach from where it stands; a leaf datastore that calls nothing has no onward journey to constrain, and asking the question of every asset in the model is how a rule stops being read.
+
+**Mitigation.** Give the asset only the permissions it uses, scoped to the resources it touches, and review them when its job changes. Separate the identity it runs as from the identity it uses to reach anything else.
+
+**Action.** Scope this asset's credentials to what it actually uses.
+
+**Check.** Remove one permission the asset should not need and confirm nothing breaks.
+
+**When this is wrong.** Assets whose privileges are constrained by a platform rather than by their own configuration, such as a workload with a narrowly scoped cloud role. That is least privilege; record it as true and name where the constraint lives, so the next reader does not have to go looking.
+
+**References.** CWE-250 · CAPEC-69, CAPEC-233 · ASVS V1.4.5 · https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
+
+**Rating.** likelihood unlikely × impact very-high = elevated; data breach possible via storefront
+
+</details>
+
 <details><summary><code>missing-audit-log@settlement_batch</code> — Nightly settlement batch changes critical data without an audit trail</summary>
 
 An asset that changes data other people rely on keeps no record of who changed it. Nobody can show afterwards what happened, which blocks an investigation and lets a participant deny an action they took.
@@ -483,6 +531,26 @@ The application ships no policy telling the browser where script may come from, 
 
 </details>
 
+<details><summary><code>missing-content-type-validation@storefront</code> — Storefront web app parses several formats without checking which it was sent</summary>
+
+The asset accepts more than one body format and does not record that it checks which one it was actually given. A parser chosen from an attacker-supplied header, or a file whose declared type does not match its contents, lets input reach a parser it was never meant to reach.
+
+**Why it fired.** An in-scope element running code of our own, reachable from the internet, that accepts more than one body format, and does not record validates_content_type. More than one format is the condition that matters: an asset that only ever parses JSON has nothing to confuse.
+
+**Mitigation.** Accept an explicit allowlist of content types per endpoint, reject anything else before parsing, and for uploads verify the contents rather than trusting the declared type or the file extension.
+
+**Action.** Pin the accepted content types per endpoint and reject the rest.
+
+**Check.** Send a body with a mismatched content type and confirm it is refused.
+
+**When this is wrong.** Assets behind a gateway that pins the content type before they see it, and frameworks that route strictly on a declared type. Record validates_content_type and note where the check happens.
+
+**References.** CWE-434 · CAPEC-209 · ASVS V13.1.5 · https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html
+
+**Rating.** likelihood likely × impact high = elevated; data breach possible via storefront
+
+</details>
+
 <details><summary><code>missing-hardening@payment_api</code> — Payment API is an attractive target with no recorded hardening</summary>
 
 One of the most attractive assets in the model does not record that it has been hardened, so it is probably running whatever its base image, package manager and framework defaults gave it.
@@ -520,6 +588,46 @@ One of the most attractive assets in the model does not record that it has been 
 **References.** CWE-1188 · CAPEC-1 · ASVS V14.1.3 · https://cheatsheetseries.owasp.org/cheatsheets/Secure_Product_Design_Cheat_Sheet.html
 
 **Rating.** likelihood likely × impact high = elevated; data breach possible via token_store
+
+</details>
+
+<details><summary><code>missing-mutual-authentication@api_to_token_store</code> — Token store does not verify which service calls it on api_to_token_store</summary>
+
+One service calls another across a network boundary and the receiving side does not record that it verifies which service called. Anything that reaches the port is treated as the caller, so a foothold anywhere on that network is a foothold on this asset.
+
+**Why it fired.** A non-response flow between two non-human assets, crossing a network trust boundary, arriving at an in-scope asset holding data classified confidential or above, where neither the flow nor the receiving asset records authenticates_source. Flows presenting a client certificate are excluded, since that is the control in action.
+
+**Mitigation.** Give each workload its own identity and verify it on the receiving side, with mutual TLS or signed tokens. Network position is not identity: treat reachability and authorisation as separate questions.
+
+**Action.** Verify the calling workload's identity on the receiving asset.
+
+**Check.** Call the endpoint from an unrelated workload on the same network and confirm refusal.
+
+**When this is wrong.** Meshes that apply mutual TLS transparently, and networks where an authenticating proxy sits in front of every listener. Both are real; record authenticates_source on the receiving asset and name the layer, because a network control nobody has written down is one nobody will notice being turned off.
+
+**References.** CWE-287 · CAPEC-94, CAPEC-151 · ASVS V2.10.3 · https://cheatsheetseries.owasp.org/cheatsheets/Microservices_Security_Cheat_Sheet.html
+
+**Rating.** likelihood likely × impact medium = elevated; data breach possible via payment_api, token_store
+
+</details>
+
+<details><summary><code>missing-mutual-authentication@storefront_to_api</code> — Payment API does not verify which service calls it on storefront_to_api</summary>
+
+One service calls another across a network boundary and the receiving side does not record that it verifies which service called. Anything that reaches the port is treated as the caller, so a foothold anywhere on that network is a foothold on this asset.
+
+**Why it fired.** A non-response flow between two non-human assets, crossing a network trust boundary, arriving at an in-scope asset holding data classified confidential or above, where neither the flow nor the receiving asset records authenticates_source. Flows presenting a client certificate are excluded, since that is the control in action.
+
+**Mitigation.** Give each workload its own identity and verify it on the receiving side, with mutual TLS or signed tokens. Network position is not identity: treat reachability and authorisation as separate questions.
+
+**Action.** Verify the calling workload's identity on the receiving asset.
+
+**Check.** Call the endpoint from an unrelated workload on the same network and confirm refusal.
+
+**When this is wrong.** Meshes that apply mutual TLS transparently, and networks where an authenticating proxy sits in front of every listener. Both are real; record authenticates_source on the receiving asset and name the layer, because a network control nobody has written down is one nobody will notice being turned off.
+
+**References.** CWE-287 · CAPEC-94, CAPEC-151 · ASVS V2.10.3 · https://cheatsheetseries.owasp.org/cheatsheets/Microservices_Security_Cheat_Sheet.html
+
+**Rating.** likelihood likely × impact high = elevated; data breach possible via storefront, payment_api
 
 </details>
 
@@ -743,14 +851,76 @@ The asset records security events but nothing stops those records being altered 
 
 </details>
 
-### 🟦 medium (6)
+<details><summary><code>unverified-server-identity@api_to_processor</code> — Payment API does not verify who answers on api_to_processor</summary>
+
+The link is encrypted but the caller does not record that it checks who answered. Encryption without identity verification protects the traffic from a passive listener and not at all from someone who answers in the callee's place, which is the attack that matters on an untrusted path.
+
+**Why it fired.** A non-response flow over an encrypted protocol, crossing a network trust boundary, carrying credentials or data classified confidential or above, where the flow does not record authenticates_destination.
+
+**Mitigation.** Verify the certificate chain and the hostname, and fail closed when either does not check out. Disabling verification to get past a certificate problem in a test environment is how this reaches production.
+
+**Action.** Turn on certificate and hostname verification for this client.
+
+**Check.** Point the caller at a host presenting a valid certificate for a different name and confirm it refuses.
+
+**When this is wrong.** Links where the platform pins and verifies for you, such as a service mesh doing mutual TLS, and clients using a runtime whose defaults cannot be turned off. Record authenticates_destination: true and say which layer does it, because "the library does it by default" stops being true the moment somebody sets a flag.
+
+**References.** CWE-295 · CAPEC-94, CAPEC-459 · ASVS V9.2.1 · https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html
+
+**Rating.** likelihood likely × impact high = elevated; data breach probable via payment_api, processor
+
+</details>
+
+<details><summary><code>unverified-server-identity@shopper_to_storefront</code> — Shopper does not verify who answers on shopper_to_storefront</summary>
+
+The link is encrypted but the caller does not record that it checks who answered. Encryption without identity verification protects the traffic from a passive listener and not at all from someone who answers in the callee's place, which is the attack that matters on an untrusted path.
+
+**Why it fired.** A non-response flow over an encrypted protocol, crossing a network trust boundary, carrying credentials or data classified confidential or above, where the flow does not record authenticates_destination.
+
+**Mitigation.** Verify the certificate chain and the hostname, and fail closed when either does not check out. Disabling verification to get past a certificate problem in a test environment is how this reaches production.
+
+**Action.** Turn on certificate and hostname verification for this client.
+
+**Check.** Point the caller at a host presenting a valid certificate for a different name and confirm it refuses.
+
+**When this is wrong.** Links where the platform pins and verifies for you, such as a service mesh doing mutual TLS, and clients using a runtime whose defaults cannot be turned off. Record authenticates_destination: true and say which layer does it, because "the library does it by default" stops being true the moment somebody sets a flag.
+
+**References.** CWE-295 · CAPEC-94, CAPEC-459 · ASVS V9.2.1 · https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html
+
+**Rating.** likelihood likely × impact high = elevated; data breach probable via shopper, storefront
+
+</details>
+
+<details><summary><code>unverified-server-identity@storefront_to_api</code> — Storefront web app does not verify who answers on storefront_to_api</summary>
+
+The link is encrypted but the caller does not record that it checks who answered. Encryption without identity verification protects the traffic from a passive listener and not at all from someone who answers in the callee's place, which is the attack that matters on an untrusted path.
+
+**Why it fired.** A non-response flow over an encrypted protocol, crossing a network trust boundary, carrying credentials or data classified confidential or above, where the flow does not record authenticates_destination.
+
+**Mitigation.** Verify the certificate chain and the hostname, and fail closed when either does not check out. Disabling verification to get past a certificate problem in a test environment is how this reaches production.
+
+**Action.** Turn on certificate and hostname verification for this client.
+
+**Check.** Point the caller at a host presenting a valid certificate for a different name and confirm it refuses.
+
+**When this is wrong.** Links where the platform pins and verifies for you, such as a service mesh doing mutual TLS, and clients using a runtime whose defaults cannot be turned off. Record authenticates_destination: true and say which layer does it, because "the library does it by default" stops being true the moment somebody sets a flag.
+
+**References.** CWE-295 · CAPEC-94, CAPEC-459 · ASVS V9.2.1 · https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html
+
+**Rating.** likelihood likely × impact high = elevated; data breach probable via storefront, payment_api
+
+</details>
+
+### 🟦 medium (8)
 
 | ID | Title | Subject | STRIDE | CWE | Status | Confidence |
 | --- | --- | --- | --- | --- | --- | --- |
 | `dos-risky-access-across-trust-boundary@api_to_token_store` | Token store accepts unthrottled traffic over api_to_token_store | Token persistence (flow) | denial-of-service | CWE-770 | unchecked | low |
+| `excessive-privilege@settlement_batch` | Nightly settlement batch has no recorded limit on its own privileges | Nightly settlement batch (element) | elevation-of-privilege | CWE-250 | unchecked | low |
 | `incomplete-model@settlement_batch` | Nightly settlement batch records no security controls at all | Nightly settlement batch (element) | repudiation | CWE-1059 | unchecked | high |
 | `missing-build-infrastructure@model` | Payment Service builds custom code with no build pipeline modelled | Payment Service (model) | tampering | CWE-1357 | unchecked | high |
 | `missing-identity-store@model` | Payment Service authenticates callers but models no identity store | Payment Service (model) | spoofing | CWE-1059 | unchecked | high |
+| `missing-mutual-authentication@batch_to_token_store` | Token store does not verify which service calls it on batch_to_token_store | Nightly read (flow) | spoofing | CWE-287 | unchecked | low |
 | `weak-authentication@api_to_token_store` | Payment API authenticates to Token store with a static credential | Token persistence (flow) | spoofing | CWE-287 | unchecked | high |
 | `weak-authentication@batch_to_token_store` | Nightly settlement batch authenticates to Token store with a static credential | Nightly read (flow) | spoofing | CWE-287 | unchecked | high |
 
@@ -771,6 +941,26 @@ Traffic crosses a network boundary into an asset the business needs available, a
 **References.** CWE-770 · CAPEC-125, CAPEC-227 · ASVS V11.1.4 · https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html
 
 **Rating.** likelihood unlikely × impact medium = medium; data breach improbable via payment_api, token_store
+
+</details>
+
+<details><summary><code>excessive-privilege@settlement_batch</code> — Nightly settlement batch has no recorded limit on its own privileges</summary>
+
+An asset worth attacking does not record that its own privileges are constrained. What matters after a compromise is not whether the asset was breached but how far the attacker travels from it, and that is decided by what it was allowed to do.
+
+**Why it fired.** An in-scope, non-human, non-client element that either holds data classified confidential or above or is a technology the catalogue marks as a high-value target, that makes outbound calls of its own, and does not record implements_least_privilege. The outbound requirement is what keeps this from becoming wallpaper. Least privilege matters for what an asset can reach from where it stands; a leaf datastore that calls nothing has no onward journey to constrain, and asking the question of every asset in the model is how a rule stops being read.
+
+**Mitigation.** Give the asset only the permissions it uses, scoped to the resources it touches, and review them when its job changes. Separate the identity it runs as from the identity it uses to reach anything else.
+
+**Action.** Scope this asset's credentials to what it actually uses.
+
+**Check.** Remove one permission the asset should not need and confirm nothing breaks.
+
+**When this is wrong.** Assets whose privileges are constrained by a platform rather than by their own configuration, such as a workload with a narrowly scoped cloud role. That is least privilege; record it as true and name where the constraint lives, so the next reader does not have to go looking.
+
+**References.** CWE-250 · CAPEC-69, CAPEC-233 · ASVS V1.4.5 · https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
+
+**Rating.** likelihood unlikely × impact high = medium; data breach possible via settlement_batch
 
 </details>
 
@@ -834,6 +1024,26 @@ Links in this model authenticate their callers, but nothing in it is an identity
 
 </details>
 
+<details><summary><code>missing-mutual-authentication@batch_to_token_store</code> — Token store does not verify which service calls it on batch_to_token_store</summary>
+
+One service calls another across a network boundary and the receiving side does not record that it verifies which service called. Anything that reaches the port is treated as the caller, so a foothold anywhere on that network is a foothold on this asset.
+
+**Why it fired.** A non-response flow between two non-human assets, crossing a network trust boundary, arriving at an in-scope asset holding data classified confidential or above, where neither the flow nor the receiving asset records authenticates_source. Flows presenting a client certificate are excluded, since that is the control in action.
+
+**Mitigation.** Give each workload its own identity and verify it on the receiving side, with mutual TLS or signed tokens. Network position is not identity: treat reachability and authorisation as separate questions.
+
+**Action.** Verify the calling workload's identity on the receiving asset.
+
+**Check.** Call the endpoint from an unrelated workload on the same network and confirm refusal.
+
+**When this is wrong.** Meshes that apply mutual TLS transparently, and networks where an authenticating proxy sits in front of every listener. Both are real; record authenticates_source on the receiving asset and name the layer, because a network control nobody has written down is one nobody will notice being turned off.
+
+**References.** CWE-287 · CAPEC-94, CAPEC-151 · ASVS V2.10.3 · https://cheatsheetseries.owasp.org/cheatsheets/Microservices_Security_Cheat_Sheet.html
+
+**Rating.** likelihood unlikely × impact medium = medium; data breach possible via settlement_batch, token_store
+
+</details>
+
 <details><summary><code>weak-authentication@api_to_token_store</code> — Payment API authenticates to Token store with a static credential</summary>
 
 A caller proves itself to a crown-jewel asset with a static username and password. That secret is replayable, it lives in configuration, and it does not expire when the caller does.
@@ -886,7 +1096,11 @@ question open forever.
 
 | Field | Findings it would settle |
 | --- | --- |
+| `el.controls.implements_least_privilege` | 3 |
+| `flow.controls.authenticates_destination` | 3 |
+| `flow.controls.authenticates_source` | 3 |
 | `flow.controls.rate_limited` | 3 |
+| `flow.to.controls.authenticates_source` | 3 |
 | `el.controls.hardened` | 2 |
 | `el.controls.logs_security_events` | 2 |
 | `el.controls.uses_code_signing` | 2 |
@@ -895,6 +1109,7 @@ question open forever.
 | `el.controls.checks_input_bounds` | 1 |
 | `el.controls.log_integrity_protected` | 1 |
 | `el.controls.redundant` | 1 |
+| `el.controls.validates_content_type` | 1 |
 | `flow.from.controls.uses_parameterized_queries` | 1 |
 | `flow.to.controls.rate_limited` | 1 |
 | `m.controls.hardened` | 1 |
@@ -909,20 +1124,30 @@ question open forever.
 | `container-baseimage-backdooring@storefront` | Storefront web app runs a container image with no recorded provenance check | elevated | `el.controls.uses_code_signing`, `el.controls.verifies_dependencies` |
 | `dos-risky-access-across-trust-boundary@ops_to_api` | Payment API accepts unthrottled traffic over ops_to_api | elevated | `flow.controls.rate_limited` |
 | `dos-risky-access-across-trust-boundary@storefront_to_api` | Payment API accepts unthrottled traffic over storefront_to_api | elevated | `flow.controls.rate_limited` |
+| `excessive-privilege@payment_api` | Payment API has no recorded limit on its own privileges | elevated | `el.controls.implements_least_privilege` |
+| `excessive-privilege@storefront` | Storefront web app has no recorded limit on its own privileges | elevated | `el.controls.implements_least_privilege` |
 | `missing-audit-log@settlement_batch` | Nightly settlement batch changes critical data without an audit trail | elevated | `el.controls.logs_security_events` |
 | `missing-audit-log@storefront` | Storefront web app changes critical data without an audit trail | elevated | `el.controls.logs_security_events` |
 | `missing-cloud-hardening@vpc` | Production VPC has no recorded cloud hardening baseline | elevated | `m.controls.hardened` |
+| `missing-content-type-validation@storefront` | Storefront web app parses several formats without checking which it was sent | elevated | `el.controls.validates_content_type` |
 | `missing-hardening@payment_api` | Payment API is an attractive target with no recorded hardening | elevated | `el.controls.hardened` |
 | `missing-hardening@token_store` | Token store is an attractive target with no recorded hardening | elevated | `el.controls.hardened` |
+| `missing-mutual-authentication@api_to_token_store` | Token store does not verify which service calls it on api_to_token_store | elevated | `flow.controls.authenticates_source`, `flow.to.controls.authenticates_source` |
+| `missing-mutual-authentication@storefront_to_api` | Payment API does not verify which service calls it on storefront_to_api | elevated | `flow.controls.authenticates_source`, `flow.to.controls.authenticates_source` |
 | `single-point-of-failure@settlement_batch` | Nightly settlement batch is availability-critical with no recorded redundancy | elevated | `el.controls.redundant` |
 | `sql-nosql-injection@batch_to_token_store` | Nightly settlement batch may build injectable queries against Token store | elevated | `flow.from.controls.uses_parameterized_queries` |
 | `unbounded-input-size@storefront` | Storefront web app parses attacker-sized input with no recorded bound | elevated | `el.controls.checks_input_bounds` |
 | `unprotected-audit-log@payment_api` | Payment API logs security events but nothing protects the log | elevated | `el.controls.log_integrity_protected` |
+| `unverified-server-identity@api_to_processor` | Payment API does not verify who answers on api_to_processor | elevated | `flow.controls.authenticates_destination` |
+| `unverified-server-identity@shopper_to_storefront` | Shopper does not verify who answers on shopper_to_storefront | elevated | `flow.controls.authenticates_destination` |
+| `unverified-server-identity@storefront_to_api` | Storefront web app does not verify who answers on storefront_to_api | elevated | `flow.controls.authenticates_destination` |
 | `dos-risky-access-across-trust-boundary@api_to_token_store` | Token store accepts unthrottled traffic over api_to_token_store | medium | `flow.controls.rate_limited`, `flow.to.controls.rate_limited` |
+| `excessive-privilege@settlement_batch` | Nightly settlement batch has no recorded limit on its own privileges | medium | `el.controls.implements_least_privilege` |
+| `missing-mutual-authentication@batch_to_token_store` | Token store does not verify which service calls it on batch_to_token_store | medium | `flow.controls.authenticates_source`, `flow.to.controls.authenticates_source` |
 
 ## Risk tracking
 
-Nothing in this model has been triaged yet: all 37 risks are unchecked. Record a decision in `risk_tracking` as each one is dealt with.
+Nothing in this model has been triaged yet: all 47 risks are unchecked. Record a decision in `risk_tracking` as each one is dealt with.
 
 ## Data asset matrix
 
@@ -971,13 +1196,13 @@ each other and mean nothing against another model.
 
 | Element | Kind | Technology | RAA | Confidentiality | Integrity | Availability | Trust boundary | Internet | Risks |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Payment API** | process | web-service-rest | 100 | strictly-confidential | mission-critical | critical | Web tier namespace | reachable | 8 |
-| **Token store** | datastore | database | 99 | confidential | critical | critical | Data tier subnet | reachable | 9 |
-| **Nightly settlement batch** | process | batch-processing | 75 | confidential | critical | critical | Production VPC | no | 4 |
-| **Storefront web app** | process | web-application | 73 | strictly-confidential | critical | important | Web tier namespace | facing | 9 |
+| **Payment API** | process | web-service-rest | 100 | strictly-confidential | mission-critical | critical | Web tier namespace | reachable | 11 |
+| **Token store** | datastore | database | 99 | confidential | critical | critical | Data tier subnet | reachable | 11 |
+| **Nightly settlement batch** | process | batch-processing | 75 | confidential | critical | critical | Production VPC | no | 5 |
+| **Storefront web app** | process | web-application | 73 | strictly-confidential | critical | important | Web tier namespace | facing | 12 |
 | **Audit log store** | datastore | database | 47 | internal | critical | important | Data tier subnet | reachable | 0 |
 | **Operations console** | external | devops-client | 34 | public | archive | archive | Public internet | no | 0 |
-| Card processor _(out of scope)_ | external | web-service-rest | 24 | strictly-confidential | critical | critical | Public internet | reachable | 1 |
+| Card processor _(out of scope)_ | external | web-service-rest | 24 | strictly-confidential | critical | critical | Public internet | reachable | 2 |
 | **Shopper** | actor | browser | 21 | public | archive | archive | Public internet | facing | 0 |
 
 ## Shared runtimes
