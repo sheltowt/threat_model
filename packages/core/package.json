@@ -1,8 +1,8 @@
 {
-  "name": "@tmc/core",
+  "name": "tmac-core",
   "version": "0.1.0",
   "type": "module",
-  "description": "Model schema, loader and graph for tmc threat models",
+  "description": "Model schema, loader and graph for tmac threat models",
   "license": "Apache-2.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -29,5 +29,30 @@
   "dependencies": {
     "yaml": "^2.9.0",
     "zod": "^4.5.4"
-  }
+  },
+  "author": "B. Shelton",
+  "homepage": "https://github.com/sheltowt/threat_model#readme",
+  "bugs": {
+    "url": "https://github.com/sheltowt/threat_model/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sheltowt/threat_model.git",
+    "directory": "packages/core"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "tmac",
+    "threat-modeling",
+    "threat-model-as-code",
+    "threat-model",
+    "security",
+    "schema"
+  ]
 }

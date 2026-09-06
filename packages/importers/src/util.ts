@@ -3,7 +3,7 @@
  *
  * The one job that matters here is identifier hygiene. Foreign formats use UUIDs
  * (Threat Dragon), free-text names (pytm) or dotted vendor ids (OTM), none of which
- * satisfy the tmc id grammar. Every importer routes its ids through the one
+ * satisfy the tmac id grammar. Every importer routes its ids through the one
  * `IdRegistry` below so that cross-references still resolve after renaming.
  */
 
@@ -13,7 +13,7 @@ import {
   type Linddun,
   type ModelInput,
   type Stride,
-} from '@tmc/core';
+} from 'tmac-core';
 
 export interface ImportWarning {
   code: string;
@@ -44,7 +44,7 @@ export function isValidId(value: string): boolean {
 }
 
 /**
- * Turn arbitrary text into a legal tmc id. An input that is already legal is passed
+ * Turn arbitrary text into a legal tmac id. An input that is already legal is passed
  * through untouched, which keeps `model -> export -> import` round trips stable.
  */
 export function slugify(input: unknown, fallback = 'item'): string {
@@ -63,7 +63,7 @@ export function slugify(input: unknown, fallback = 'item'): string {
 }
 
 /**
- * Allocates unique tmc ids and remembers where each came from, so a later reference
+ * Allocates unique tmac ids and remembers where each came from, so a later reference
  * to the foreign id (or to the element's name, which is how pytm cross-references)
  * still resolves.
  */
@@ -234,7 +234,7 @@ export function coerceDocument(data: unknown, parseYaml?: (text: string) => unkn
     return JSON.parse(text);
   } catch {
     if (parseYaml) return parseYaml(text);
-    throw new Error('tmc: input is not valid JSON');
+    throw new Error('tmac: input is not valid JSON');
   }
 }
 

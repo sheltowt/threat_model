@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fileURLToPath } from 'node:url';
-import { buildGraph, loadModel } from '@tmc/core';
-import { analyze, loadRules } from '@tmc/rules';
+import { buildGraph, loadModel } from 'tmac-core';
+import { analyze, loadRules } from 'tmac-rules';
 
 const example = fileURLToPath(
   new URL('../../../examples/payment-service/threatmodel.yaml', import.meta.url),

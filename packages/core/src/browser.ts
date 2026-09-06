@@ -1,5 +1,5 @@
 /**
- * Everything in `@tmc/core` that does not touch the filesystem.
+ * Everything in `tmac-core` that does not touch the filesystem.
  *
  * The browser editor imports this, so it runs the same schema, the same graph
  * construction and the same cross-reference checks as the CLI. Anything that reads a

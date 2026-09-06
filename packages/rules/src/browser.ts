@@ -1,5 +1,5 @@
 /**
- * Everything in `@tmc/rules` that does not touch the filesystem, so the browser
+ * Everything in `tmac-rules` that does not touch the filesystem, so the browser
  * editor runs the same engine and the same rules as the CLI.
  */
 export * from './expr/index.js';

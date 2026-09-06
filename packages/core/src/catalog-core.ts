@@ -45,16 +45,16 @@ function readSection(
 ): Map<string, Record<string, unknown>> {
   const body = raw[section];
   if (body === undefined || body === null) {
-    if (required) throw new Error(`tmc: ${where} has no top-level "${section}:" key`);
+    if (required) throw new Error(`tmac: ${where} has no top-level "${section}:" key`);
     return new Map();
   }
   if (typeof body !== 'object' || Array.isArray(body)) {
-    throw new Error(`tmc: "${section}:" in ${where} must be a mapping`);
+    throw new Error(`tmac: "${section}:" in ${where} must be a mapping`);
   }
   const out = new Map<string, Record<string, unknown>>();
   for (const [id, value] of Object.entries(body)) {
     if (value !== null && (typeof value !== 'object' || Array.isArray(value))) {
-      throw new Error(`tmc: ${section}.${id} in ${where} must be a mapping`);
+      throw new Error(`tmac: ${section}.${id} in ${where} must be a mapping`);
     }
     out.set(id, (value ?? {}) as Record<string, unknown>);
   }
@@ -70,7 +70,7 @@ function toBooleanAttrs(
   for (const [key, value] of Object.entries(entry)) {
     if (skip.has(key)) continue;
     if (typeof value !== 'boolean') {
-      throw new Error(`tmc: attribute ${where}.${key} must be true or false, got ${typeof value}`);
+      throw new Error(`tmac: attribute ${where}.${key} must be true or false, got ${typeof value}`);
     }
     attrs[key] = value;
   }

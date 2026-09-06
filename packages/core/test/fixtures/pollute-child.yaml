@@ -1,6 +1,6 @@
 # A hostile include: assigning __proto__ during a merge would change the behaviour
 # of every object in the process.
-schema: tmc/1.0
+schema: tmac/1.0
 __proto__:
   polluted: true
 elements:

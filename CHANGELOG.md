@@ -7,7 +7,7 @@ project uses semantic versioning.
 
 ### Added
 
-- Declarative model format `tmc/1.0`: data assets with confidentiality, integrity and
+- Declarative model format `tmac/1.0`: data assets with confidentiality, integrity and
   availability ratings, generic elements backed by a technology catalogue, flows with
   protocol and authentication attributes, nested trust boundaries, shared runtimes,
   assumptions, manual threats and risk tracking.
@@ -27,7 +27,7 @@ project uses semantic versioning.
 - Synthetic finding ids of the form `rule-id@subject-id`, stable across regeneration,
   rewording and re-layout, with wildcard risk tracking and failure on orphaned keys.
 - Relative Attacker Attractiveness scoring, adapted from Threagile.
-- `tmc` command: `init`, `validate`, `analyze`, `diff`, `diagram`, `explain`,
+- `tmac` command: `init`, `validate`, `analyze`, `diff`, `diagram`, `explain`,
   `rules list`, `track seed`, `import`, `export`, `schema`.
 - Outputs: JSON, SARIF, Markdown, self-contained HTML, and Graphviz diagrams rendered
   through WASM so there is no system Graphviz dependency.
@@ -40,7 +40,7 @@ project uses semantic versioning.
 
 #### pytm
 
-pytm treats an unset security control as `false`. tmc distinguishes unrecorded from
+pytm treats an unset security control as `false`. tmac distinguishes unrecorded from
 recorded-absent, so the importer carries across only controls that are explicitly
 present in the input and reports how many were dropped as indeterminate. Expect a
 freshly imported pytm model to produce low-confidence findings where pytm produced

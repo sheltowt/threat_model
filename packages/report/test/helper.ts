@@ -2,8 +2,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect } from 'vitest';
-import { buildGraph, loadModel, type ModelGraph } from '@tmc/core';
-import { analyze, loadRules, type Analysis, type LoadedRule } from '@tmc/rules';
+import { buildGraph, loadModel, type ModelGraph } from 'tmac-core';
+import { analyze, loadRules, type Analysis, type LoadedRule } from 'tmac-rules';
 
 export const EXAMPLE = fileURLToPath(
   new URL('../../../examples/payment-service/threatmodel.yaml', import.meta.url),

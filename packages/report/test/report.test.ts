@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { analyze } from '@tmc/rules';
+import { analyze } from 'tmac-rules';
 import {
   risksJson,
   statsJson,
@@ -7,7 +7,7 @@ import {
   toHtml,
   toMarkdown,
   toSarif,
-} from '@tmc/report';
+} from 'tmac-report';
 import { readFileSync } from 'node:fs';
 import { EXAMPLE, FIXED_NOW, expectGolden, fixture, goldenPath } from './helper.js';
 
@@ -111,7 +111,7 @@ describe('SARIF', () => {
     expect(sarif.version).toBe('2.1.0');
     expect(sarif.$schema).toContain('sarif');
     const driver = sarif.runs[0]!['tool'] as { driver: { name: string; rules: unknown[] } };
-    expect(driver.driver.name).toBe('tmc');
+    expect(driver.driver.name).toBe('tmac');
     expect(driver.driver.rules.length).toBeGreaterThan(0);
   });
 

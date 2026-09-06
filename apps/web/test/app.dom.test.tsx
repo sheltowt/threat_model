@@ -14,7 +14,7 @@ const EXAMPLE = readFileSync(resolve('apps/web/src/example.yaml'), 'utf8');
  * exercises the real parse, graph and rule engine without needing a server.
  *
  * Graphviz is loaded on demand and is not exercised here; the diagram has its own
- * coverage in `@tmc/render`, and pulling a megabyte of WASM into every UI test
+ * coverage in `tmac-render`, and pulling a megabyte of WASM into every UI test
  * would make the suite slow for no extra assurance.
  */
 beforeEach(() => {

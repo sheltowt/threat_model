@@ -1,6 +1,6 @@
 # Technology catalogue. Rules never name a technology directly; they ask about the
 # boolean attributes declared here. That is Threagile's best structural idea, and it
-# means a team can add "our-in-house-esb" in .tmc/technologies.yaml and have every
+# means a team can add "our-in-house-esb" in .tmac/technologies.yaml and have every
 # existing rule apply to it correctly.
 #
 # `kind` is the element kind this technology defaults to when the author omits it.

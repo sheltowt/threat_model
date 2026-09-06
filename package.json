@@ -1,9 +1,9 @@
 {
-  "name": "tmc-monorepo",
+  "name": "tmac-monorepo",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "tmc - threat models as code",
+  "description": "tmac - threat models as code",
   "license": "Apache-2.0",
   "workspaces": [
     "packages/*",
@@ -13,20 +13,23 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "npm run generate && tsc --build && npm run build --workspace @tmc/web",
+    "build": "npm run generate && tsc --build && npm run build --workspace tmac-web",
     "clean": "tsc --build --clean",
-    "typecheck": "tsc --build && npm run typecheck --workspace @tmc/web",
+    "typecheck": "tsc --build && npm run typecheck --workspace tmac-web",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "tmc": "node --experimental-strip-types apps/cli/src/index.ts",
+    "tmac": "node --experimental-strip-types apps/cli/src/index.ts",
     "generate": "node scripts/generate-data.mjs",
     "generate:check": "node scripts/generate-data.mjs --check",
     "build:lib": "npm run generate && tsc --build",
-    "dev": "npm run dev --workspace @tmc/web"
+    "dev": "npm run dev --workspace tmac-web",
+    "bundle:editor": "node scripts/bundle-editor.mjs",
+    "schema": "node scripts/emit-schema.mjs",
+    "schema:check": "node scripts/emit-schema.mjs --check"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",

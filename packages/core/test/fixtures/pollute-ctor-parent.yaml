@@ -1,4 +1,4 @@
-schema: tmc/1.0
+schema: tmac/1.0
 includes: [pollute-ctor-child.yaml]
 meta:
   title: Include with prototype-reaching keys

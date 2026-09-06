@@ -1,4 +1,4 @@
-schema: tmc/1.0
+schema: tmac/1.0
 meta:
   title: ignored, the parent wins
 elements:

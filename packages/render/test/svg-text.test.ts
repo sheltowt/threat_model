@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { svgBody, themeSvg } from '@tmc/render';
+import { svgBody, themeSvg } from 'tmac-render';
 
 const GRAPHVIZ_PROLOG = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"

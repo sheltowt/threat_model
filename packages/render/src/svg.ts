@@ -36,7 +36,7 @@ export async function renderSvg(dot: string, options: SvgOptions = {}): Promise<
   });
   if (result.status !== 'success') {
     const detail = result.errors.map((e) => e.message).join('\n') || 'unknown error';
-    throw new Error(`tmc: graphviz failed to render the diagram:\n${detail}`);
+    throw new Error(`tmac: graphviz failed to render the diagram:\n${detail}`);
   }
   return options.themeAware === false ? result.output : themeSvg(result.output);
 }

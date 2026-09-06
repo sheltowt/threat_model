@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { oneLine, prose, toMarkdown, toSarif } from '@tmc/report';
+import { oneLine, prose, toMarkdown, toSarif } from 'tmac-report';
 import { FIXED_NOW, fixture } from './helper.js';
 
 /**

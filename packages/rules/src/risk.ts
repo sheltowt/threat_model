@@ -9,7 +9,7 @@ import type {
   RuleFunction,
   Severity,
   Stride,
-} from '@tmc/core/browser';
+} from 'tmac-core/browser';
 
 export interface RiskSubject {
   kind: 'element' | 'flow' | 'boundary' | 'data' | 'model';

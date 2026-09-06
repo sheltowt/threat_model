@@ -8,7 +8,7 @@
  * here from the cell rectangles.
  */
 
-import type { ModelInput } from '@tmc/core';
+import type { ModelInput } from 'tmac-core';
 import {
   asArray,
   asBool,
@@ -206,7 +206,7 @@ export function importThreatDragon(json: unknown): ImportResult {
           warnings,
           'td-protocol-unmapped',
           `protocol "${spelled}" on flow "${name}" is not in the catalogue; used ${protocol}`,
-          'Add the protocol to .tmc/protocols.yaml, or set it on the flow by hand.',
+          'Add the protocol to .tmac/protocols.yaml, or set it on the flow by hand.',
         );
       }
     }
@@ -384,7 +384,7 @@ export function importThreatDragon(json: unknown): ImportResult {
   const version = asString(doc['version']);
   if (version !== undefined) meta.version = version;
 
-  const model: ModelInput = { schema: 'tmc/1.0', meta };
+  const model: ModelInput = { schema: 'tmac/1.0', meta };
   if (Object.keys(elements).length > 0) model.elements = elements;
   if (flows.length > 0) model.flows = flows;
   if (Object.keys(boundaries).length > 0) model.trust_boundaries = boundaries;

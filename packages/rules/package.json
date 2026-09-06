@@ -1,5 +1,5 @@
 {
-  "name": "@tmc/rules",
+  "name": "tmac-rules",
   "version": "0.1.0",
   "type": "module",
   "description": "Sandboxed rule engine and built-in risk rule library",
@@ -27,8 +27,33 @@
     "build": "tsc --build"
   },
   "dependencies": {
-    "@tmc/core": "0.1.0",
+    "tmac-core": "^0.1.0",
     "yaml": "^2.9.0",
     "zod": "^4.5.4"
-  }
+  },
+  "author": "B. Shelton",
+  "homepage": "https://github.com/sheltowt/threat_model#readme",
+  "bugs": {
+    "url": "https://github.com/sheltowt/threat_model/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sheltowt/threat_model.git",
+    "directory": "packages/rules"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "tmac",
+    "threat-modeling",
+    "threat-model-as-code",
+    "threat-model",
+    "security",
+    "stride"
+  ]
 }

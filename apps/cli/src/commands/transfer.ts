@@ -1,15 +1,15 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
-import { modelSchema } from '@tmc/core';
+import { modelSchema } from 'tmac-core';
 import {
   detectFormat,
   exportOtm,
   exportTmbom,
   importAny,
   type ImportFormat,
-} from '@tmc/importers';
-import { analyze as runAnalysis } from '@tmc/rules';
+} from 'tmac-importers';
+import { analyze as runAnalysis } from 'tmac-rules';
 import { findModel, open } from '../context.js';
 import { dim, green, red, yellow } from '../ui.js';
 
@@ -27,7 +27,7 @@ export interface ImportOptions {
   layout?: string;
 }
 
-/** Convert a foreign threat model into a tmc model file. */
+/** Convert a foreign threat model into a tmac model file. */
 export function importModel(input: string, options: ImportOptions): number {
   const data = readData(input);
 
@@ -75,7 +75,7 @@ export interface ExportOptions {
   out?: string;
 }
 
-/** Convert a tmc model into an interchange format. */
+/** Convert a tmac model into an interchange format. */
 export function exportModel(file: string | undefined, options: ExportOptions): number {
   const target = findModel(file);
   const ctx = open(target);

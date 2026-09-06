@@ -1,4 +1,4 @@
-import { comparableEnum, rankOf } from '@tmc/core/browser';
+import { comparableEnum, rankOf } from 'tmac-core/browser';
 import type { MacroName, Node } from './ast.js';
 
 /**
@@ -10,7 +10,7 @@ import type { MacroName, Node } from './ast.js';
  * as UNKNOWN, propagates through Kleene logic, and surfaces as a low-confidence
  * finding that names the gap instead of asserting the flaw. See ADR 0002.
  */
-export const UNKNOWN = Symbol.for('tmc.unknown');
+export const UNKNOWN = Symbol.for('tmac.unknown');
 export type Unknown = typeof UNKNOWN;
 
 export type Value =

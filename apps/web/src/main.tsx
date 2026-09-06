@@ -4,7 +4,7 @@ import { App } from './App.js';
 import './styles.css';
 
 const host = document.getElementById('root');
-if (!host) throw new Error('tmc: #root is missing from index.html');
+if (!host) throw new Error('tmac: #root is missing from index.html');
 
 createRoot(host).render(
   <StrictMode>

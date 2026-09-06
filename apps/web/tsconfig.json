@@ -13,11 +13,11 @@
     "allowImportingTsExtensions": true,
     "types": ["vite/client"],
     "paths": {
-      "@tmc/core/browser": ["../../packages/core/src/browser.ts"],
-      "@tmc/rules/browser": ["../../packages/rules/src/browser.ts"],
-      "@tmc/render/browser": ["../../packages/render/src/browser.ts"],
-      "@tmc/render/svg-text": ["../../packages/render/src/svg-text.ts"],
-      "@tmc/report/browser": ["../../packages/report/src/browser.ts"]
+      "tmac-core/browser": ["../../packages/core/src/browser.ts"],
+      "tmac-rules/browser": ["../../packages/rules/src/browser.ts"],
+      "tmac-render/browser": ["../../packages/render/src/browser.ts"],
+      "tmac-render/svg-text": ["../../packages/render/src/svg-text.ts"],
+      "tmac-report/browser": ["../../packages/report/src/browser.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "test/**/*.ts", "test/**/*.tsx"]

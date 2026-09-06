@@ -1,6 +1,6 @@
 # Writing a rule
 
-A rule is a YAML document. Drop it in `.tmc/rules/` in your repository and `tmc
+A rule is a YAML document. Drop it in `.tmac/rules/` in your repository and `tmac
 analyze` picks it up; give it the same `id` as a built-in and it replaces that
 built-in, which is how you retune a noisy rule without forking the tool.
 

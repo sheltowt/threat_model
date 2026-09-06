@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { buildGraph, loadModel, type ModelGraph } from '@tmc/core';
+import { buildGraph, loadModel, type ModelGraph } from 'tmac-core';
 
 export const EXAMPLE = fileURLToPath(
   new URL('../../../examples/payment-service/threatmodel.yaml', import.meta.url),

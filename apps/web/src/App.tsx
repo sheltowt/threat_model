@@ -98,7 +98,7 @@ export function App() {
   );
 
   const openCount = state.analysis?.stats.openRisks ?? 0;
-  // Only a page served by `tmc serve` has somewhere to save to.
+  // Only a page served by `tmac serve` has somewhere to save to.
   const target = useMemo(() => saveTarget(window.location.search), []);
 
   const content = useMemo(() => {
@@ -176,7 +176,7 @@ export function App() {
     >
       <header className="header">
         <span className="brand">
-          tmc <small>threat models as code</small>
+          tmac <small>threat models as code</small>
         </span>
         <span className="model-name" title={state.name}>
           {state.name}

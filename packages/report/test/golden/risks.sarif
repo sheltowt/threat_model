@@ -5,8 +5,8 @@
     {
       "tool": {
         "driver": {
-          "name": "tmc",
-          "informationUri": "https://github.com/tmc-dev/tmc",
+          "name": "tmac",
+          "informationUri": "https://github.com/tmac-dev/tmac",
           "rules": [
             {
               "id": "clickjacking",

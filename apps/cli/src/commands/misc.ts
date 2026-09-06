@@ -2,9 +2,9 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { stringify as stringifyYaml } from 'yaml';
-import { diffModels, formatDiff, loadModel, modelJsonSchema } from '@tmc/core';
-import { analyze as runAnalysis, isOpen, loadRules } from '@tmc/rules';
-import { dataAssetDot, dataFlowDot, renderSvg } from '@tmc/render';
+import { diffModels, formatDiff, loadModel, modelJsonSchema } from 'tmac-core';
+import { analyze as runAnalysis, isOpen, loadRules } from 'tmac-rules';
+import { dataAssetDot, dataFlowDot, renderSvg } from 'tmac-render';
 import { findModel, open, projectDir } from '../context.js';
 import { bold, dim, green, plural, red, table, wrapText, yellow } from '../ui.js';
 
@@ -14,7 +14,7 @@ function scaffoldDir(): string {
   for (const candidate of [join(HERE, '..', 'scaffold'), join(HERE, '..', '..', 'scaffold')]) {
     if (existsSync(candidate)) return candidate;
   }
-  throw new Error('tmc: scaffold templates not found');
+  throw new Error('tmac: scaffold templates not found');
 }
 
 /** Create a starter model and project directory. */
@@ -27,19 +27,19 @@ export function init(dir: string, options: { force?: boolean }): number {
     );
     return 1;
   }
-  mkdirSync(join(target, '.tmc', 'rules'), { recursive: true });
+  mkdirSync(join(target, '.tmac', 'rules'), { recursive: true });
   const scaffold = scaffoldDir();
   writeFileSync(modelPath, readFileSync(join(scaffold, 'threatmodel.yaml'), 'utf8'), 'utf8');
   writeFileSync(
-    join(target, '.tmc', 'README.md'),
-    readFileSync(join(scaffold, 'tmc-readme.md'), 'utf8'),
+    join(target, '.tmac', 'README.md'),
+    readFileSync(join(scaffold, 'tmac-readme.md'), 'utf8'),
     'utf8',
   );
 
   process.stdout.write(
     `${green('Created')} ${modelPath}\n` +
-      dim('  .tmc/rules/    drop *.rule.yaml here to add or replace rules\n') +
-      `\nNext: ${bold('tmc analyze')}\n`,
+      dim('  .tmac/rules/    drop *.rule.yaml here to add or replace rules\n') +
+      `\nNext: ${bold('tmac analyze')}\n`,
   );
   return 0;
 }
@@ -52,7 +52,7 @@ export function schema(options: { out?: string }): number {
     process.stdout.write(`${green('Wrote')} ${options.out}\n`);
     process.stdout.write(
       dim('  point your editor at it, for example in .vscode/settings.json:\n') +
-        dim('  "yaml.schemas": { "./tmc.schema.json": "threatmodel.yaml" }\n'),
+        dim('  "yaml.schemas": { "./tmac.schema.json": "threatmodel.yaml" }\n'),
     );
   } else {
     process.stdout.write(json);
@@ -104,7 +104,7 @@ export function explain(id: string, file: string | undefined): number {
 
   if (!rule) {
     process.stderr.write(red(`no rule with id "${ruleId}"\n`));
-    process.stderr.write(dim('  run "tmc rules list" to see them all\n'));
+    process.stderr.write(dim('  run "tmac rules list" to see them all\n'));
     return 1;
   }
 

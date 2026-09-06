@@ -1,6 +1,6 @@
 /**
- * `@tmc/importers` — read foreign threat model formats into a tmc model, and write
- * a tmc model back out as OTM or a CycloneDX threat model BOM.
+ * `tmac-importers` — read foreign threat model formats into a tmac model, and write
+ * a tmac model back out as OTM or a CycloneDX threat model BOM.
  *
  * Every importer returns the same shape: a model that passes `modelSchema`, an
  * optional layout sidecar (ADR 0003), and a list of warnings. Nothing is guessed
@@ -82,7 +82,7 @@ export function importAny(format: ImportFormat, data: unknown): ImportResult {
       return importOtm(data);
     default: {
       const exhaustive: never = format;
-      throw new Error(`tmc: unknown import format "${String(exhaustive)}"`);
+      throw new Error(`tmac: unknown import format "${String(exhaustive)}"`);
     }
   }
 }

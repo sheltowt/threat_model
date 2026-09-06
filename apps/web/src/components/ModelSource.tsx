@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Diagnostic } from '@tmc/core/browser';
+import type { Diagnostic } from 'tmac-core/browser';
 import { saveModel, type SaveTarget } from '../lib/save.js';
 
 interface Props {
@@ -8,7 +8,7 @@ interface Props {
   diagnostics: readonly Diagnostic[];
   elapsedMs: number;
   onChange: (text: string) => void;
-  /** Present only when `tmc serve --write` is hosting this page. */
+  /** Present only when `tmac serve --write` is hosting this page. */
   saveTo?: SaveTarget | undefined;
 }
 
@@ -100,7 +100,7 @@ export function ModelSource({ text, name, diagnostics, elapsedMs, onChange, save
             className="btn primary"
             onClick={() => void save()}
             disabled={saveState === 'saving' || errors > 0}
-            title={errors > 0 ? 'Fix the errors above before saving' : 'Write to the file tmc serve is editing'}
+            title={errors > 0 ? 'Fix the errors above before saving' : 'Write to the file tmac serve is editing'}
           >
             {saveState === 'saving' ? 'Saving…' : 'Save'}
           </button>

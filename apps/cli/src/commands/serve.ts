@@ -2,7 +2,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { createReadStream, existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { modelSchema } from '@tmc/core';
+import { modelSchema } from 'tmac-core';
 import { findModel } from '../context.js';
 import { bold, dim, green, red, yellow } from '../ui.js';
 
@@ -83,7 +83,7 @@ export async function serve(file: string | undefined, options: ServeOptions): Pr
   const modelPath = findModel(file);
   if (!existsSync(modelPath)) {
     process.stderr.write(
-      red(`no model at ${modelPath}\n`) + dim('  run "tmc init" to create one\n'),
+      red(`no model at ${modelPath}\n`) + dim('  run "tmac init" to create one\n'),
     );
     return 1;
   }
@@ -92,7 +92,7 @@ export async function serve(file: string | undefined, options: ServeOptions): Pr
   if (!webRoot) {
     process.stderr.write(
       red('the editor has not been built\n') +
-        dim('  run "npm run build --workspace @tmc/web" and try again\n'),
+        dim('  run "npm run build --workspace tmac-web" and try again\n'),
     );
     return 1;
   }
@@ -125,7 +125,7 @@ export async function serve(file: string | undefined, options: ServeOptions): Pr
     server.listen(port, options.host, () => {
       const url = `http://${options.host}:${port}/?model=/api/model`;
       process.stdout.write(
-        `${green('tmc')} editing ${bold(modelPath)}\n` +
+        `${green('tmac')} editing ${bold(modelPath)}\n` +
           `  ${url}\n` +
           (options.write
             ? dim('  saving from the editor is enabled\n')

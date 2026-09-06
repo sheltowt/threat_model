@@ -21,8 +21,8 @@ describe('evaluateModel', () => {
   it('agrees with what the CLI would report for the same file', async () => {
     // The editor exists to show the same answers, so this is the assertion that
     // matters most about it.
-    const { buildGraph, loadModel } = await import('@tmc/core');
-    const { analyze, loadRules } = await import('@tmc/rules');
+    const { buildGraph, loadModel } = await import('tmac-core');
+    const { analyze, loadRules } = await import('tmac-rules');
     const path = fileURLToPath(
       new URL('../../../examples/payment-service/threatmodel.yaml', import.meta.url),
     );
@@ -38,7 +38,7 @@ describe('evaluateModel', () => {
 
   it('reports diagnostics rather than throwing on a broken model', () => {
     // A half-typed model is the normal state of an editor and must not blank it.
-    const state = evaluateModel('typing.yaml', 'schema: tmc/1.0\nmeta:\n  titl');
+    const state = evaluateModel('typing.yaml', 'schema: tmac/1.0\nmeta:\n  titl');
     expect(state.ok).toBe(false);
     expect(state.diagnostics.length).toBeGreaterThan(0);
     expect(state.graph).toBeUndefined();
@@ -51,7 +51,7 @@ describe('evaluateModel', () => {
   });
 
   it('keeps the text even when it does not parse, so nothing is lost', () => {
-    const text = 'schema: tmc/1.0\nbroken';
+    const text = 'schema: tmac/1.0\nbroken';
     expect(evaluateModel('x.yaml', text).text).toBe(text);
   });
 

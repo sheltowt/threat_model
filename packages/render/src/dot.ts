@@ -1,5 +1,5 @@
 /**
- * Graphviz DOT generation for the two diagrams tmc draws: the data flow diagram and
+ * Graphviz DOT generation for the two diagrams tmac draws: the data flow diagram and
  * the data asset matrix.
  *
  * Everything a model author can write reaches the output through `escapeLabel`.
@@ -15,11 +15,11 @@ import type {
   ElementNode,
   FlowNode,
   ModelGraph,
-} from '@tmc/core';
+} from 'tmac-core';
 
 /**
- * The shape of a risk this package needs, kept structural so `@tmc/render` does not
- * depend on `@tmc/rules`. A `Risk` from the engine satisfies it.
+ * The shape of a risk this package needs, kept structural so `tmac-render` does not
+ * depend on `tmac-rules`. A `Risk` from the engine satisfies it.
  */
 export interface RenderRisk {
   id: string;

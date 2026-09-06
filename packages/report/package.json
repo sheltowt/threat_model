@@ -1,5 +1,5 @@
 {
-  "name": "@tmc/report",
+  "name": "tmac-report",
   "version": "0.1.0",
   "type": "module",
   "description": "Markdown, HTML, SARIF and JSON reporting",
@@ -27,8 +27,33 @@
     "build": "tsc --build"
   },
   "dependencies": {
-    "@tmc/core": "0.1.0",
-    "@tmc/rules": "0.1.0",
-    "@tmc/render": "0.1.0"
-  }
+    "tmac-core": "^0.1.0",
+    "tmac-rules": "^0.1.0",
+    "tmac-render": "^0.1.0"
+  },
+  "author": "B. Shelton",
+  "homepage": "https://github.com/sheltowt/threat_model#readme",
+  "bugs": {
+    "url": "https://github.com/sheltowt/threat_model/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sheltowt/threat_model.git",
+    "directory": "packages/report"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "tmac",
+    "threat-modeling",
+    "threat-model-as-code",
+    "threat-model",
+    "sarif",
+    "report"
+  ]
 }

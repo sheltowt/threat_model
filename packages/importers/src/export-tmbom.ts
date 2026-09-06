@@ -1,16 +1,16 @@
 /**
- * Export a tmc model as a CycloneDX 1.6 Threat Model BOM.
+ * Export a tmac model as a CycloneDX 1.6 Threat Model BOM.
  *
  * Elements become `components`, flows become `dependencies`, and each risk becomes
  * both a `vulnerability` (so existing CycloneDX tooling sees it) and an `annotation`
  * (so the reasoning survives, which the vulnerability record has no field for).
  *
  * The risk parameter is loosely typed on purpose: this package must not depend on
- * `@tmc/rules`, and callers pass either engine risks or hand-written entries.
+ * `tmac-rules`, and callers pass either engine risks or hand-written entries.
  */
 
 import { createHash } from 'node:crypto';
-import type { Model } from '@tmc/core';
+import type { Model } from 'tmac-core';
 
 export interface RiskLike {
   id?: string;
@@ -98,26 +98,26 @@ export function exportTmbom(
     ...(element.description === undefined ? {} : { description: element.description }),
     scope: element.out_of_scope ? 'excluded' : 'required',
     properties: properties([
-      ['tmc:kind', element.kind],
-      ['tmc:technology', element.technology],
-      ['tmc:size', element.size],
-      ['tmc:machine', element.machine],
-      ['tmc:usage', element.usage],
-      ['tmc:internet_facing', element.internet_facing],
-      ['tmc:human', element.human],
-      ['tmc:custom_code', element.custom_code],
-      ['tmc:multi_tenant', element.multi_tenant],
-      ['tmc:encryption', element.encryption],
-      ['tmc:owner', element.owner],
-      ['tmc:confidentiality', element.confidentiality],
-      ['tmc:integrity', element.integrity],
-      ['tmc:availability', element.availability],
-      ['tmc:trust_boundary', boundaryOf.get(id)],
-      ['tmc:processes', element.processes],
-      ['tmc:stores', element.stores],
-      ['tmc:tags', element.tags],
+      ['tmac:kind', element.kind],
+      ['tmac:technology', element.technology],
+      ['tmac:size', element.size],
+      ['tmac:machine', element.machine],
+      ['tmac:usage', element.usage],
+      ['tmac:internet_facing', element.internet_facing],
+      ['tmac:human', element.human],
+      ['tmac:custom_code', element.custom_code],
+      ['tmac:multi_tenant', element.multi_tenant],
+      ['tmac:encryption', element.encryption],
+      ['tmac:owner', element.owner],
+      ['tmac:confidentiality', element.confidentiality],
+      ['tmac:integrity', element.integrity],
+      ['tmac:availability', element.availability],
+      ['tmac:trust_boundary', boundaryOf.get(id)],
+      ['tmac:processes', element.processes],
+      ['tmac:stores', element.stores],
+      ['tmac:tags', element.tags],
       ...Object.entries(element.controls ?? {}).map(
-        ([control, value]) => [`tmc:control:${control}`, value] as [string, unknown],
+        ([control, value]) => [`tmac:control:${control}`, value] as [string, unknown],
       ),
     ]),
   }));
@@ -131,15 +131,15 @@ export function exportTmbom(
       ...(asset.description === undefined ? {} : { description: asset.description }),
       scope: 'required',
       properties: properties([
-        ['tmc:classification', asset.classification],
-        ['tmc:integrity', asset.integrity],
-        ['tmc:availability', asset.availability],
-        ['tmc:quantity', asset.quantity],
-        ['tmc:pii', asset.pii],
-        ['tmc:credentials', asset.credentials],
-        ['tmc:regulations', asset.regulations],
-        ['tmc:owner', asset.owner],
-        ['tmc:tags', asset.tags],
+        ['tmac:classification', asset.classification],
+        ['tmac:integrity', asset.integrity],
+        ['tmac:availability', asset.availability],
+        ['tmac:quantity', asset.quantity],
+        ['tmac:pii', asset.pii],
+        ['tmac:credentials', asset.credentials],
+        ['tmac:regulations', asset.regulations],
+        ['tmac:owner', asset.owner],
+        ['tmac:tags', asset.tags],
       ]),
     });
   }
@@ -172,14 +172,14 @@ export function exportTmbom(
   ];
 
   const vulnerabilities = allRisks.map((risk, index) => {
-    const id = String(risk.id ?? `tmc-risk-${index + 1}`);
+    const id = String(risk.id ?? `tmac-risk-${index + 1}`);
     const severity = SEVERITY_MAP[String(risk.severity ?? 'medium').toLowerCase()] ?? 'unknown';
     const cwe = Number(risk.cwe);
     const subject = risk.element ?? risk.flow;
     return {
       'bom-ref': `vuln:${id}`,
       id,
-      source: { name: 'tmc' },
+      source: { name: 'tmac' },
       ratings: [{ severity, method: 'other' }],
       ...(Number.isInteger(cwe) && cwe > 0 ? { cwes: [cwe] } : {}),
       ...(risk.title === undefined ? {} : { description: risk.title }),
@@ -187,10 +187,10 @@ export function exportTmbom(
       ...(risk.mitigation === undefined ? {} : { recommendation: risk.mitigation }),
       ...(subject === undefined ? {} : { affects: [{ ref: subject }] }),
       properties: properties([
-        ['tmc:severity', risk.severity],
-        ['tmc:flow', risk.flow],
-        ['tmc:element', risk.element],
-        ['tmc:source', risk['source']],
+        ['tmac:severity', risk.severity],
+        ['tmac:flow', risk.flow],
+        ['tmac:element', risk.element],
+        ['tmac:source', risk['source']],
       ]),
     };
   });
@@ -200,7 +200,7 @@ export function exportTmbom(
   const annotations = Object.entries(model.risk_tracking ?? {}).map(([riskId, tracking]) => ({
     'bom-ref': `annotation:${riskId}`,
     subjects: [`vuln:${riskId}`],
-    annotator: { organization: { name: 'tmc' } },
+    annotator: { organization: { name: 'tmac' } },
     timestamp: tracking.date ?? timestamp,
     text: [
       `status: ${tracking.status}`,
@@ -223,14 +223,14 @@ export function exportTmbom(
         components: [
           {
             type: 'application',
-            name: 'tmc',
+            name: 'tmac',
             ...(options.toolVersion === undefined ? {} : { version: options.toolVersion }),
           },
         ],
       },
       component: {
         type: 'application',
-        'bom-ref': 'tmc:model',
+        'bom-ref': 'tmac:model',
         name: model.meta.title,
         ...(model.meta.description === undefined ? {} : { description: model.meta.description }),
         ...(model.meta.version === undefined ? {} : { version: String(model.meta.version) }),
@@ -239,9 +239,9 @@ export function exportTmbom(
         ? {}
         : { authors: [{ name: model.meta.author }] }),
       properties: properties([
-        ['tmc:business_criticality', model.meta.business_criticality],
-        ['tmc:owner', model.meta.owner],
-        ['tmc:date', model.meta.date],
+        ['tmac:business_criticality', model.meta.business_criticality],
+        ['tmac:owner', model.meta.owner],
+        ['tmac:date', model.meta.date],
       ]),
     },
     components,

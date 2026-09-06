@@ -1,6 +1,6 @@
 # Threat Modeling Tool: Implementation Plan
 
-Working name: **tmc** ("threat model as code"). This plan synthesises what works in
+Working name: **tmac** ("threat model as code"). This plan synthesises what works in
 OWASP Threat Dragon, OWASP pytm and Threagile, and what each gets wrong, into a
 single design and a phased build order.
 
@@ -43,7 +43,7 @@ language for the editor, which is what left Threagile without a usable GUI.
 | `packages/render` | DOT generation, ELK auto-layout, SVG | `elkjs`, `@viz-js/viz` |
 | `packages/report` | Markdown, HTML, SARIF, JSON, PDF | Handlebars templates, Playwright or `pdf-lib` for PDF |
 | `packages/importers` | Threat Dragon v2, pytm JSON, Threagile YAML, OTM | none beyond core |
-| `apps/cli` | `tmc` command | `commander` |
+| `apps/cli` | `tmac` command | `commander` |
 | `apps/web` | Editor and viewer, deployable as static site | React, React Flow, TanStack Query |
 | `apps/server` | Optional OAuth proxy for GitHub/GitLab (Threat Dragon pattern) | Hono |
 
@@ -58,7 +58,7 @@ already precise, pytm's control flags where Threagile has none, and Threat Drago
 element types for GUI familiarity.
 
 ```yaml
-schema: tmc/1.0
+schema: tmac/1.0
 meta:
   title: Payment Service
   owner: platform-security
@@ -217,7 +217,7 @@ Engine behaviour:
   `unnecessary-data-transfer@*` are supported.
 - **Relative Attacker Attractiveness** (Threagile's RAA) is computed per element and
   shown in reports to prioritise.
-- Custom rules: any `*.rule.yaml` under `.tmc/rules/` in the repo is loaded. No
+- Custom rules: any `*.rule.yaml` under `.tmac/rules/` in the repo is loaded. No
   plugins, no code execution.
 
 Initial library: port all 42 Threagile built-ins (they cover architecture-level
@@ -228,23 +228,23 @@ set). Every rule ships with a positive and negative fixture model.
 ## 5. CLI
 
 ```
-tmc init                      # scaffold threatmodel.yaml + example + .tmc/ dir
-tmc validate [file]           # schema + referential integrity, exit 1 on error
-tmc analyze [file]            # run rules; writes risks.json, report, diagrams
+tmac init                      # scaffold threatmodel.yaml + example + .tmac/ dir
+tmac validate [file]           # schema + referential integrity, exit 1 on error
+tmac analyze [file]            # run rules; writes risks.json, report, diagrams
     --format json|sarif|md|html|pdf
     --fail-on high            # CI gate on unresolved severity
     --allow-orphaned-tracking
-tmc diff <old> <new>          # semantic diff: elements, flows, boundaries, risks added/removed/changed
-tmc diagram [file] --out dfd.svg --layout elk|dot
-tmc explain <rule-id>         # print rule metadata and detection logic
-tmc rules list
-tmc import --from threat-dragon|pytm|threagile|otm <file>
-tmc export --to tm-bom|otm
-tmc track seed                # write unchecked entries for every open risk (Threagile macro)
-tmc serve                     # local editor on http://localhost:7300 for this file
+tmac diff <old> <new>          # semantic diff: elements, flows, boundaries, risks added/removed/changed
+tmac diagram [file] --out dfd.svg --layout elk|dot
+tmac explain <rule-id>         # print rule metadata and detection logic
+tmac rules list
+tmac import --from threat-dragon|pytm|threagile|otm <file>
+tmac export --to tm-bom|otm
+tmac track seed                # write unchecked entries for every open risk (Threagile macro)
+tmac serve                     # local editor on http://localhost:7300 for this file
 ```
 
-Output layout (`tmc analyze --out ./tm-out`): `risks.json`, `risks.sarif`,
+Output layout (`tmac analyze --out ./tm-out`): `risks.json`, `risks.sarif`,
 `report.md`, `report.html`, `dfd.svg`, `data-assets.svg`, `stats.json`.
 
 SARIF lets GitHub code scanning surface risks on PRs with zero extra integration.
@@ -252,7 +252,7 @@ SARIF lets GitHub code scanning surface risks on PRs with zero extra integration
 ## 6. Web editor
 
 Built last, on top of a stable core, and shipped as a static site plus an embedded
-`tmc serve` mode.
+`tmac serve` mode.
 
 - React Flow canvas with the four Threat Dragon shapes plus boundary boxes. Edits
   write back to the YAML through the core (never to a private JSON), so GUI and CLI
@@ -265,11 +265,11 @@ Built last, on top of a stable core, and shipped as a static site plus an embedd
 - Git providers copied from Threat Dragon: GitHub, GitLab, Bitbucket via a stateless
   OAuth proxy that never stores models. Scope requests to a single repo where the
   provider allows it, addressing the "full repo access" criticism.
-- Desktop packaging (Tauri) is deferred; the CLI plus `tmc serve` covers offline use.
+- Desktop packaging (Tauri) is deferred; the CLI plus `tmac serve` covers offline use.
 
 ## 7. Reporting
 
-- Markdown and HTML from Handlebars templates in `.tmc/templates/`, so teams can
+- Markdown and HTML from Handlebars templates in `.tmac/templates/`, so teams can
   restyle (pytm's template idea, but with a mainstream engine).
 - Toggles from Threat Dragon: show mitigated, show out of scope, show empty
   elements, include element properties.
@@ -289,8 +289,8 @@ Built last, on top of a stable core, and shipped as a static site plus an embedd
 - CI: lint, typecheck, unit, e2e, CodeQL, SHA-pinned Actions, dependency cooldown,
   CycloneDX SBOM per release, Trivy on the container, signed tags, release
   candidates before every minor (Threat Dragon's contract).
-- Docker image `tmc` with graphviz and Chromium pinned, usable as
-  `docker run -v $PWD:/work tmc analyze /work/threatmodel.yaml`.
+- Docker image `tmac` with graphviz and Chromium pinned, usable as
+  `docker run -v $PWD:/work tmac analyze /work/threatmodel.yaml`.
 - `SECURITY.md`, `CODEOWNERS`, ADRs under `docs/adr/`.
 
 ## 9. Phased delivery
@@ -304,7 +304,7 @@ Built last, on top of a stable core, and shipped as a static site plus an embedd
 | 4 Rule library | 3 | Remaining Threagile rules, pytm control-based rules, LINDDUN privacy rules driven by `pii`, technology catalogue complete | 60+ rules, each with fixtures and `explain` text |
 | 5 Interop | 2 | Importers for Threat Dragon v2, pytm JSON, Threagile YAML, OTM; TM-BOM and OTM export | Round-trip tests pass on each project's own demo model |
 | 6 Editor (viewer) | 3 | Static web app: load file, render diagram, risk list, report | Shared model viewable from a URL |
-| 7 Editor (authoring) | 4 | React Flow editing, schema-driven property panels, YAML write-back, layout sidecar, `tmc serve` | Model edited in GUI round-trips through CLI unchanged |
+| 7 Editor (authoring) | 4 | React Flow editing, schema-driven property panels, YAML write-back, layout sidecar, `tmac serve` | Model edited in GUI round-trips through CLI unchanged |
 | 8 Providers and release | 3 | OAuth proxy, GitHub/GitLab/Bitbucket save, PDF, Docker, 1.0 RC | RC cycle complete, SBOM and signed release published |
 
 Roughly six months for one to two engineers. Phases 1 to 5 deliver a CI-usable

@@ -1,9 +1,9 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
-import { SEVERITY, type Severity } from '@tmc/core';
-import { analyze as runAnalysis, atLeastSeverity, isOpen, type Analysis } from '@tmc/rules';
-import { dataAssetDot, dataFlowDot, renderSvg } from '@tmc/render';
-import { risksJson, statsJson, technicalAssetsJson, toHtml, toMarkdown, toSarif } from '@tmc/report';
+import { SEVERITY, type Severity } from 'tmac-core';
+import { analyze as runAnalysis, atLeastSeverity, isOpen, type Analysis } from 'tmac-rules';
+import { dataAssetDot, dataFlowDot, renderSvg } from 'tmac-render';
+import { risksJson, statsJson, technicalAssetsJson, toHtml, toMarkdown, toSarif } from 'tmac-report';
 import { open, findModel } from '../context.js';
 import { bold, dim, green, magenta, plural, red, severityColor, table, yellow } from '../ui.js';
 
@@ -55,7 +55,7 @@ function printSummary(analysis: Analysis, file: string): void {
       `\n${yellow(bold(`${plural(lowConfidence, 'finding')} could not be settled`))}\n` +
         dim(
           '  These are model gaps, not confirmed flaws. Record the missing controls\n' +
-            `  and they will either resolve or become confirmed. Run: tmc explain <id>\n`,
+            `  and they will either resolve or become confirmed. Run: tmac explain <id>\n`,
         ),
     );
   }

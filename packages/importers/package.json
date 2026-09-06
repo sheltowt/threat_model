@@ -1,5 +1,5 @@
 {
-  "name": "@tmc/importers",
+  "name": "tmac-importers",
   "version": "0.1.0",
   "type": "module",
   "description": "Importers and exporters for foreign threat model formats",
@@ -12,9 +12,44 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist", "data", "rules", "templates"],
+  "files": [
+    "dist",
+    "data",
+    "rules",
+    "templates"
+  ],
   "scripts": {
     "build": "tsc --build"
   },
-  "dependencies": { "@tmc/core": "0.1.0", "yaml": "^2.9.0" }
+  "dependencies": {
+    "tmac-core": "^0.1.0",
+    "yaml": "^2.9.0"
+  },
+  "author": "B. Shelton",
+  "homepage": "https://github.com/sheltowt/threat_model#readme",
+  "bugs": {
+    "url": "https://github.com/sheltowt/threat_model/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sheltowt/threat_model.git",
+    "directory": "packages/importers"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "tmac",
+    "threat-modeling",
+    "threat-model-as-code",
+    "threat-model",
+    "threat-dragon",
+    "pytm",
+    "threagile",
+    "otm"
+  ]
 }

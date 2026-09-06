@@ -7,8 +7,8 @@
  * All of that lives here once.
  */
 
-import { isResolved, SEVERITY, type ModelGraph, type Severity } from '@tmc/core/browser';
-import type { Analysis, Risk } from '@tmc/rules/browser';
+import { isResolved, SEVERITY, type ModelGraph, type Severity } from 'tmac-core/browser';
+import type { Analysis, Risk } from 'tmac-rules/browser';
 import { isOpenRisk } from './json.js';
 
 export interface DiagramSet {

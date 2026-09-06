@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parse as parseYaml } from 'yaml';
-import { buildGraph, builtinCatalog, modelSchema, type Model } from '@tmc/core';
-import { analyze, loadRules } from '@tmc/rules';
+import { buildGraph, builtinCatalog, modelSchema, type Model } from 'tmac-core';
+import { analyze, loadRules } from 'tmac-rules';
 import {
   detectFormat,
   exportOtm,
@@ -15,7 +15,7 @@ import {
   importThreatDragon,
   slugify,
   type ImportResult,
-} from '@tmc/importers';
+} from 'tmac-importers';
 
 const fixture = (name: string) =>
   parseYaml(readFileSync(fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url)), 'utf8'));

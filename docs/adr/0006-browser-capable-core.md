@@ -37,22 +37,22 @@ pull request. `npm run generate:check` fails CI if the two have diverged.
 
 | entry | contains |
 |---|---|
-| `@tmc/core` | everything, including `loadModel` and `loadCatalog` |
-| `@tmc/core/browser` | schema, enums, catalogue, graph, diff, ids, JSON Schema, and `parseModelText` |
-| `@tmc/rules` | everything, including `loadRules` from a directory |
-| `@tmc/rules/browser` | evaluator, engine, severity, and the compiled-in library |
+| `tmac-core` | everything, including `loadModel` and `loadCatalog` |
+| `tmac-core/browser` | schema, enums, catalogue, graph, diff, ids, JSON Schema, and `parseModelText` |
+| `tmac-rules` | everything, including `loadRules` from a directory |
+| `tmac-rules/browser` | evaluator, engine, severity, and the compiled-in library |
 
 Validation moved out of `load.ts` into `parse.ts`, which has no filesystem
 dependency. `load.ts` is now only file reading and include resolution, and delegates.
-`@tmc/rules` depends on `@tmc/core/browser` throughout, because an engine has no
+`tmac-rules` depends on `tmac-core/browser` throughout, because an engine has no
 business reading files.
 
 ## Enforcement
 
-`packages/core/test/browser.test.ts` and the equivalent in `@tmc/rules` walk the
+`packages/core/test/browser.test.ts` and the equivalent in `tmac-rules` walk the
 import graph of the built browser entry and fail on any `node:` specifier reachable
 from it. This caught two real leaks while the split was being made: a value import of
-`builtinCatalog` from the filesystem module, and every `@tmc/core` import inside the
+`builtinCatalog` from the filesystem module, and every `tmac-core` import inside the
 rules package.
 
 A second test asserts the compiled-in rule library is identical to what the

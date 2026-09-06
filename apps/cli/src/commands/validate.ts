@@ -1,5 +1,5 @@
-import { ModelError, formatDiagnostic, validateModel, type Diagnostic } from '@tmc/core';
-import { loadRules } from '@tmc/rules';
+import { ModelError, formatDiagnostic, validateModel, type Diagnostic } from 'tmac-core';
+import { loadRules } from 'tmac-rules';
 import { resolve } from 'node:path';
 import { findModel, projectDir } from '../context.js';
 import { bold, dim, green, plural, red, yellow } from '../ui.js';

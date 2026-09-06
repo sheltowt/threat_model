@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildGraph, builtinCatalog, parseModelText, tryParseModelText } from '@tmc/core/browser';
+import { buildGraph, builtinCatalog, parseModelText, tryParseModelText } from 'tmac-core/browser';
 
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 
@@ -60,7 +60,7 @@ describe('parsing without a filesystem', () => {
   const catalog = builtinCatalog();
 
   const MODEL = `
-schema: tmc/1.0
+schema: tmac/1.0
 meta:
   title: In memory
 data_assets:
@@ -104,7 +104,7 @@ flows:
   });
 
   it('reports diagnostics instead of throwing when asked not to throw', () => {
-    const result = tryParseModelText('schema: tmc/1.0\nmeta: {}\n', catalog, { source: 'pasted' });
+    const result = tryParseModelText('schema: tmac/1.0\nmeta: {}\n', catalog, { source: 'pasted' });
     expect(result.ok).toBe(false);
     expect(result.diagnostics.length).toBeGreaterThan(0);
     expect(result.model).toBeUndefined();
@@ -112,7 +112,7 @@ flows:
 
   it('names an unknown technology and suggests the near miss', () => {
     const result = tryParseModelText(
-      'schema: tmc/1.0\nmeta:\n  title: t\nelements:\n  a:\n    technology: databse\n',
+      'schema: tmac/1.0\nmeta:\n  title: t\nelements:\n  a:\n    technology: databse\n',
       catalog,
     );
     expect(result.ok).toBe(false);

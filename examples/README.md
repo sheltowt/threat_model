@@ -34,4 +34,4 @@ worth reading as a worked reference:
 The settlement batch is the most instructive element. It reads tokens over an
 unencrypted database protocol and records nothing about parameterised queries, so it
 draws both a confirmed transport finding and an uncertain injection finding. Compare
-`tmc explain` on the two.
+`tmac explain` on the two.
