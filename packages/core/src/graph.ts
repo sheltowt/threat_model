@@ -1,4 +1,4 @@
-import type { Catalog, ProtocolEntry, TechnologyEntry } from './catalog.js';
+import type { Catalog, ProtocolEntry, TechnologyEntry } from './catalog-core.js';
 import {
   CONFIDENTIALITY,
   CRITICALITY,

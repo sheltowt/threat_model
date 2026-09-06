@@ -1,4 +1,4 @@
-import { comparableEnum, rankOf } from '@tmc/core';
+import { comparableEnum, rankOf } from '@tmc/core/browser';
 import type { MacroName, Node } from './ast.js';
 
 /**

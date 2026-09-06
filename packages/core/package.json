@@ -10,11 +10,24 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
+    },
+    "./package.json": "./package.json"
   },
-  "files": ["dist", "data", "rules", "templates"],
+  "files": [
+    "dist",
+    "data",
+    "rules",
+    "templates"
+  ],
   "scripts": {
     "build": "tsc --build"
   },
-  "dependencies": { "yaml": "^2.9.0", "zod": "^4.5.4" }
+  "dependencies": {
+    "yaml": "^2.9.0",
+    "zod": "^4.5.4"
+  }
 }

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { modelSchema } from './schema.js';
-import { builtinCatalog } from './catalog.js';
+import { builtinCatalog } from './catalog-core.js';
 
 /**
  * Emit the JSON Schema that editors use for completion and inline validation.

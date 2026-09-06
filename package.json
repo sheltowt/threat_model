@@ -13,7 +13,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsc --build",
+    "build": "npm run generate && tsc --build",
     "clean": "tsc --build --clean",
     "typecheck": "tsc --build --dry 2>/dev/null || tsc --build",
     "test": "vitest run",
@@ -22,7 +22,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "tmc": "node --experimental-strip-types apps/cli/src/index.ts"
+    "tmc": "node --experimental-strip-types apps/cli/src/index.ts",
+    "generate": "node scripts/generate-data.mjs",
+    "generate:check": "node scripts/generate-data.mjs --check"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

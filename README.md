@@ -239,6 +239,7 @@ Decisions and why:
 - [ADR 0003: layout lives outside the model](docs/adr/0003-layout-sidecar.md)
 - [ADR 0004: a flat element taxonomy](docs/adr/0004-flat-element-taxonomy.md)
 - [ADR 0005: synthetic ids and risk tracking](docs/adr/0005-synthetic-ids-and-tracking.md)
+- [ADR 0006: a browser-capable core](docs/adr/0006-browser-capable-core.md)
 
 ## Status
 
