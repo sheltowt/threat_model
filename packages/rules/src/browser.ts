@@ -8,3 +8,4 @@ export * from './risk.js';
 export * from './severity.js';
 export * from './engine.js';
 export * from './builtin.js';
+export * from './questions.js';

@@ -51,6 +51,15 @@ That is a different sentence from "you have a SQL injection flaw", and it is the
 sentence the model actually supports. Record the control and the finding either
 resolves or becomes confirmed.
 
+`tmac questions` turns every such gap into one ranked list, so a young model reads as
+a worklist rather than a wall:
+
+```
+WORST     WAITING  RECORD THIS                                FOR
+elevated  2        token_store.controls.authenticates_source  missing-mutual-authentication
+elevated  1        payment_api.controls.hardened              missing-hardening
+```
+
 ## The model
 
 ```yaml
@@ -185,6 +194,7 @@ quietly describing a risk that no longer exists.
 | `tmac track seed` | write tracking entries for every open risk |
 | `tmac import --from threat-dragon model.json` | convert from another tool |
 | `tmac export --to tm-bom` | CycloneDX threat model BOM, or OTM |
+| `tmac questions` | what the model does not record, worst first |
 | `tmac serve --write` | open the editor against the local file, and save back to it |
 | `tmac schema -o tmac.schema.json` | JSON Schema for editor completion |
 
