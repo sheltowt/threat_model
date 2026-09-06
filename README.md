@@ -275,7 +275,7 @@ Decisions and why:
 
 ## Status
 
-Early but working end to end. 53 built-in rules, 308 tests.
+Early but working end to end. 59 built-in rules, 350 tests.
 
 Built and tested: the model format, the rule format and engine, the reporters, the
 importers, the CLI, and a browser editor that reads, analyses and saves a model.

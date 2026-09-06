@@ -1,0 +1,56 @@
+id: missing-audit-log
+title: Security-relevant actions are not logged
+stride: repudiation
+cwe: 778
+capec: [CAPEC-81, CAPEC-93]
+asvs: V7.1.3
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+function: development
+
+description: >
+  An asset that changes data other people rely on keeps no record of who changed it.
+  Nobody can show afterwards what happened, which blocks an investigation and lets a
+  participant deny an action they took.
+
+detection_logic: >
+  An in-scope, non-human, non-client element that runs code of our own and holds or
+  handles data rated critical or better for integrity, and does not record the
+  logs_security_events control. Elements whose technology exists to observe others,
+  such as monitoring and intrusion detection, are skipped: they are the log.
+
+risk_assessment: >
+  Likelihood is Likely rather than higher, because this is not an attack someone
+  mounts; it is a gap discovered at the worst possible moment. Impact follows the
+  integrity rating of what the asset holds, because that is what nobody will be able
+  to reconstruct.
+
+false_positives: >
+  Assets whose platform logs every mutation underneath them, such as a managed
+  database with audit logging switched on at the service level, and read-only
+  components that change nothing worth attributing. Record logs_security_events with
+  a pointer to where the log actually lands.
+
+mitigation: >
+  Log the actor, the action, the subject and the time for every state change, to a
+  destination the acting asset cannot rewrite. Log the decision, not just the
+  request: "denied, insufficient scope" is worth more later than the bare call.
+action: Emit a structured audit event for every state change this asset makes.
+check: Perform a state-changing action and find it, attributed, in the log store.
+
+scope: element
+match: |
+  !el.human
+  && !el.technology.client
+  && !el.technology.monitoring
+  && !el.technology.ids
+  && el.custom_code
+  && el.integrity >= 'critical'
+  && !el.controls.logs_security_events
+
+likelihood: likely
+impact: |
+  el.integrity >= 'mission-critical' ? 'high' : 'medium'
+
+data_breach_probability: improbable
+risk_title: "{{ el.name }} changes critical data without an audit trail"
+tags: [logging, accountability]

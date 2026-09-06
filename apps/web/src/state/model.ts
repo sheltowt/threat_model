@@ -1,3 +1,4 @@
+import exampleUrl from '../../../../examples/payment-service/threatmodel.yaml?url';
 import {
   buildGraph,
   builtinCatalog,
@@ -84,9 +85,15 @@ export function evaluateModel(name: string, text: string): ModelState {
   };
 }
 
-/** The example that ships with the app, so a first visit shows something real. */
+/**
+ * The example that ships with the app, so a first visit shows something real.
+ *
+ * Imported from the repository's one copy rather than a duplicate kept beside the
+ * app. There used to be a duplicate; it drifted the first time the example changed,
+ * and a test caught it. One file is better than two files and a reminder.
+ */
 export async function loadExample(): Promise<{ name: string; text: string }> {
-  const response = await fetch(new URL('../example.yaml', import.meta.url));
+  const response = await fetch(exampleUrl);
   if (!response.ok) throw new Error(`could not load the example: ${response.status}`);
   return { name: 'payment-service (example)', text: await response.text() };
 }

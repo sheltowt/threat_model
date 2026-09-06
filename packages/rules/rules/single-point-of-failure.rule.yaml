@@ -1,0 +1,54 @@
+id: single-point-of-failure
+title: Availability-critical asset with no redundancy
+stride: denial-of-service
+cwe: 1188
+capec: [CAPEC-607]
+asvs: V1.1.5
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html
+function: operations
+
+description: >
+  Something the system is rated as needing is recorded as having no redundancy, so a
+  single failure of one asset stops the service. An attacker does not have to break
+  it, only to keep it busy.
+
+detection_logic: >
+  An in-scope, non-human, non-client element rated critical or better for
+  availability that does not record the redundant control. Load balancers and
+  gateways are included deliberately: a single load balancer in front of a redundant
+  fleet is the classic version of this.
+
+risk_assessment: >
+  Likelihood rises to Very Likely when the asset is reachable from the internet,
+  because then anyone can apply the load. Impact follows the availability rating,
+  which is the model's own statement of what an outage costs.
+
+false_positives: >
+  Assets whose platform provides redundancy invisibly, such as a managed queue or a
+  serverless function across zones. That is still redundancy: record it as
+  redundant: true, with a note about what the provider guarantees, because the next
+  reader cannot tell from the technology alone.
+
+mitigation: >
+  Run more than one instance across more than one failure domain, and check that a
+  failover actually happens rather than assuming it. Where redundancy is genuinely
+  not affordable, lower the availability rating so the model stops claiming the
+  service needs something it does not have.
+action: Add a second instance in another failure domain, or correct the rating.
+check: Remove one instance in a rehearsal and confirm the service survives.
+
+scope: element
+match: |
+  !el.human
+  && !el.technology.client
+  && el.availability >= 'critical'
+  && !el.controls.redundant
+
+likelihood: |
+  el.internet_reachable ? 'very-likely' : 'likely'
+impact: |
+  el.availability >= 'mission-critical' ? 'high' : 'medium'
+
+data_breach_probability: improbable
+risk_title: "{{ el.name }} is availability-critical with no recorded redundancy"
+tags: [availability, resilience]

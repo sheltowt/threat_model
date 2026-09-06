@@ -10,16 +10,16 @@ Card-present checkout API for the storefront, plus its settlement batch.
 | Model date | 2026-09-06 |
 | Model version | 3 |
 | Generated | 2026-09-06T12:00:00Z |
-| Rules run | 53 (0 skipped) |
+| Rules run | 59 (0 skipped) |
 | Scope | 7 of 8 elements, 7 flows, 4 trust boundaries, 5 data assets |
 
 ## Management summary
 
 The payment service accepts card data from the storefront, tokenises it through the processor, and stores only tokens. The open questions are whether the settlement batch needs the full pan and who owns key rotation.
 
-The analysis found **31 risks** across 8 elements and 7 flows, of which **31 remain open**, the worst at **high** severity. 0 have been dealt with and 0 are suppressed by a recorded assumption.
+The analysis found **37 risks** across 8 elements and 7 flows, of which **37 remain open**, the worst at **high** severity. 0 have been dealt with and 0 are suppressed by a recorded assumption.
 
-11 of these are low-confidence findings, meaning the rule could not settle its condition because the model does not record the control it asks about. They are model gaps first and risks second — see [Low-confidence findings](#low-confidence-findings).
+16 of these are low-confidence findings, meaning the rule could not settle its condition because the model does not record the control it asks about. They are model gaps first and risks second — see [Low-confidence findings](#low-confidence-findings).
 
 ## Severity summary
 
@@ -27,10 +27,10 @@ The analysis found **31 risks** across 8 elements and 7 flows, of which **31 rem
 | --- | --- | --- | --- | --- | --- |
 | 🟥 critical | 0 | 0 | 0 | 0 | 0 |
 | 🟧 high | 5 | 5 | 0 | 0 | 2 |
-| 🟨 elevated | 20 | 20 | 0 | 0 | 8 |
+| 🟨 elevated | 26 | 26 | 0 | 0 | 13 |
 | 🟦 medium | 6 | 6 | 0 | 0 | 1 |
 | ⬜ low | 0 | 0 | 0 | 0 | 0 |
-| **Total** | 31 | 31 | 0 | 0 | 11 |
+| **Total** | 37 | 37 | 0 | 0 | 16 |
 
 ## Attention first
 
@@ -192,16 +192,19 @@ A general-purpose asset is published directly to the internet. Everything it exp
 
 </details>
 
-### 🟨 elevated (20)
+### 🟨 elevated (26)
 
 | ID | Title | Subject | STRIDE | CWE | Status | Confidence |
 | --- | --- | --- | --- | --- | --- | --- |
+| `availability-dependency-inversion@payment_api` | Payment API depends on something rated less available than itself | Payment API (element) | denial-of-service | CWE-1188 | unchecked | high |
 | `clickjacking@storefront` | Storefront web app can be framed by another origin | Storefront web app (element) | tampering | CWE-1021 | unchecked | high |
 | `container-baseimage-backdooring@payment_api` | Payment API runs a container image with no recorded provenance check | Payment API (element) | tampering | CWE-1357 | unchecked | low |
 | `container-baseimage-backdooring@storefront` | Storefront web app runs a container image with no recorded provenance check | Storefront web app (element) | tampering | CWE-1357 | unchecked | low |
 | `dos-risky-access-across-trust-boundary@ops_to_api` | Payment API accepts unthrottled traffic over ops_to_api | Operator access (flow) | denial-of-service | CWE-770 | unchecked | low |
 | `dos-risky-access-across-trust-boundary@storefront_to_api` | Payment API accepts unthrottled traffic over storefront_to_api | Tokenise (flow) | denial-of-service | CWE-770 | unchecked | low |
 | `excessive-pii-collection@payment_api` | Payment API aggregates several categories of personal data | Payment API (element) | information-disclosure | CWE-359 | unchecked | high |
+| `missing-audit-log@settlement_batch` | Nightly settlement batch changes critical data without an audit trail | Nightly settlement batch (element) | repudiation | CWE-778 | unchecked | low |
+| `missing-audit-log@storefront` | Storefront web app changes critical data without an audit trail | Storefront web app (element) | repudiation | CWE-778 | unchecked | low |
 | `missing-cloud-hardening@vpc` | Production VPC has no recorded cloud hardening baseline | Production VPC (boundary) | elevation-of-privilege | CWE-1188 | unchecked | low |
 | `missing-consent-record@card_data` | Personal data card_data has no recorded origin | card_data (data) | repudiation | CWE-359 | unchecked | high |
 | `missing-consent-record@customer_profile` | Personal data customer_profile has no recorded origin | customer_profile (data) | repudiation | CWE-359 | unchecked | high |
@@ -212,10 +215,33 @@ A general-purpose asset is published directly to the internet. Everything it exp
 | `missing-waf@storefront` | Storefront web app faces the internet with no web application firewall in front | Storefront web app (element) | tampering | CWE-693 | unchecked | high |
 | `pii-crossing-untrusted-boundary@api_to_processor` | api_to_processor carries personal data to Card processor outside the estate | Processor tokenisation (flow) | information-disclosure | CWE-359 | unchecked | high |
 | `pii-retention-unbounded@customer_profile` | Personal data customer_profile is stored in volume with no owner | customer_profile (data) | information-disclosure | CWE-359 | unchecked | high |
+| `single-point-of-failure@settlement_batch` | Nightly settlement batch is availability-critical with no recorded redundancy | Nightly settlement batch (element) | denial-of-service | CWE-1188 | unchecked | low |
 | `sql-nosql-injection@batch_to_token_store` | Nightly settlement batch may build injectable queries against Token store | Nightly read (flow) | tampering | CWE-89 | unchecked | low |
+| `unbounded-input-size@storefront` | Storefront web app parses attacker-sized input with no recorded bound | Storefront web app (element) | denial-of-service | CWE-400 | unchecked | low |
 | `unencrypted-communication@api_to_token_store` | Unencrypted sql-access-protocol link from Payment API to Token store | Token persistence (flow) | information-disclosure | CWE-319 | unchecked | high |
 | `unencrypted-communication@batch_to_token_store` | Unencrypted sql-access-protocol link from Nightly settlement batch to Token store | Nightly read (flow) | information-disclosure | CWE-319 | unchecked | high |
 | `unguarded-direct-datastore-access@api_to_token_store` | Payment API reaches Token store directly across a network boundary | Token persistence (flow) | elevation-of-privilege | CWE-1220 | unchecked | high |
+| `unprotected-audit-log@payment_api` | Payment API logs security events but nothing protects the log | Payment API (element) | repudiation | CWE-117 | unchecked | low |
+
+<details><summary><code>availability-dependency-inversion@payment_api</code> — Payment API depends on something rated less available than itself</summary>
+
+An asset the system depends on calls out to something rated less available than it is. The caller's rating is therefore a claim it cannot keep: it can be no more available than the weakest thing it needs, and the model says so.
+
+**Why it fired.** An in-scope element rated critical or better for availability with an outbound, non-response flow to an asset carrying a lower availability rating. This reads the graph rather than any control, so it is always a confirmed finding, never an unsettled one: both ratings are recorded or the model would not have loaded.
+
+**Mitigation.** Either raise the dependency to match, or make the call optional with a timeout, a fallback and a circuit breaker, so the caller degrades instead of stopping.
+
+**Action.** Add a timeout and a fallback path, or raise the dependency's availability.
+
+**Check.** Take the dependency away in a rehearsal and confirm the caller still serves.
+
+**When this is wrong.** Calls the caller can complete without, where a timeout or a cached answer keeps it serving. That is the fix rather than an exception, and it is worth writing down: either raise the dependency's rating or record that the call is optional by lowering the caller's dependence on it.
+
+**References.** CWE-1188 · CAPEC-607 · ASVS V1.1.5 · https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html
+
+**Rating.** likelihood likely × impact medium = elevated; data breach improbable via payment_api
+
+</details>
 
 <details><summary><code>clickjacking@storefront</code> — Storefront web app can be framed by another origin</summary>
 
@@ -334,6 +360,46 @@ One processing asset holds several distinct categories of personal data at once,
 **References.** CWE-359 · CAPEC-118 · ASVS V8.3 · https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html
 
 **Rating.** likelihood likely × impact high = elevated; data breach probable via payment_api
+
+</details>
+
+<details><summary><code>missing-audit-log@settlement_batch</code> — Nightly settlement batch changes critical data without an audit trail</summary>
+
+An asset that changes data other people rely on keeps no record of who changed it. Nobody can show afterwards what happened, which blocks an investigation and lets a participant deny an action they took.
+
+**Why it fired.** An in-scope, non-human, non-client element that runs code of our own and holds or handles data rated critical or better for integrity, and does not record the logs_security_events control. Elements whose technology exists to observe others, such as monitoring and intrusion detection, are skipped: they are the log.
+
+**Mitigation.** Log the actor, the action, the subject and the time for every state change, to a destination the acting asset cannot rewrite. Log the decision, not just the request: "denied, insufficient scope" is worth more later than the bare call.
+
+**Action.** Emit a structured audit event for every state change this asset makes.
+
+**Check.** Perform a state-changing action and find it, attributed, in the log store.
+
+**When this is wrong.** Assets whose platform logs every mutation underneath them, such as a managed database with audit logging switched on at the service level, and read-only components that change nothing worth attributing. Record logs_security_events with a pointer to where the log actually lands.
+
+**References.** CWE-778 · CAPEC-81, CAPEC-93 · ASVS V7.1.3 · https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+
+**Rating.** likelihood likely × impact medium = elevated; data breach improbable via settlement_batch
+
+</details>
+
+<details><summary><code>missing-audit-log@storefront</code> — Storefront web app changes critical data without an audit trail</summary>
+
+An asset that changes data other people rely on keeps no record of who changed it. Nobody can show afterwards what happened, which blocks an investigation and lets a participant deny an action they took.
+
+**Why it fired.** An in-scope, non-human, non-client element that runs code of our own and holds or handles data rated critical or better for integrity, and does not record the logs_security_events control. Elements whose technology exists to observe others, such as monitoring and intrusion detection, are skipped: they are the log.
+
+**Mitigation.** Log the actor, the action, the subject and the time for every state change, to a destination the acting asset cannot rewrite. Log the decision, not just the request: "denied, insufficient scope" is worth more later than the bare call.
+
+**Action.** Emit a structured audit event for every state change this asset makes.
+
+**Check.** Perform a state-changing action and find it, attributed, in the log store.
+
+**When this is wrong.** Assets whose platform logs every mutation underneath them, such as a managed database with audit logging switched on at the service level, and read-only components that change nothing worth attributing. Record logs_security_events with a pointer to where the log actually lands.
+
+**References.** CWE-778 · CAPEC-81, CAPEC-93 · ASVS V7.1.3 · https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+
+**Rating.** likelihood likely × impact medium = elevated; data breach improbable via storefront
 
 </details>
 
@@ -537,6 +603,26 @@ A large body of personal data is held durably and no owner is recorded. Retentio
 
 </details>
 
+<details><summary><code>single-point-of-failure@settlement_batch</code> — Nightly settlement batch is availability-critical with no recorded redundancy</summary>
+
+Something the system is rated as needing is recorded as having no redundancy, so a single failure of one asset stops the service. An attacker does not have to break it, only to keep it busy.
+
+**Why it fired.** An in-scope, non-human, non-client element rated critical or better for availability that does not record the redundant control. Load balancers and gateways are included deliberately: a single load balancer in front of a redundant fleet is the classic version of this.
+
+**Mitigation.** Run more than one instance across more than one failure domain, and check that a failover actually happens rather than assuming it. Where redundancy is genuinely not affordable, lower the availability rating so the model stops claiming the service needs something it does not have.
+
+**Action.** Add a second instance in another failure domain, or correct the rating.
+
+**Check.** Remove one instance in a rehearsal and confirm the service survives.
+
+**When this is wrong.** Assets whose platform provides redundancy invisibly, such as a managed queue or a serverless function across zones. That is still redundancy: record it as redundant: true, with a note about what the provider guarantees, because the next reader cannot tell from the technology alone.
+
+**References.** CWE-1188 · CAPEC-607 · ASVS V1.1.5 · https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html
+
+**Rating.** likelihood likely × impact medium = elevated; data breach improbable via settlement_batch
+
+</details>
+
 <details><summary><code>sql-nosql-injection@batch_to_token_store</code> — Nightly settlement batch may build injectable queries against Token store</summary>
 
 Custom code builds a query for a datastore from data it received, so a caller who controls that data controls the query.
@@ -554,6 +640,26 @@ Custom code builds a query for a datastore from data it received, so a caller wh
 **References.** CWE-89 · CAPEC-66, CAPEC-7 · ASVS V5.3.4 · https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html
 
 **Rating.** likelihood likely × impact very-high = elevated; data breach probable via settlement_batch, token_store
+
+</details>
+
+<details><summary><code>unbounded-input-size@storefront</code> — Storefront web app parses attacker-sized input with no recorded bound</summary>
+
+The asset parses a format that can be made arbitrarily large or deeply nested, and records no bound on what it will accept. One request can then consume memory or CPU out of proportion to its size, which is a cheap way to take a service down.
+
+**Why it fired.** An in-scope element running code of our own that is reachable from the internet, accepts a format whose cost an attacker controls (file uploads, serialised objects, XML, JSON), and does not record checks_input_bounds.
+
+**Mitigation.** Cap request body size, parse depth and element count at the edge and again in the asset, and stream large uploads rather than buffering them. Reject early, before allocating.
+
+**Action.** Set an explicit body size and parse depth limit on this asset.
+
+**Check.** Send an oversized and a deeply nested payload and confirm both are refused cheaply.
+
+**When this is wrong.** Assets behind a gateway that enforces a body limit for them, and parsers configured with limits in a framework rather than in code anyone would recognise. Both are real protection; record checks_input_bounds and say where the limit lives.
+
+**References.** CWE-400 · CAPEC-130, CAPEC-197 · ASVS V13.1.3 · https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html
+
+**Rating.** likelihood very-likely × impact medium = elevated; data breach improbable via storefront
 
 </details>
 
@@ -614,6 +720,26 @@ An asset an attacker can reach from the internet talks straight to a sensitive d
 **References.** CWE-1220 · CAPEC-116 · ASVS V1.2.2 · https://cheatsheetseries.owasp.org/cheatsheets/Database_Security_Cheat_Sheet.html
 
 **Rating.** likelihood likely × impact medium = elevated; data breach probable via payment_api, token_store
+
+</details>
+
+<details><summary><code>unprotected-audit-log@payment_api</code> — Payment API logs security events but nothing protects the log</summary>
+
+The asset records security events but nothing stops those records being altered or deleted afterwards. An attacker who reaches the asset can remove the evidence of having done so, and an insider can rewrite their own history.
+
+**Why it fired.** An in-scope, non-human, non-client element that records logs_security_events as present, and does not record log_integrity_protected. The `known()` guard is the point of the rule. Without it the condition is unsettled wherever nobody mentioned logging at all, and it would ask "is your log protected?" of every element in the model, including ones that keep no log. A model that says nothing about logging has a different problem, and missing-audit-log raises it.
+
+**Mitigation.** Ship logs off the asset as they are written, to a store the asset can append to and not rewrite. Where the record has to stand up to dispute, sign or chain the entries so a gap is detectable rather than invisible.
+
+**Action.** Forward this asset's logs to an append-only destination it cannot rewrite.
+
+**Check.** From the asset's own credentials, try to delete a log entry and confirm failure.
+
+**When this is wrong.** Logs shipped immediately to an append-only or write-once destination the asset has no credentials to modify, where the protection is real but lives in the pipeline rather than the asset. Record log_integrity_protected and name the destination.
+
+**References.** CWE-117 · CAPEC-268, CAPEC-93 · ASVS V7.3.1 · https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+
+**Rating.** likelihood likely × impact high = elevated; data breach improbable via payment_api
 
 </details>
 
@@ -762,9 +888,13 @@ question open forever.
 | --- | --- |
 | `flow.controls.rate_limited` | 3 |
 | `el.controls.hardened` | 2 |
+| `el.controls.logs_security_events` | 2 |
 | `el.controls.uses_code_signing` | 2 |
 | `el.controls.verifies_dependencies` | 2 |
 | `flow.controls.uses_mfa` | 2 |
+| `el.controls.checks_input_bounds` | 1 |
+| `el.controls.log_integrity_protected` | 1 |
+| `el.controls.redundant` | 1 |
 | `flow.from.controls.uses_parameterized_queries` | 1 |
 | `flow.to.controls.rate_limited` | 1 |
 | `m.controls.hardened` | 1 |
@@ -779,15 +909,20 @@ question open forever.
 | `container-baseimage-backdooring@storefront` | Storefront web app runs a container image with no recorded provenance check | elevated | `el.controls.uses_code_signing`, `el.controls.verifies_dependencies` |
 | `dos-risky-access-across-trust-boundary@ops_to_api` | Payment API accepts unthrottled traffic over ops_to_api | elevated | `flow.controls.rate_limited` |
 | `dos-risky-access-across-trust-boundary@storefront_to_api` | Payment API accepts unthrottled traffic over storefront_to_api | elevated | `flow.controls.rate_limited` |
+| `missing-audit-log@settlement_batch` | Nightly settlement batch changes critical data without an audit trail | elevated | `el.controls.logs_security_events` |
+| `missing-audit-log@storefront` | Storefront web app changes critical data without an audit trail | elevated | `el.controls.logs_security_events` |
 | `missing-cloud-hardening@vpc` | Production VPC has no recorded cloud hardening baseline | elevated | `m.controls.hardened` |
 | `missing-hardening@payment_api` | Payment API is an attractive target with no recorded hardening | elevated | `el.controls.hardened` |
 | `missing-hardening@token_store` | Token store is an attractive target with no recorded hardening | elevated | `el.controls.hardened` |
+| `single-point-of-failure@settlement_batch` | Nightly settlement batch is availability-critical with no recorded redundancy | elevated | `el.controls.redundant` |
 | `sql-nosql-injection@batch_to_token_store` | Nightly settlement batch may build injectable queries against Token store | elevated | `flow.from.controls.uses_parameterized_queries` |
+| `unbounded-input-size@storefront` | Storefront web app parses attacker-sized input with no recorded bound | elevated | `el.controls.checks_input_bounds` |
+| `unprotected-audit-log@payment_api` | Payment API logs security events but nothing protects the log | elevated | `el.controls.log_integrity_protected` |
 | `dos-risky-access-across-trust-boundary@api_to_token_store` | Token store accepts unthrottled traffic over api_to_token_store | medium | `flow.controls.rate_limited`, `flow.to.controls.rate_limited` |
 
 ## Risk tracking
 
-Nothing in this model has been triaged yet: all 31 risks are unchecked. Record a decision in `risk_tracking` as each one is dealt with.
+Nothing in this model has been triaged yet: all 37 risks are unchecked. Record a decision in `risk_tracking` as each one is dealt with.
 
 ## Data asset matrix
 
@@ -836,10 +971,10 @@ each other and mean nothing against another model.
 
 | Element | Kind | Technology | RAA | Confidentiality | Integrity | Availability | Trust boundary | Internet | Risks |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Payment API** | process | web-service-rest | 100 | strictly-confidential | mission-critical | critical | Web tier namespace | reachable | 6 |
+| **Payment API** | process | web-service-rest | 100 | strictly-confidential | mission-critical | critical | Web tier namespace | reachable | 8 |
 | **Token store** | datastore | database | 99 | confidential | critical | critical | Data tier subnet | reachable | 9 |
-| **Nightly settlement batch** | process | batch-processing | 75 | confidential | critical | critical | Production VPC | no | 2 |
-| **Storefront web app** | process | web-application | 73 | strictly-confidential | critical | important | Web tier namespace | facing | 7 |
+| **Nightly settlement batch** | process | batch-processing | 75 | confidential | critical | critical | Production VPC | no | 4 |
+| **Storefront web app** | process | web-application | 73 | strictly-confidential | critical | important | Web tier namespace | facing | 9 |
 | **Audit log store** | datastore | database | 47 | internal | critical | important | Data tier subnet | reachable | 0 |
 | **Operations console** | external | devops-client | 34 | public | archive | archive | Public internet | no | 0 |
 | Card processor _(out of scope)_ | external | web-service-rest | 24 | strictly-confidential | critical | critical | Public internet | reachable | 1 |

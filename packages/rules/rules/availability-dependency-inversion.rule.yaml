@@ -1,0 +1,51 @@
+id: availability-dependency-inversion
+title: Critical asset depends on something less available than itself
+stride: denial-of-service
+cwe: 1188
+capec: [CAPEC-607]
+asvs: V1.1.5
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html
+function: architecture
+
+description: >
+  An asset the system depends on calls out to something rated less available than it
+  is. The caller's rating is therefore a claim it cannot keep: it can be no more
+  available than the weakest thing it needs, and the model says so.
+
+detection_logic: >
+  An in-scope element rated critical or better for availability with an outbound,
+  non-response flow to an asset carrying a lower availability rating. This reads the
+  graph rather than any control, so it is always a confirmed finding, never an
+  unsettled one: both ratings are recorded or the model would not have loaded.
+
+risk_assessment: >
+  Likelihood is Likely, because it needs no attacker at all, only the dependency
+  having the bad day its own rating admits it might. Impact follows the caller's
+  rating, which is the promise being broken.
+
+false_positives: >
+  Calls the caller can complete without, where a timeout or a cached answer keeps it
+  serving. That is the fix rather than an exception, and it is worth writing down:
+  either raise the dependency's rating or record that the call is optional by
+  lowering the caller's dependence on it.
+
+mitigation: >
+  Either raise the dependency to match, or make the call optional with a timeout, a
+  fallback and a circuit breaker, so the caller degrades instead of stopping.
+action: Add a timeout and a fallback path, or raise the dependency's availability.
+check: Take the dependency away in a rehearsal and confirm the caller still serves.
+
+scope: element
+match: |
+  !el.human
+  && !el.technology.client
+  && el.availability >= 'critical'
+  && el.outgoing.exists(f, !f.is_response && !f.to.out_of_scope && f.to.availability < el.availability)
+
+likelihood: likely
+impact: |
+  el.availability >= 'mission-critical' ? 'high' : 'medium'
+
+data_breach_probability: improbable
+risk_title: "{{ el.name }} depends on something rated less available than itself"
+tags: [availability, resilience, architecture]

@@ -5,7 +5,7 @@ import { EMPTY, evaluateModel, urlTarget } from '../src/state/model.js';
 import { DEFAULT_ROUTE, formatHash, parseHash } from '../src/state/selection.js';
 
 const EXAMPLE = readFileSync(
-  fileURLToPath(new URL('../src/example.yaml', import.meta.url)),
+  fileURLToPath(new URL('../../../examples/payment-service/threatmodel.yaml', import.meta.url)),
   'utf8',
 );
 

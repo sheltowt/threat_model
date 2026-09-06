@@ -11,9 +11,9 @@
     "version": "3"
   },
   "stats": {
-    "rules_run": 53,
+    "rules_run": 59,
     "rules_skipped": 0,
-    "candidates_evaluated": 344,
+    "candidates_evaluated": 386,
     "elements": 8,
     "elements_in_scope": 7,
     "elements_out_of_scope": 1,
@@ -23,48 +23,50 @@
     "shared_runtimes": 1,
     "data_assets": 5,
     "orphaned_data_assets": 0,
-    "risks": 31,
-    "open_risks": 31,
-    "low_confidence_risks": 11,
+    "risks": 37,
+    "open_risks": 37,
+    "low_confidence_risks": 16,
     "suppressed_risks": 0,
     "risks_by_severity": {
       "critical": 0,
       "high": 5,
-      "elevated": 20,
+      "elevated": 26,
       "medium": 6,
       "low": 0
     },
     "open_risks_by_severity": {
       "critical": 0,
       "high": 5,
-      "elevated": 20,
+      "elevated": 26,
       "medium": 6,
       "low": 0
     },
     "risks_by_status": {
-      "unchecked": 31
+      "unchecked": 37
     },
     "risks_by_stride": {
-      "denial-of-service": 3,
+      "denial-of-service": 6,
       "elevation-of-privilege": 5,
       "information-disclosure": 8,
-      "repudiation": 3,
+      "repudiation": 6,
       "spoofing": 5,
       "tampering": 7
     },
     "risks_by_function": {
-      "architecture": 8,
+      "architecture": 9,
       "business-side": 8,
-      "development": 3,
-      "operations": 12
+      "development": 6,
+      "operations": 14
     },
     "risks_by_rule": {
+      "availability-dependency-inversion": 1,
       "clickjacking": 1,
       "container-baseimage-backdooring": 2,
       "dos-risky-access-across-trust-boundary": 3,
       "excessive-pii-collection": 2,
       "incomplete-model": 1,
       "manual": 1,
+      "missing-audit-log": 2,
       "missing-authentication-second-factor": 2,
       "missing-build-infrastructure": 1,
       "missing-cloud-hardening": 1,
@@ -76,10 +78,13 @@
       "missing-waf": 1,
       "pii-crossing-untrusted-boundary": 1,
       "pii-retention-unbounded": 1,
+      "single-point-of-failure": 1,
       "sql-nosql-injection": 1,
+      "unbounded-input-size": 1,
       "unencrypted-communication": 2,
       "unguarded-access-from-internet": 1,
       "unguarded-direct-datastore-access": 1,
+      "unprotected-audit-log": 1,
       "weak-authentication": 2
     },
     "warnings": 0
@@ -291,6 +296,51 @@
       "most_relevant_data": [
         "card_data",
         "customer_profile"
+      ]
+    },
+    {
+      "id": "availability-dependency-inversion@payment_api",
+      "rule": "availability-dependency-inversion",
+      "title": "Payment API depends on something rated less available than itself",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "high",
+      "status": "unchecked",
+      "stride": "denial-of-service",
+      "function": "architecture",
+      "subject": {
+        "kind": "element",
+        "id": "payment_api",
+        "name": "Payment API"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "payment_api"
+      ],
+      "detection_logic": "An in-scope element rated critical or better for availability with an outbound, non-response flow to an asset carrying a lower availability rating. This reads the graph rather than any control, so it is always a confirmed finding, never an unsettled one: both ratings are recorded or the model would not have loaded.\n",
+      "false_positives": "Calls the caller can complete without, where a timeout or a cached answer keeps it serving. That is the fix rather than an exception, and it is worth writing down: either raise the dependency's rating or record that the call is optional by lowering the caller's dependence on it.\n",
+      "mitigation": "Either raise the dependency to match, or make the call optional with a timeout, a fallback and a circuit breaker, so the caller degrades instead of stopping.\n",
+      "tags": [
+        "architecture",
+        "availability",
+        "resilience"
+      ],
+      "description": "An asset the system depends on calls out to something rated less available than it is. The caller's rating is therefore a claim it cannot keep: it can be no more available than the weakest thing it needs, and the model says so.\n",
+      "cwe": 1188,
+      "capec": [
+        "CAPEC-607"
+      ],
+      "asvs": "V1.1.5",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+      "action": "Add a timeout and a fallback path, or raise the dependency's availability.",
+      "check": "Take the dependency away in a rehearsal and confirm the caller still serves.",
+      "most_relevant_element": "payment_api",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile",
+        "payment_token",
+        "processor_credentials"
       ]
     },
     {
@@ -568,6 +618,98 @@
         "customer_profile",
         "payment_token",
         "processor_credentials"
+      ]
+    },
+    {
+      "id": "missing-audit-log@settlement_batch",
+      "rule": "missing-audit-log",
+      "title": "Nightly settlement batch changes critical data without an audit trail",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "repudiation",
+      "function": "development",
+      "subject": {
+        "kind": "element",
+        "id": "settlement_batch",
+        "name": "Nightly settlement batch"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "settlement_batch"
+      ],
+      "detection_logic": "An in-scope, non-human, non-client element that runs code of our own and holds or handles data rated critical or better for integrity, and does not record the logs_security_events control. Elements whose technology exists to observe others, such as monitoring and intrusion detection, are skipped: they are the log.\n",
+      "false_positives": "Assets whose platform logs every mutation underneath them, such as a managed database with audit logging switched on at the service level, and read-only components that change nothing worth attributing. Record logs_security_events with a pointer to where the log actually lands.\n",
+      "mitigation": "Log the actor, the action, the subject and the time for every state change, to a destination the acting asset cannot rewrite. Log the decision, not just the request: \"denied, insufficient scope\" is worth more later than the bare call.\n",
+      "tags": [
+        "accountability",
+        "logging"
+      ],
+      "description": "An asset that changes data other people rely on keeps no record of who changed it. Nobody can show afterwards what happened, which blocks an investigation and lets a participant deny an action they took.\n",
+      "cwe": 778,
+      "capec": [
+        "CAPEC-81",
+        "CAPEC-93"
+      ],
+      "asvs": "V7.1.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+      "action": "Emit a structured audit event for every state change this asset makes.",
+      "check": "Perform a state-changing action and find it, attributed, in the log store.",
+      "unknowns": [
+        "el.controls.logs_security_events"
+      ],
+      "most_relevant_element": "settlement_batch",
+      "most_relevant_data": [
+        "audit_log",
+        "payment_token"
+      ]
+    },
+    {
+      "id": "missing-audit-log@storefront",
+      "rule": "missing-audit-log",
+      "title": "Storefront web app changes critical data without an audit trail",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "repudiation",
+      "function": "development",
+      "subject": {
+        "kind": "element",
+        "id": "storefront",
+        "name": "Storefront web app"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "storefront"
+      ],
+      "detection_logic": "An in-scope, non-human, non-client element that runs code of our own and holds or handles data rated critical or better for integrity, and does not record the logs_security_events control. Elements whose technology exists to observe others, such as monitoring and intrusion detection, are skipped: they are the log.\n",
+      "false_positives": "Assets whose platform logs every mutation underneath them, such as a managed database with audit logging switched on at the service level, and read-only components that change nothing worth attributing. Record logs_security_events with a pointer to where the log actually lands.\n",
+      "mitigation": "Log the actor, the action, the subject and the time for every state change, to a destination the acting asset cannot rewrite. Log the decision, not just the request: \"denied, insufficient scope\" is worth more later than the bare call.\n",
+      "tags": [
+        "accountability",
+        "logging"
+      ],
+      "description": "An asset that changes data other people rely on keeps no record of who changed it. Nobody can show afterwards what happened, which blocks an investigation and lets a participant deny an action they took.\n",
+      "cwe": 778,
+      "capec": [
+        "CAPEC-81",
+        "CAPEC-93"
+      ],
+      "asvs": "V7.1.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+      "action": "Emit a structured audit event for every state change this asset makes.",
+      "check": "Perform a state-changing action and find it, attributed, in the log store.",
+      "unknowns": [
+        "el.controls.logs_security_events"
+      ],
+      "most_relevant_element": "storefront",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile"
       ]
     },
     {
@@ -1016,6 +1158,51 @@
       ]
     },
     {
+      "id": "single-point-of-failure@settlement_batch",
+      "rule": "single-point-of-failure",
+      "title": "Nightly settlement batch is availability-critical with no recorded redundancy",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "denial-of-service",
+      "function": "operations",
+      "subject": {
+        "kind": "element",
+        "id": "settlement_batch",
+        "name": "Nightly settlement batch"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "settlement_batch"
+      ],
+      "detection_logic": "An in-scope, non-human, non-client element rated critical or better for availability that does not record the redundant control. Load balancers and gateways are included deliberately: a single load balancer in front of a redundant fleet is the classic version of this.\n",
+      "false_positives": "Assets whose platform provides redundancy invisibly, such as a managed queue or a serverless function across zones. That is still redundancy: record it as redundant: true, with a note about what the provider guarantees, because the next reader cannot tell from the technology alone.\n",
+      "mitigation": "Run more than one instance across more than one failure domain, and check that a failover actually happens rather than assuming it. Where redundancy is genuinely not affordable, lower the availability rating so the model stops claiming the service needs something it does not have.\n",
+      "tags": [
+        "availability",
+        "resilience"
+      ],
+      "description": "Something the system is rated as needing is recorded as having no redundancy, so a single failure of one asset stops the service. An attacker does not have to break it, only to keep it busy.\n",
+      "cwe": 1188,
+      "capec": [
+        "CAPEC-607"
+      ],
+      "asvs": "V1.1.5",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+      "action": "Add a second instance in another failure domain, or correct the rating.",
+      "check": "Remove one instance in a rehearsal and confirm the service survives.",
+      "unknowns": [
+        "el.controls.redundant"
+      ],
+      "most_relevant_element": "settlement_batch",
+      "most_relevant_data": [
+        "audit_log",
+        "payment_token"
+      ]
+    },
+    {
       "id": "sql-nosql-injection@batch_to_token_store",
       "rule": "sql-nosql-injection",
       "title": "Nightly settlement batch may build injectable queries against Token store",
@@ -1060,6 +1247,52 @@
       "most_relevant_flow": "batch_to_token_store",
       "most_relevant_data": [
         "payment_token"
+      ]
+    },
+    {
+      "id": "unbounded-input-size@storefront",
+      "rule": "unbounded-input-size",
+      "title": "Storefront web app parses attacker-sized input with no recorded bound",
+      "severity": "elevated",
+      "likelihood": "very-likely",
+      "impact": "medium",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "denial-of-service",
+      "function": "development",
+      "subject": {
+        "kind": "element",
+        "id": "storefront",
+        "name": "Storefront web app"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "storefront"
+      ],
+      "detection_logic": "An in-scope element running code of our own that is reachable from the internet, accepts a format whose cost an attacker controls (file uploads, serialised objects, XML, JSON), and does not record checks_input_bounds.\n",
+      "false_positives": "Assets behind a gateway that enforces a body limit for them, and parsers configured with limits in a framework rather than in code anyone would recognise. Both are real protection; record checks_input_bounds and say where the limit lives.\n",
+      "mitigation": "Cap request body size, parse depth and element count at the edge and again in the asset, and stream large uploads rather than buffering them. Reject early, before allocating.\n",
+      "tags": [
+        "availability",
+        "input-validation"
+      ],
+      "description": "The asset parses a format that can be made arbitrarily large or deeply nested, and records no bound on what it will accept. One request can then consume memory or CPU out of proportion to its size, which is a cheap way to take a service down.\n",
+      "cwe": 400,
+      "capec": [
+        "CAPEC-130",
+        "CAPEC-197"
+      ],
+      "asvs": "V13.1.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+      "action": "Set an explicit body size and parse depth limit on this asset.",
+      "check": "Send an oversized and a deeply nested payload and confirm both are refused cheaply.",
+      "unknowns": [
+        "el.controls.checks_input_bounds"
+      ],
+      "most_relevant_element": "storefront",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile"
       ]
     },
     {
@@ -1194,6 +1427,54 @@
       "most_relevant_data": [
         "customer_profile",
         "payment_token"
+      ]
+    },
+    {
+      "id": "unprotected-audit-log@payment_api",
+      "rule": "unprotected-audit-log",
+      "title": "Payment API logs security events but nothing protects the log",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "repudiation",
+      "function": "operations",
+      "subject": {
+        "kind": "element",
+        "id": "payment_api",
+        "name": "Payment API"
+      },
+      "data_breach_probability": "improbable",
+      "data_breach_elements": [
+        "payment_api"
+      ],
+      "detection_logic": "An in-scope, non-human, non-client element that records logs_security_events as present, and does not record log_integrity_protected.\nThe `known()` guard is the point of the rule. Without it the condition is unsettled wherever nobody mentioned logging at all, and it would ask \"is your log protected?\" of every element in the model, including ones that keep no log. A model that says nothing about logging has a different problem, and missing-audit-log raises it.\n",
+      "false_positives": "Logs shipped immediately to an append-only or write-once destination the asset has no credentials to modify, where the protection is real but lives in the pipeline rather than the asset. Record log_integrity_protected and name the destination.\n",
+      "mitigation": "Ship logs off the asset as they are written, to a store the asset can append to and not rewrite. Where the record has to stand up to dispute, sign or chain the entries so a gap is detectable rather than invisible.\n",
+      "tags": [
+        "accountability",
+        "logging"
+      ],
+      "description": "The asset records security events but nothing stops those records being altered or deleted afterwards. An attacker who reaches the asset can remove the evidence of having done so, and an insider can rewrite their own history.\n",
+      "cwe": 117,
+      "capec": [
+        "CAPEC-268",
+        "CAPEC-93"
+      ],
+      "asvs": "V7.3.1",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+      "action": "Forward this asset's logs to an append-only destination it cannot rewrite.",
+      "check": "From the asset's own credentials, try to delete a log entry and confirm failure.",
+      "unknowns": [
+        "el.controls.log_integrity_protected"
+      ],
+      "most_relevant_element": "payment_api",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile",
+        "payment_token",
+        "processor_credentials"
       ]
     },
     {

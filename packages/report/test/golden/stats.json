@@ -11,9 +11,9 @@
     "version": "3"
   },
   "stats": {
-    "rules_run": 53,
+    "rules_run": 59,
     "rules_skipped": 0,
-    "candidates_evaluated": 344,
+    "candidates_evaluated": 386,
     "elements": 8,
     "elements_in_scope": 7,
     "elements_out_of_scope": 1,
@@ -23,48 +23,50 @@
     "shared_runtimes": 1,
     "data_assets": 5,
     "orphaned_data_assets": 0,
-    "risks": 31,
-    "open_risks": 31,
-    "low_confidence_risks": 11,
+    "risks": 37,
+    "open_risks": 37,
+    "low_confidence_risks": 16,
     "suppressed_risks": 0,
     "risks_by_severity": {
       "critical": 0,
       "high": 5,
-      "elevated": 20,
+      "elevated": 26,
       "medium": 6,
       "low": 0
     },
     "open_risks_by_severity": {
       "critical": 0,
       "high": 5,
-      "elevated": 20,
+      "elevated": 26,
       "medium": 6,
       "low": 0
     },
     "risks_by_status": {
-      "unchecked": 31
+      "unchecked": 37
     },
     "risks_by_stride": {
-      "denial-of-service": 3,
+      "denial-of-service": 6,
       "elevation-of-privilege": 5,
       "information-disclosure": 8,
-      "repudiation": 3,
+      "repudiation": 6,
       "spoofing": 5,
       "tampering": 7
     },
     "risks_by_function": {
-      "architecture": 8,
+      "architecture": 9,
       "business-side": 8,
-      "development": 3,
-      "operations": 12
+      "development": 6,
+      "operations": 14
     },
     "risks_by_rule": {
+      "availability-dependency-inversion": 1,
       "clickjacking": 1,
       "container-baseimage-backdooring": 2,
       "dos-risky-access-across-trust-boundary": 3,
       "excessive-pii-collection": 2,
       "incomplete-model": 1,
       "manual": 1,
+      "missing-audit-log": 2,
       "missing-authentication-second-factor": 2,
       "missing-build-infrastructure": 1,
       "missing-cloud-hardening": 1,
@@ -76,10 +78,13 @@
       "missing-waf": 1,
       "pii-crossing-untrusted-boundary": 1,
       "pii-retention-unbounded": 1,
+      "single-point-of-failure": 1,
       "sql-nosql-injection": 1,
+      "unbounded-input-size": 1,
       "unencrypted-communication": 2,
       "unguarded-access-from-internet": 1,
       "unguarded-direct-datastore-access": 1,
+      "unprotected-audit-log": 1,
       "weak-authentication": 2
     },
     "warnings": 0

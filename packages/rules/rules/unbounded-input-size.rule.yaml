@@ -1,0 +1,52 @@
+id: unbounded-input-size
+title: Input accepted without a size or depth bound
+stride: denial-of-service
+cwe: 400
+capec: [CAPEC-130, CAPEC-197]
+asvs: V13.1.3
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html
+function: development
+
+description: >
+  The asset parses a format that can be made arbitrarily large or deeply nested, and
+  records no bound on what it will accept. One request can then consume memory or CPU
+  out of proportion to its size, which is a cheap way to take a service down.
+
+detection_logic: >
+  An in-scope element running code of our own that is reachable from the internet,
+  accepts a format whose cost an attacker controls (file uploads, serialised objects,
+  XML, JSON), and does not record checks_input_bounds.
+
+risk_assessment: >
+  Likelihood is Very Likely: this needs one request and no privileges. Impact follows
+  the asset's availability rating, and rises when the asset shares a runtime with
+  others, because exhausting it takes them down too.
+
+false_positives: >
+  Assets behind a gateway that enforces a body limit for them, and parsers configured
+  with limits in a framework rather than in code anyone would recognise. Both are real
+  protection; record checks_input_bounds and say where the limit lives.
+
+mitigation: >
+  Cap request body size, parse depth and element count at the edge and again in the
+  asset, and stream large uploads rather than buffering them. Reject early, before
+  allocating.
+action: Set an explicit body size and parse depth limit on this asset.
+check: Send an oversized and a deeply nested payload and confirm both are refused cheaply.
+
+scope: element
+match: |
+  !el.human
+  && !el.technology.client
+  && el.custom_code
+  && el.internet_reachable
+  && el.accepts_formats.exists(f, f == 'file' || f == 'serialization' || f == 'xml' || f == 'json')
+  && !el.controls.checks_input_bounds
+
+likelihood: very-likely
+impact: |
+  el.availability >= 'critical' || size(el.shared_runtimes) > 0 ? 'medium' : 'low'
+
+data_breach_probability: improbable
+risk_title: "{{ el.name }} parses attacker-sized input with no recorded bound"
+tags: [availability, input-validation]

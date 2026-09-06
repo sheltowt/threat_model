@@ -1,0 +1,56 @@
+id: unprotected-audit-log
+title: Audit log is not protected from tampering
+stride: repudiation
+cwe: 117
+capec: [CAPEC-268, CAPEC-93]
+asvs: V7.3.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+function: operations
+
+description: >
+  The asset records security events but nothing stops those records being altered or
+  deleted afterwards. An attacker who reaches the asset can remove the evidence of
+  having done so, and an insider can rewrite their own history.
+
+detection_logic: >
+  An in-scope, non-human, non-client element that records logs_security_events as
+  present, and does not record log_integrity_protected.
+
+  The `known()` guard is the point of the rule. Without it the condition is unsettled
+  wherever nobody mentioned logging at all, and it would ask "is your log protected?"
+  of every element in the model, including ones that keep no log. A model that says
+  nothing about logging has a different problem, and missing-audit-log raises it.
+
+risk_assessment: >
+  Impact rises with the integrity rating of what the asset handles, because a log is
+  worth exactly as much as the decisions it would let you reconstruct. Likelihood is
+  Likely: tampering with logs is a routine step once an attacker has a foothold, not
+  an exotic one.
+
+false_positives: >
+  Logs shipped immediately to an append-only or write-once destination the asset has
+  no credentials to modify, where the protection is real but lives in the pipeline
+  rather than the asset. Record log_integrity_protected and name the destination.
+
+mitigation: >
+  Ship logs off the asset as they are written, to a store the asset can append to and
+  not rewrite. Where the record has to stand up to dispute, sign or chain the entries
+  so a gap is detectable rather than invisible.
+action: Forward this asset's logs to an append-only destination it cannot rewrite.
+check: From the asset's own credentials, try to delete a log entry and confirm failure.
+
+scope: element
+match: |
+  !el.human
+  && !el.technology.client
+  && known(el.controls.logs_security_events)
+  && el.controls.logs_security_events
+  && !el.controls.log_integrity_protected
+
+likelihood: likely
+impact: |
+  el.integrity >= 'critical' ? 'high' : 'medium'
+
+data_breach_probability: improbable
+risk_title: "{{ el.name }} logs security events but nothing protects the log"
+tags: [logging, accountability]
