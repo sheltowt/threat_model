@@ -30,12 +30,34 @@ export interface LoadResult {
 type Raw = Record<string, unknown>;
 
 /**
+ * Keys that reach the prototype chain rather than the object.
+ *
+ * An included file is untrusted: it arrives in a repository, and `includes` is the
+ * one place this tool copies keys from a YAML document into an object it already
+ * holds. Assigning `__proto__` there would let a model file change the behaviour of
+ * every object in the process, so those keys are dropped and reported rather than
+ * merged. Reported, because a model that contains one is either broken or hostile
+ * and the reader should know which.
+ */
+const UNSAFE_KEYS: ReadonlySet<string> = new Set(['__proto__', 'constructor', 'prototype']);
+
+/**
  * Merge an included document into the accumulator. Maps merge key-wise and arrays
  * concatenate; a scalar in the including file wins, so a parent can pin a title.
  */
 function mergeInto(base: Raw, extra: Raw, path: string, diagnostics: Diagnostic[]): void {
   for (const [key, value] of Object.entries(extra)) {
     const here = path ? `${path}.${key}` : key;
+    if (UNSAFE_KEYS.has(key)) {
+      diagnostics.push({
+        severity: 'error',
+        code: 'unsafe-key',
+        message: `an included file sets "${key}", which is not a model field`,
+        path: here,
+        hint: 'that key reaches the JavaScript prototype chain and is never merged',
+      });
+      continue;
+    }
     const existing = base[key];
     if (existing === undefined) {
       base[key] = value;

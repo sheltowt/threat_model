@@ -30,10 +30,33 @@ newlines. Both Threat Dragon and pytm have shipped label-injection bugs here.
 **Reports.** Generated HTML loads no external script, stylesheet or font, so a report
 opened from a filesystem makes no network request. There is a test asserting this.
 
+Report text is built from rule and model prose, which is untrusted, so the escapers
+on that path are treated as security code. Markdown table cells escape the backslash
+before the pipe, because escaping only the pipe turns `\|` into a literal backslash
+followed by an unescaped pipe and the cell ends there. Whitespace collapsing uses one
+unambiguous character class rather than a pattern with `\s` on both sides of a `\n`,
+which backtracks quadratically on a long run of spaces.
+
+**Embedding a diagram.** `svgBody` selects the `<svg>` element rather than deleting
+the prologue, doctype and comments around it. Deleting them was unsound twice over:
+removing a comment can splice its neighbours into a fresh `<!--`, so one pass does
+not converge, and the lazy scans backtracked quadratically. It is an extractor, not
+a sanitiser, and callers must only pass it SVG they generated.
+
+**Includes.** `includes` is the one place a YAML document's keys are copied into an
+object the tool already holds, which is the shape of a prototype pollution sink. Keys
+that reach the prototype chain are refused with an error rather than merged.
+
 **What is not defended.** A model file can make the tool do a large amount of work,
 for instance through a very large element count. There is no wall-clock limit on a
 whole run, only per-expression bounds. Do not run `tmc` on an untrusted model in an
 unbounded process.
+
+## Scanning
+
+CodeQL runs on every pull request. The findings above were all raised by it against
+this repository's own code and fixed, each with a test written as the attack it
+prevents. An alert on our own scanner is treated as a defect, not as noise.
 
 ## Supported versions
 

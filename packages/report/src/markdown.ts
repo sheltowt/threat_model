@@ -29,10 +29,17 @@ import {
   type ReportOptions,
 } from './common.js';
 
-/** Pipes and newlines would break out of a table cell, so they are neutralised. */
+/**
+ * Pipes and newlines would break out of a table cell, so they are neutralised.
+ *
+ * Backslashes go first. Escaping only the pipe turns an input of `\|` into `\\|`,
+ * which Markdown reads as a literal backslash followed by an unescaped pipe, and the
+ * cell ends there. Escaping the escape character before what it escapes is the same
+ * ordering `escapeLabel` gets right for Graphviz.
+ */
 function cell(text: unknown): string {
   const raw = oneLine(text === undefined || text === null ? '' : String(text));
-  return raw.replace(/\|/g, '\\|') || '—';
+  return raw.replace(/\\/g, '\\\\').replace(/\|/g, '\\|') || '—';
 }
 
 function table(headers: readonly string[], rows: readonly (readonly unknown[])[]): string {

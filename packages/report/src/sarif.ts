@@ -201,7 +201,8 @@ function descriptorFor(ruleId: string, risks: readonly Risk[], meta: RuleMeta | 
 
 /** SARIF `text` fields are single-paragraph by convention; collapse the YAML folding. */
 function oneLine(text: string | undefined): string {
-  return (text ?? '').replace(/\s*\n\s*/g, ' ').trim();
+  // One unambiguous class, for the reason given on the copy in `common.ts`.
+  return (text ?? '').replace(/\s+/g, ' ').trim();
 }
 
 function suppressionFor(risk: Risk): Record<string, unknown>[] | undefined {

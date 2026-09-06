@@ -39,14 +39,22 @@ export function themeSvg(svg: string): string {
 }
 
 /**
- * Strip the XML prologue and doctype so the result can be dropped straight into an
- * HTML document, where both are invalid.
+ * Extract the `<svg>` element so it can be dropped into an HTML document, where the
+ * XML prologue, the doctype and Graphviz's leading comments are all invalid.
+ *
+ * This selects rather than deletes, and the distinction matters. Deleting the
+ * prologue, doctype and comments one pattern at a time was two bugs at once: the
+ * lazy `[\s\S]*?` scans backtrack quadratically on adversarial input, and removing
+ * a comment can splice its neighbours into a new `<!--`, so a single pass does not
+ * converge. Taking everything from the first `<svg` onwards has neither problem,
+ * because it never rewrites the interior at all. It is also a linear scan.
+ *
+ * This is not a sanitiser and must not be used as one. It assumes the caller
+ * generated the SVG; passing it a document from somewhere else would embed whatever
+ * that document contains.
  */
 export function svgBody(svg: string): string {
-  return svg
-    .replace(/^﻿/, '')
-    .replace(/<\?xml[\s\S]*?\?>/g, '')
-    .replace(/<!DOCTYPE[\s\S]*?>/gi, '')
-    .replace(/<!--[\s\S]*?-->/g, '')
-    .trim();
+  const start = svg.search(/<svg[\s>]/i);
+  if (start === -1) return '';
+  return svg.slice(start).trim();
 }

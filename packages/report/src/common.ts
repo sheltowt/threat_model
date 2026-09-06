@@ -169,16 +169,24 @@ export function subjectLabel(risk: Risk): string {
   return `${risk.subject.name} (${risk.subject.kind})`;
 }
 
-/** Collapse YAML folded scalars into one paragraph for a table cell. */
+/**
+ * Collapse YAML folded scalars into one paragraph for a table cell.
+ *
+ * `\s+` rather than `\s*\n\s*`: the latter has `\s` on both sides of a `\n` that
+ * `\s` also matches, so the engine backtracks quadratically over a long run of
+ * spaces that never reaches a newline. Rule and model prose is untrusted input. One
+ * unambiguous class is linear and collapses runs of spaces too, which is what a
+ * single-line cell wants anyway.
+ */
 export function oneLine(text: string | undefined | null): string {
-  return (text ?? '').replace(/\s*\n\s*/g, ' ').trim();
+  return (text ?? '').replace(/\s+/g, ' ').trim();
 }
 
 /** Trim trailing whitespace on a block of prose, keeping paragraph breaks. */
 export function prose(text: string | undefined | null): string {
   return (text ?? '')
     .split(/\n{2,}/)
-    .map((p) => p.replace(/\s*\n\s*/g, ' ').trim())
+    .map((p) => p.replace(/\s+/g, ' ').trim())
     .filter(Boolean)
     .join('\n\n');
 }
