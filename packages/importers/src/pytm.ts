@@ -55,6 +55,13 @@ const CLASS_MAP: Record<string, { kind: ElementIn['kind']; technology: string; m
 };
 
 /** pytm control attribute -> tmac control name. */
+/**
+ * pytm's `usesVPN` has no control to map onto, because a private tunnel is a
+ * property of a route rather than of an asset and lives on the flow. On a Dataflow
+ * it becomes `vpn: true`; on an asset there is nowhere for it to go, and dropping it
+ * silently would be the sort of quiet loss this importer exists to avoid, so it is
+ * reported instead.
+ */
 const CONTROL_MAP: Record<string, string> = {
   authenticatesSource: 'authenticates_source',
   authenticatesDestination: 'authenticates_destination',
@@ -77,7 +84,6 @@ const CONTROL_MAP: Record<string, string> = {
   usesParameterizedInput: 'uses_parameterized_queries',
   usesSecureFunctions: 'uses_secure_defaults',
   usesStrongSessionIdentifiers: 'uses_strong_session_ids',
-  usesVPN: 'uses_vpn',
   validatesContentType: 'validates_content_type',
   validatesInput: 'validates_input',
   validatesHeaders: 'validates_schema',
@@ -286,6 +292,8 @@ export function importPytm(json: unknown, options: PytmImportOptions = {}): Impo
     const description = asString(entry['description']);
     if (description !== undefined) flow.description = description;
     if (asBool(entry['isResponse']) === true) flow.is_response = true;
+    // A tunnel is a property of the route, so it lands on the flow, not in controls.
+    if (asBool(pick(entry, 'usesVPN', 'uses_vpn')) === true) flow.vpn = true;
     const sends = stringList(pick(entry, 'data', 'sends'))
       .map((d) => dataRegistry.resolve(d))
       .filter((d): d is string => d !== undefined);

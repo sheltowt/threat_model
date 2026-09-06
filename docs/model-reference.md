@@ -154,11 +154,12 @@ Every one is optional and three-valued.
 `logs_security_events` `log_integrity_protected` `monitored` `rate_limited`
 `redundant` `sanitizes_input` `uses_code_signing` `uses_content_security_policy`
 `uses_mfa` `uses_parameterized_queries` `uses_secure_defaults`
-`uses_strong_session_ids` `uses_vpn` `validates_content_type`
+`uses_strong_session_ids` `validates_content_type`
 `validates_file_uploads` `validates_input` `validates_schema` `verifies_dependencies`
 `content_filtered` `human_in_the_loop`
 
-Flows carry the same block.
+Flows carry the same block. A private tunnel is `vpn` on the flow rather than a
+control, because a tunnel is a property of a route and not of an asset.
 
 ## flows
 

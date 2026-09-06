@@ -76,6 +76,38 @@ export const BUILTIN_RULE_DATA: readonly RawRuleEntry[] = [
   },
   {
     "doc": {
+      "action": "Add a per-resource authorisation check on the receiving asset.",
+      "asvs": "V4.1.1",
+      "capec": [
+        "CAPEC-122"
+      ],
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+      "check": "Call the endpoint as a valid user who should not be entitled and confirm refusal.",
+      "cwe": 862,
+      "data_breach_probability": "probable",
+      "description": "The link establishes who the caller is and then does not record any check on what that caller is allowed to do. Knowing the name on the request is not the same as deciding whether it may be granted, and any authenticated party gets everything.\n",
+      "detection_logic": "A non-response flow that authenticates the caller by some means, arrives at an in-scope asset holding data classified confidential or above, declares no authorization, and does not record authorizes_source on either the flow or the receiving asset.\n",
+      "false_positives": "Endpoints where every authenticated caller genuinely is entitled to everything, such as a single-tenant internal tool. Record authorizes_source: true on the asset if a check exists, or set authorization on the flow to say which identity it acts as.\n",
+      "function": "development",
+      "id": "authentication-without-authorization",
+      "impact": "flow.to.confidentiality >= 'strictly-confidential' ? 'very-high' : 'high'\n",
+      "likelihood": "likely",
+      "match": "!flow.is_response\n&& flow.authentication != 'none'\n&& flow.authorization == 'none'\n&& !flow.to.out_of_scope\n&& flow.to.confidentiality >= 'confidential'\n&& !flow.controls.authorizes_source\n&& !flow.to.controls.authorizes_source\n",
+      "mitigation": "Decide authorisation on the server for every request, against the resource being touched rather than the route being called. Deny by default.\n",
+      "risk_assessment": "Likelihood is Likely: the attacker needs an account, which on anything with self service is no barrier at all. Impact follows what the target holds, because an authenticated caller with no authorisation check reaches all of it.\n",
+      "risk_title": "{{ flow.to.name }} identifies callers on {{ flow.id }} but checks no permissions",
+      "scope": "flow",
+      "stride": "elevation-of-privilege",
+      "tags": [
+        "access-control",
+        "authorization"
+      ],
+      "title": "Caller is identified but not checked against what it may do"
+    },
+    "file": "authentication-without-authorization.rule.yaml"
+  },
+  {
+    "doc": {
       "action": "Add a timeout and a fallback path, or raise the dependency's availability.",
       "asvs": "V1.1.5",
       "capec": [
@@ -372,6 +404,39 @@ export const BUILTIN_RULE_DATA: readonly RawRuleEntry[] = [
   },
   {
     "doc": {
+      "action": "Scope this asset's credentials to what it actually uses.",
+      "asvs": "V1.4.5",
+      "capec": [
+        "CAPEC-69",
+        "CAPEC-233"
+      ],
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+      "check": "Remove one permission the asset should not need and confirm nothing breaks.",
+      "cwe": 250,
+      "data_breach_probability": "possible",
+      "description": "An asset worth attacking does not record that its own privileges are constrained. What matters after a compromise is not whether the asset was breached but how far the attacker travels from it, and that is decided by what it was allowed to do.\n",
+      "detection_logic": "An in-scope, non-human, non-client element that either holds data classified confidential or above or is a technology the catalogue marks as a high-value target, that makes outbound calls of its own, and does not record implements_least_privilege.\nThe outbound requirement is what keeps this from becoming wallpaper. Least privilege matters for what an asset can reach from where it stands; a leaf datastore that calls nothing has no onward journey to constrain, and asking the question of every asset in the model is how a rule stops being read.\n",
+      "false_positives": "Assets whose privileges are constrained by a platform rather than by their own configuration, such as a workload with a narrowly scoped cloud role. That is least privilege; record it as true and name where the constraint lives, so the next reader does not have to go looking.\n",
+      "function": "operations",
+      "id": "excessive-privilege",
+      "impact": "el.confidentiality >= 'strictly-confidential' ? 'very-high' : 'high'\n",
+      "likelihood": "unlikely",
+      "match": "!el.human\n&& !el.technology.client\n&& (el.confidentiality >= 'confidential' || el.technology.high_value_target)\n&& el.outgoing.exists(f, !f.is_response)\n&& !el.controls.implements_least_privilege\n",
+      "mitigation": "Give the asset only the permissions it uses, scoped to the resources it touches, and review them when its job changes. Separate the identity it runs as from the identity it uses to reach anything else.\n",
+      "risk_assessment": "Likelihood is Unlikely on its own terms, because this is a second-order failure that needs a first compromise. Impact is High to Very High, because it is precisely what turns one compromised asset into several.\n",
+      "risk_title": "{{ el.name }} has no recorded limit on its own privileges",
+      "scope": "element",
+      "stride": "elevation-of-privilege",
+      "tags": [
+        "access-control",
+        "least-privilege"
+      ],
+      "title": "High-value asset with no recorded least-privilege constraint"
+    },
+    "file": "excessive-privilege.rule.yaml"
+  },
+  {
+    "doc": {
       "action": "Fill in the element's controls block, recording false where a control is genuinely absent.",
       "asvs": "V1.1.2",
       "capec": [
@@ -602,6 +667,39 @@ export const BUILTIN_RULE_DATA: readonly RawRuleEntry[] = [
   },
   {
     "doc": {
+      "action": "Enable revocation checking, or shorten certificate lifetimes deliberately.",
+      "asvs": "V9.2.4",
+      "capec": [
+        "CAPEC-475"
+      ],
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html",
+      "check": "Revoke a test certificate and confirm the connection is refused.",
+      "cwe": 299,
+      "data_breach_probability": "possible",
+      "description": "The link authenticates with a client certificate but nothing records that revocation is checked. A certificate that has been withdrawn, because a key leaked or a service was decommissioned, keeps working until it expires.\n",
+      "detection_logic": "A flow authenticating with a client certificate, to an in-scope asset, that does not record checks_certificate_revocation.\n",
+      "false_positives": "Deployments using short-lived certificates measured in hours, where expiry does the job revocation would. That is a legitimate design; record checks_certificate_revocation: true and note the lifetime, since the argument only holds while the lifetime stays short.\n",
+      "function": "operations",
+      "id": "missing-certificate-revocation-check",
+      "impact": "high",
+      "likelihood": "unlikely",
+      "match": "flow.authentication == 'client-certificate'\n&& !flow.to.out_of_scope\n&& !flow.controls.checks_certificate_revocation\n",
+      "mitigation": "Check OCSP or a CRL at handshake time and fail closed when the answer cannot be obtained, or issue certificates short-lived enough that revocation is unnecessary. Decide which, and write down which.\n",
+      "risk_assessment": "Likelihood is Unlikely, because it needs a certificate to have leaked in the first place. Impact is High: a revoked certificate is one somebody has already decided should not work, so the failure is of a control that was consciously applied.\n",
+      "risk_title": "{{ flow.id }} accepts client certificates without checking revocation",
+      "scope": "flow",
+      "stride": "spoofing",
+      "tags": [
+        "identity",
+        "tls",
+        "pki"
+      ],
+      "title": "Client certificates accepted without a revocation check"
+    },
+    "file": "missing-certificate-revocation-check.rule.yaml"
+  },
+  {
+    "doc": {
       "action": "Adopt a cloud benchmark and enforce it in the pipeline that creates these resources.",
       "asvs": "V14.1.3",
       "capec": [
@@ -698,6 +796,38 @@ export const BUILTIN_RULE_DATA: readonly RawRuleEntry[] = [
       "title": "Missing content security policy"
     },
     "file": "missing-content-security-policy.rule.yaml"
+  },
+  {
+    "doc": {
+      "action": "Pin the accepted content types per endpoint and reject the rest.",
+      "asvs": "V13.1.5",
+      "capec": [
+        "CAPEC-209"
+      ],
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html",
+      "check": "Send a body with a mismatched content type and confirm it is refused.",
+      "cwe": 434,
+      "data_breach_probability": "possible",
+      "description": "The asset accepts more than one body format and does not record that it checks which one it was actually given. A parser chosen from an attacker-supplied header, or a file whose declared type does not match its contents, lets input reach a parser it was never meant to reach.\n",
+      "detection_logic": "An in-scope element running code of our own, reachable from the internet, that accepts more than one body format, and does not record validates_content_type. More than one format is the condition that matters: an asset that only ever parses JSON has nothing to confuse.\n",
+      "false_positives": "Assets behind a gateway that pins the content type before they see it, and frameworks that route strictly on a declared type. Record validates_content_type and note where the check happens.\n",
+      "function": "development",
+      "id": "missing-content-type-validation",
+      "impact": "el.confidentiality >= 'confidential' ? 'high' : 'medium'\n",
+      "likelihood": "likely",
+      "match": "!el.human\n&& !el.technology.client\n&& el.custom_code\n&& el.internet_reachable\n&& size(el.accepts_formats) > 1\n&& !el.controls.validates_content_type\n",
+      "mitigation": "Accept an explicit allowlist of content types per endpoint, reject anything else before parsing, and for uploads verify the contents rather than trusting the declared type or the file extension.\n",
+      "risk_assessment": "Likelihood is Likely: it takes one request with an altered header. Impact follows what the asset holds, and is worst where a second parser reachable this way is one the other rules already worry about, such as XML.\n",
+      "risk_title": "{{ el.name }} parses several formats without checking which it was sent",
+      "scope": "element",
+      "stride": "tampering",
+      "tags": [
+        "input-validation",
+        "parsing"
+      ],
+      "title": "Request bodies parsed without checking what they claim to be"
+    },
+    "file": "missing-content-type-validation.rule.yaml"
   },
   {
     "doc": {
@@ -860,6 +990,40 @@ export const BUILTIN_RULE_DATA: readonly RawRuleEntry[] = [
       "title": "Authentication with no identity store in the model"
     },
     "file": "missing-identity-store.rule.yaml"
+  },
+  {
+    "doc": {
+      "action": "Verify the calling workload's identity on the receiving asset.",
+      "asvs": "V2.10.3",
+      "capec": [
+        "CAPEC-94",
+        "CAPEC-151"
+      ],
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Microservices_Security_Cheat_Sheet.html",
+      "check": "Call the endpoint from an unrelated workload on the same network and confirm refusal.",
+      "cwe": 287,
+      "data_breach_probability": "possible",
+      "description": "One service calls another across a network boundary and the receiving side does not record that it verifies which service called. Anything that reaches the port is treated as the caller, so a foothold anywhere on that network is a foothold on this asset.\n",
+      "detection_logic": "A non-response flow between two non-human assets, crossing a network trust boundary, arriving at an in-scope asset holding data classified confidential or above, where neither the flow nor the receiving asset records authenticates_source. Flows presenting a client certificate are excluded, since that is the control in action.\n",
+      "false_positives": "Meshes that apply mutual TLS transparently, and networks where an authenticating proxy sits in front of every listener. Both are real; record authenticates_source on the receiving asset and name the layer, because a network control nobody has written down is one nobody will notice being turned off.\n",
+      "function": "architecture",
+      "id": "missing-mutual-authentication",
+      "impact": "flow.to.confidentiality >= 'strictly-confidential' ? 'high' : 'medium'\n",
+      "likelihood": "flow.from.internet_reachable ? 'likely' : 'unlikely'\n",
+      "match": "!flow.is_response\n&& !flow.from.human\n&& !flow.to.human\n&& flow.authentication != 'client-certificate'\n&& flow.crosses_network_boundary\n&& !flow.to.out_of_scope\n&& flow.to.confidentiality >= 'confidential'\n&& !flow.controls.authenticates_source\n&& !flow.to.controls.authenticates_source\n",
+      "mitigation": "Give each workload its own identity and verify it on the receiving side, with mutual TLS or signed tokens. Network position is not identity: treat reachability and authorisation as separate questions.\n",
+      "risk_assessment": "Likelihood is Likely where the caller is reachable from the internet, because the path to that network is shorter, and Unlikely otherwise. Impact follows what the receiving asset holds.\n",
+      "risk_title": "{{ flow.to.name }} does not verify which service calls it on {{ flow.id }}",
+      "scope": "flow",
+      "stride": "spoofing",
+      "tags": [
+        "identity",
+        "authentication",
+        "zero-trust"
+      ],
+      "title": "Service-to-service call that does not verify the caller"
+    },
+    "file": "missing-mutual-authentication.rule.yaml"
   },
   {
     "doc": {
@@ -1749,6 +1913,39 @@ export const BUILTIN_RULE_DATA: readonly RawRuleEntry[] = [
   },
   {
     "doc": {
+      "action": "Encode on output and sanitise stored rich content against an allowlist.",
+      "asvs": "V5.3.3",
+      "capec": [
+        "CAPEC-592"
+      ],
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html",
+      "check": "Store a payload with markup in it and confirm it renders as text.",
+      "cwe": 79,
+      "data_breach_probability": "possible",
+      "description": "Content arriving from outside is written to a store and later read back by an asset that renders pages. Validation on the way in decides whether to accept it; sanitisation decides what survives being rendered. This asset records neither sanitisation nor output encoding, so what one user submits can run in another user's session.\n",
+      "detection_logic": "An in-scope web application running code of our own, reachable from the internet, which writes to a datastore that some asset also reads, and which records neither sanitizes_input nor encodes_output. The stored-then-rendered path is what separates this from the reflected case, which cross-site-scripting already covers.\n",
+      "false_positives": "Stores holding only content the application generated itself, and pipelines that sanitise on the way out in a template layer. Record encodes_output and say where.\n",
+      "function": "development",
+      "id": "unsanitized-stored-content",
+      "impact": "high",
+      "likelihood": "very-likely",
+      "match": "!el.human\n&& !el.technology.client\n&& el.custom_code\n&& el.internet_reachable\n&& el.technology.web_application\n&& el.outgoing.exists(f, f.to.technology.datastore && size(f.sends) > 0)\n&& !el.controls.sanitizes_input\n&& !el.controls.encodes_output\n",
+      "mitigation": "Sanitise on input against an allowlist, encode on output for the context the value lands in, and set a content security policy so a mistake in either is not the end of it. Do all three; each one covers a different failure.\n",
+      "risk_assessment": "Likelihood is Very Likely where the content is reachable from the internet: it needs one submission and then waits. Impact is High, because a stored payload runs in the session of every reader rather than only the person who clicked a link.\n",
+      "risk_title": "{{ el.name }} stores submitted content without sanitising or encoding it",
+      "scope": "element",
+      "stride": "tampering",
+      "tags": [
+        "injection",
+        "xss",
+        "input-validation"
+      ],
+      "title": "Attacker-supplied content stored and served without sanitisation"
+    },
+    "file": "unsanitized-stored-content.rule.yaml"
+  },
+  {
+    "doc": {
       "action": "Replace the serialized interface with a data-only format and a schema.",
       "asvs": "V5.5.1",
       "capec": [
@@ -1814,6 +2011,40 @@ export const BUILTIN_RULE_DATA: readonly RawRuleEntry[] = [
   },
   {
     "doc": {
+      "action": "Turn on certificate and hostname verification for this client.",
+      "asvs": "V9.2.1",
+      "capec": [
+        "CAPEC-94",
+        "CAPEC-459"
+      ],
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html",
+      "check": "Point the caller at a host presenting a valid certificate for a different name and confirm it refuses.",
+      "cwe": 295,
+      "data_breach_probability": "probable",
+      "description": "The link is encrypted but the caller does not record that it checks who answered. Encryption without identity verification protects the traffic from a passive listener and not at all from someone who answers in the callee's place, which is the attack that matters on an untrusted path.\n",
+      "detection_logic": "A non-response flow over an encrypted protocol, crossing a network trust boundary, carrying credentials or data classified confidential or above, where the flow does not record authenticates_destination.\n",
+      "false_positives": "Links where the platform pins and verifies for you, such as a service mesh doing mutual TLS, and clients using a runtime whose defaults cannot be turned off. Record authenticates_destination: true and say which layer does it, because \"the library does it by default\" stops being true the moment somebody sets a flag.\n",
+      "function": "development",
+      "id": "unverified-server-identity",
+      "impact": "high",
+      "likelihood": "likely",
+      "match": "!flow.is_response\n&& flow.protocol.encrypted\n&& flow.crosses_network_boundary\n&& (flow.carries_credentials || flow.max_classification >= 'confidential')\n&& !flow.controls.authenticates_destination\n",
+      "mitigation": "Verify the certificate chain and the hostname, and fail closed when either does not check out. Disabling verification to get past a certificate problem in a test environment is how this reaches production.\n",
+      "risk_assessment": "Likelihood is Likely rather than higher: it needs a position on the path, which is a real prerequisite. Impact is High, because a caller that cannot tell who answered will hand over exactly what it was going to send, credentials included.\n",
+      "risk_title": "{{ flow.from.name }} does not verify who answers on {{ flow.id }}",
+      "scope": "flow",
+      "stride": "spoofing",
+      "tags": [
+        "transport",
+        "identity",
+        "tls"
+      ],
+      "title": "Encrypted link that does not verify who it is talking to"
+    },
+    "file": "unverified-server-identity.rule.yaml"
+  },
+  {
+    "doc": {
       "action": "Move this link to certificate or token authentication.",
       "asvs": "V2.2",
       "capec": [
@@ -1844,6 +2075,39 @@ export const BUILTIN_RULE_DATA: readonly RawRuleEntry[] = [
       "title": "Shared credential authenticating a high-value target"
     },
     "file": "weak-authentication.rule.yaml"
+  },
+  {
+    "doc": {
+      "action": "Confirm the session store's identifier source and rotation, and record it.",
+      "asvs": "V3.2.2",
+      "capec": [
+        "CAPEC-21",
+        "CAPEC-59"
+      ],
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html",
+      "check": "Collect a few hundred identifiers and confirm no structure or sequence in them.",
+      "cwe": 330,
+      "data_breach_probability": "probable",
+      "description": "The link carries a session identifier and nothing records that those identifiers are unpredictable. A session id that can be guessed, or that survives a login, hands an attacker somebody else's session without any need to steal a credential.\n",
+      "detection_logic": "A non-response flow authenticating by session id, arriving at an in-scope asset that runs code of our own, where neither the flow nor the receiving asset records uses_strong_session_ids.\n",
+      "false_positives": "Applications whose framework generates identifiers from a cryptographic source and rotates them on privilege change, which is most modern ones. Record uses_strong_session_ids: true; the point of the field is that the next reader can tell the difference between \"the framework does it\" and \"nobody looked\".\n",
+      "function": "development",
+      "id": "weak-session-identifier",
+      "impact": "flow.to.confidentiality >= 'confidential' ? 'high' : 'medium'\n",
+      "likelihood": "flow.to.internet_reachable ? 'very-likely' : 'likely'\n",
+      "match": "!flow.is_response\n&& flow.authentication == 'session-id'\n&& !flow.to.out_of_scope\n&& flow.to.custom_code\n&& !flow.controls.uses_strong_session_ids\n&& !flow.to.controls.uses_strong_session_ids\n",
+      "mitigation": "Generate identifiers from a cryptographically secure source with at least 128 bits of entropy, rotate them on login and on any privilege change, and invalidate them on logout on the server rather than only in the browser.\n",
+      "risk_assessment": "Likelihood rises to Very Likely when the asset is reachable from the internet, because guessing is then unmetered and unattended. Impact follows what the session grants access to.\n",
+      "risk_title": "Sessions on {{ flow.to.name }} have no recorded strength guarantee",
+      "scope": "flow",
+      "stride": "spoofing",
+      "tags": [
+        "session-management",
+        "identity"
+      ],
+      "title": "Session identifiers with no recorded strength guarantee"
+    },
+    "file": "weak-session-identifier.rule.yaml"
   },
   {
     "doc": {

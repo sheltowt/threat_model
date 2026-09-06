@@ -1,0 +1,55 @@
+id: unsanitized-stored-content
+title: Attacker-supplied content stored and served without sanitisation
+stride: tampering
+cwe: 79
+capec: [CAPEC-592]
+asvs: V5.3.3
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html
+function: development
+
+description: >
+  Content arriving from outside is written to a store and later read back by an asset
+  that renders pages. Validation on the way in decides whether to accept it;
+  sanitisation decides what survives being rendered. This asset records neither
+  sanitisation nor output encoding, so what one user submits can run in another
+  user's session.
+
+detection_logic: >
+  An in-scope web application running code of our own, reachable from the internet,
+  which writes to a datastore that some asset also reads, and which records neither
+  sanitizes_input nor encodes_output. The stored-then-rendered path is what separates
+  this from the reflected case, which cross-site-scripting already covers.
+
+risk_assessment: >
+  Likelihood is Very Likely where the content is reachable from the internet: it
+  needs one submission and then waits. Impact is High, because a stored payload runs
+  in the session of every reader rather than only the person who clicked a link.
+
+false_positives: >
+  Stores holding only content the application generated itself, and pipelines that
+  sanitise on the way out in a template layer. Record encodes_output and say where.
+
+mitigation: >
+  Sanitise on input against an allowlist, encode on output for the context the value
+  lands in, and set a content security policy so a mistake in either is not the end
+  of it. Do all three; each one covers a different failure.
+action: Encode on output and sanitise stored rich content against an allowlist.
+check: Store a payload with markup in it and confirm it renders as text.
+
+scope: element
+match: |
+  !el.human
+  && !el.technology.client
+  && el.custom_code
+  && el.internet_reachable
+  && el.technology.web_application
+  && el.outgoing.exists(f, f.to.technology.datastore && size(f.sends) > 0)
+  && !el.controls.sanitizes_input
+  && !el.controls.encodes_output
+
+likelihood: very-likely
+impact: high
+
+data_breach_probability: possible
+risk_title: "{{ el.name }} stores submitted content without sanitising or encoding it"
+tags: [injection, xss, input-validation]

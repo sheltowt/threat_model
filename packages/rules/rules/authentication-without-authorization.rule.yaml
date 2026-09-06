@@ -1,0 +1,53 @@
+id: authentication-without-authorization
+title: Caller is identified but not checked against what it may do
+stride: elevation-of-privilege
+cwe: 862
+capec: [CAPEC-122]
+asvs: V4.1.1
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
+function: development
+
+description: >
+  The link establishes who the caller is and then does not record any check on what
+  that caller is allowed to do. Knowing the name on the request is not the same as
+  deciding whether it may be granted, and any authenticated party gets everything.
+
+detection_logic: >
+  A non-response flow that authenticates the caller by some means, arrives at an
+  in-scope asset holding data classified confidential or above, declares no
+  authorization, and does not record authorizes_source on either the flow or the
+  receiving asset.
+
+risk_assessment: >
+  Likelihood is Likely: the attacker needs an account, which on anything with self
+  service is no barrier at all. Impact follows what the target holds, because an
+  authenticated caller with no authorisation check reaches all of it.
+
+false_positives: >
+  Endpoints where every authenticated caller genuinely is entitled to everything, such
+  as a single-tenant internal tool. Record authorizes_source: true on the asset if a
+  check exists, or set authorization on the flow to say which identity it acts as.
+
+mitigation: >
+  Decide authorisation on the server for every request, against the resource being
+  touched rather than the route being called. Deny by default.
+action: Add a per-resource authorisation check on the receiving asset.
+check: Call the endpoint as a valid user who should not be entitled and confirm refusal.
+
+scope: flow
+match: |
+  !flow.is_response
+  && flow.authentication != 'none'
+  && flow.authorization == 'none'
+  && !flow.to.out_of_scope
+  && flow.to.confidentiality >= 'confidential'
+  && !flow.controls.authorizes_source
+  && !flow.to.controls.authorizes_source
+
+likelihood: likely
+impact: |
+  flow.to.confidentiality >= 'strictly-confidential' ? 'very-high' : 'high'
+
+data_breach_probability: probable
+risk_title: "{{ flow.to.name }} identifies callers on {{ flow.id }} but checks no permissions"
+tags: [access-control, authorization]

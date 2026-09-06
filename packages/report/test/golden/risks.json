@@ -11,9 +11,9 @@
     "version": "3"
   },
   "stats": {
-    "rules_run": 59,
+    "rules_run": 67,
     "rules_skipped": 0,
-    "candidates_evaluated": 386,
+    "candidates_evaluated": 442,
     "elements": 8,
     "elements_in_scope": 7,
     "elements_out_of_scope": 1,
@@ -23,40 +23,40 @@
     "shared_runtimes": 1,
     "data_assets": 5,
     "orphaned_data_assets": 0,
-    "risks": 37,
-    "open_risks": 37,
-    "low_confidence_risks": 16,
+    "risks": 47,
+    "open_risks": 47,
+    "low_confidence_risks": 26,
     "suppressed_risks": 0,
     "risks_by_severity": {
       "critical": 0,
       "high": 5,
-      "elevated": 26,
-      "medium": 6,
+      "elevated": 34,
+      "medium": 8,
       "low": 0
     },
     "open_risks_by_severity": {
       "critical": 0,
       "high": 5,
-      "elevated": 26,
-      "medium": 6,
+      "elevated": 34,
+      "medium": 8,
       "low": 0
     },
     "risks_by_status": {
-      "unchecked": 37
+      "unchecked": 47
     },
     "risks_by_stride": {
       "denial-of-service": 6,
-      "elevation-of-privilege": 5,
+      "elevation-of-privilege": 8,
       "information-disclosure": 8,
       "repudiation": 6,
-      "spoofing": 5,
-      "tampering": 7
+      "spoofing": 11,
+      "tampering": 8
     },
     "risks_by_function": {
-      "architecture": 9,
+      "architecture": 12,
       "business-side": 8,
-      "development": 6,
-      "operations": 14
+      "development": 10,
+      "operations": 17
     },
     "risks_by_rule": {
       "availability-dependency-inversion": 1,
@@ -64,6 +64,7 @@
       "container-baseimage-backdooring": 2,
       "dos-risky-access-across-trust-boundary": 3,
       "excessive-pii-collection": 2,
+      "excessive-privilege": 3,
       "incomplete-model": 1,
       "manual": 1,
       "missing-audit-log": 2,
@@ -72,8 +73,10 @@
       "missing-cloud-hardening": 1,
       "missing-consent-record": 2,
       "missing-content-security-policy": 1,
+      "missing-content-type-validation": 1,
       "missing-hardening": 2,
       "missing-identity-store": 1,
+      "missing-mutual-authentication": 3,
       "missing-pii-encryption-at-rest": 1,
       "missing-waf": 1,
       "pii-crossing-untrusted-boundary": 1,
@@ -85,6 +88,7 @@
       "unguarded-access-from-internet": 1,
       "unguarded-direct-datastore-access": 1,
       "unprotected-audit-log": 1,
+      "unverified-server-identity": 3,
       "weak-authentication": 2
     },
     "warnings": 0
@@ -621,6 +625,100 @@
       ]
     },
     {
+      "id": "excessive-privilege@payment_api",
+      "rule": "excessive-privilege",
+      "title": "Payment API has no recorded limit on its own privileges",
+      "severity": "elevated",
+      "likelihood": "unlikely",
+      "impact": "very-high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "elevation-of-privilege",
+      "function": "operations",
+      "subject": {
+        "kind": "element",
+        "id": "payment_api",
+        "name": "Payment API"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "payment_api"
+      ],
+      "detection_logic": "An in-scope, non-human, non-client element that either holds data classified confidential or above or is a technology the catalogue marks as a high-value target, that makes outbound calls of its own, and does not record implements_least_privilege.\nThe outbound requirement is what keeps this from becoming wallpaper. Least privilege matters for what an asset can reach from where it stands; a leaf datastore that calls nothing has no onward journey to constrain, and asking the question of every asset in the model is how a rule stops being read.\n",
+      "false_positives": "Assets whose privileges are constrained by a platform rather than by their own configuration, such as a workload with a narrowly scoped cloud role. That is least privilege; record it as true and name where the constraint lives, so the next reader does not have to go looking.\n",
+      "mitigation": "Give the asset only the permissions it uses, scoped to the resources it touches, and review them when its job changes. Separate the identity it runs as from the identity it uses to reach anything else.\n",
+      "tags": [
+        "access-control",
+        "least-privilege"
+      ],
+      "description": "An asset worth attacking does not record that its own privileges are constrained. What matters after a compromise is not whether the asset was breached but how far the attacker travels from it, and that is decided by what it was allowed to do.\n",
+      "cwe": 250,
+      "capec": [
+        "CAPEC-233",
+        "CAPEC-69"
+      ],
+      "asvs": "V1.4.5",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+      "action": "Scope this asset's credentials to what it actually uses.",
+      "check": "Remove one permission the asset should not need and confirm nothing breaks.",
+      "unknowns": [
+        "el.controls.implements_least_privilege"
+      ],
+      "most_relevant_element": "payment_api",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile",
+        "payment_token",
+        "processor_credentials"
+      ]
+    },
+    {
+      "id": "excessive-privilege@storefront",
+      "rule": "excessive-privilege",
+      "title": "Storefront web app has no recorded limit on its own privileges",
+      "severity": "elevated",
+      "likelihood": "unlikely",
+      "impact": "very-high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "elevation-of-privilege",
+      "function": "operations",
+      "subject": {
+        "kind": "element",
+        "id": "storefront",
+        "name": "Storefront web app"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "storefront"
+      ],
+      "detection_logic": "An in-scope, non-human, non-client element that either holds data classified confidential or above or is a technology the catalogue marks as a high-value target, that makes outbound calls of its own, and does not record implements_least_privilege.\nThe outbound requirement is what keeps this from becoming wallpaper. Least privilege matters for what an asset can reach from where it stands; a leaf datastore that calls nothing has no onward journey to constrain, and asking the question of every asset in the model is how a rule stops being read.\n",
+      "false_positives": "Assets whose privileges are constrained by a platform rather than by their own configuration, such as a workload with a narrowly scoped cloud role. That is least privilege; record it as true and name where the constraint lives, so the next reader does not have to go looking.\n",
+      "mitigation": "Give the asset only the permissions it uses, scoped to the resources it touches, and review them when its job changes. Separate the identity it runs as from the identity it uses to reach anything else.\n",
+      "tags": [
+        "access-control",
+        "least-privilege"
+      ],
+      "description": "An asset worth attacking does not record that its own privileges are constrained. What matters after a compromise is not whether the asset was breached but how far the attacker travels from it, and that is decided by what it was allowed to do.\n",
+      "cwe": 250,
+      "capec": [
+        "CAPEC-233",
+        "CAPEC-69"
+      ],
+      "asvs": "V1.4.5",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+      "action": "Scope this asset's credentials to what it actually uses.",
+      "check": "Remove one permission the asset should not need and confirm nothing breaks.",
+      "unknowns": [
+        "el.controls.implements_least_privilege"
+      ],
+      "most_relevant_element": "storefront",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile"
+      ]
+    },
+    {
       "id": "missing-audit-log@settlement_batch",
       "rule": "missing-audit-log",
       "title": "Nightly settlement batch changes critical data without an audit trail",
@@ -888,6 +986,51 @@
       ]
     },
     {
+      "id": "missing-content-type-validation@storefront",
+      "rule": "missing-content-type-validation",
+      "title": "Storefront web app parses several formats without checking which it was sent",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "tampering",
+      "function": "development",
+      "subject": {
+        "kind": "element",
+        "id": "storefront",
+        "name": "Storefront web app"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "storefront"
+      ],
+      "detection_logic": "An in-scope element running code of our own, reachable from the internet, that accepts more than one body format, and does not record validates_content_type. More than one format is the condition that matters: an asset that only ever parses JSON has nothing to confuse.\n",
+      "false_positives": "Assets behind a gateway that pins the content type before they see it, and frameworks that route strictly on a declared type. Record validates_content_type and note where the check happens.\n",
+      "mitigation": "Accept an explicit allowlist of content types per endpoint, reject anything else before parsing, and for uploads verify the contents rather than trusting the declared type or the file extension.\n",
+      "tags": [
+        "input-validation",
+        "parsing"
+      ],
+      "description": "The asset accepts more than one body format and does not record that it checks which one it was actually given. A parser chosen from an attacker-supplied header, or a file whose declared type does not match its contents, lets input reach a parser it was never meant to reach.\n",
+      "cwe": 434,
+      "capec": [
+        "CAPEC-209"
+      ],
+      "asvs": "V13.1.5",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html",
+      "action": "Pin the accepted content types per endpoint and reject the rest.",
+      "check": "Send a body with a mismatched content type and confirm it is refused.",
+      "unknowns": [
+        "el.controls.validates_content_type"
+      ],
+      "most_relevant_element": "storefront",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile"
+      ]
+    },
+    {
       "id": "missing-hardening@payment_api",
       "rule": "missing-hardening",
       "title": "Payment API is an attractive target with no recorded hardening",
@@ -976,6 +1119,106 @@
       "most_relevant_element": "token_store",
       "most_relevant_data": [
         "customer_profile",
+        "payment_token"
+      ]
+    },
+    {
+      "id": "missing-mutual-authentication@api_to_token_store",
+      "rule": "missing-mutual-authentication",
+      "title": "Token store does not verify which service calls it on api_to_token_store",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "medium",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "spoofing",
+      "function": "architecture",
+      "subject": {
+        "kind": "flow",
+        "id": "api_to_token_store",
+        "name": "Token persistence"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "payment_api",
+        "token_store"
+      ],
+      "detection_logic": "A non-response flow between two non-human assets, crossing a network trust boundary, arriving at an in-scope asset holding data classified confidential or above, where neither the flow nor the receiving asset records authenticates_source. Flows presenting a client certificate are excluded, since that is the control in action.\n",
+      "false_positives": "Meshes that apply mutual TLS transparently, and networks where an authenticating proxy sits in front of every listener. Both are real; record authenticates_source on the receiving asset and name the layer, because a network control nobody has written down is one nobody will notice being turned off.\n",
+      "mitigation": "Give each workload its own identity and verify it on the receiving side, with mutual TLS or signed tokens. Network position is not identity: treat reachability and authorisation as separate questions.\n",
+      "tags": [
+        "authentication",
+        "identity",
+        "zero-trust"
+      ],
+      "description": "One service calls another across a network boundary and the receiving side does not record that it verifies which service called. Anything that reaches the port is treated as the caller, so a foothold anywhere on that network is a foothold on this asset.\n",
+      "cwe": 287,
+      "capec": [
+        "CAPEC-151",
+        "CAPEC-94"
+      ],
+      "asvs": "V2.10.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Microservices_Security_Cheat_Sheet.html",
+      "action": "Verify the calling workload's identity on the receiving asset.",
+      "check": "Call the endpoint from an unrelated workload on the same network and confirm refusal.",
+      "unknowns": [
+        "flow.controls.authenticates_source",
+        "flow.to.controls.authenticates_source"
+      ],
+      "most_relevant_element": "token_store",
+      "most_relevant_flow": "api_to_token_store",
+      "most_relevant_data": [
+        "customer_profile",
+        "payment_token"
+      ]
+    },
+    {
+      "id": "missing-mutual-authentication@storefront_to_api",
+      "rule": "missing-mutual-authentication",
+      "title": "Payment API does not verify which service calls it on storefront_to_api",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "spoofing",
+      "function": "architecture",
+      "subject": {
+        "kind": "flow",
+        "id": "storefront_to_api",
+        "name": "Tokenise"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "payment_api",
+        "storefront"
+      ],
+      "detection_logic": "A non-response flow between two non-human assets, crossing a network trust boundary, arriving at an in-scope asset holding data classified confidential or above, where neither the flow nor the receiving asset records authenticates_source. Flows presenting a client certificate are excluded, since that is the control in action.\n",
+      "false_positives": "Meshes that apply mutual TLS transparently, and networks where an authenticating proxy sits in front of every listener. Both are real; record authenticates_source on the receiving asset and name the layer, because a network control nobody has written down is one nobody will notice being turned off.\n",
+      "mitigation": "Give each workload its own identity and verify it on the receiving side, with mutual TLS or signed tokens. Network position is not identity: treat reachability and authorisation as separate questions.\n",
+      "tags": [
+        "authentication",
+        "identity",
+        "zero-trust"
+      ],
+      "description": "One service calls another across a network boundary and the receiving side does not record that it verifies which service called. Anything that reaches the port is treated as the caller, so a foothold anywhere on that network is a foothold on this asset.\n",
+      "cwe": 287,
+      "capec": [
+        "CAPEC-151",
+        "CAPEC-94"
+      ],
+      "asvs": "V2.10.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Microservices_Security_Cheat_Sheet.html",
+      "action": "Verify the calling workload's identity on the receiving asset.",
+      "check": "Call the endpoint from an unrelated workload on the same network and confirm refusal.",
+      "unknowns": [
+        "flow.controls.authenticates_source",
+        "flow.to.controls.authenticates_source"
+      ],
+      "most_relevant_element": "payment_api",
+      "most_relevant_flow": "storefront_to_api",
+      "most_relevant_data": [
+        "card_data",
         "payment_token"
       ]
     },
@@ -1478,6 +1721,155 @@
       ]
     },
     {
+      "id": "unverified-server-identity@api_to_processor",
+      "rule": "unverified-server-identity",
+      "title": "Payment API does not verify who answers on api_to_processor",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "spoofing",
+      "function": "development",
+      "subject": {
+        "kind": "flow",
+        "id": "api_to_processor",
+        "name": "Processor tokenisation"
+      },
+      "data_breach_probability": "probable",
+      "data_breach_elements": [
+        "payment_api",
+        "processor"
+      ],
+      "detection_logic": "A non-response flow over an encrypted protocol, crossing a network trust boundary, carrying credentials or data classified confidential or above, where the flow does not record authenticates_destination.\n",
+      "false_positives": "Links where the platform pins and verifies for you, such as a service mesh doing mutual TLS, and clients using a runtime whose defaults cannot be turned off. Record authenticates_destination: true and say which layer does it, because \"the library does it by default\" stops being true the moment somebody sets a flag.\n",
+      "mitigation": "Verify the certificate chain and the hostname, and fail closed when either does not check out. Disabling verification to get past a certificate problem in a test environment is how this reaches production.\n",
+      "tags": [
+        "identity",
+        "tls",
+        "transport"
+      ],
+      "description": "The link is encrypted but the caller does not record that it checks who answered. Encryption without identity verification protects the traffic from a passive listener and not at all from someone who answers in the callee's place, which is the attack that matters on an untrusted path.\n",
+      "cwe": 295,
+      "capec": [
+        "CAPEC-459",
+        "CAPEC-94"
+      ],
+      "asvs": "V9.2.1",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html",
+      "action": "Turn on certificate and hostname verification for this client.",
+      "check": "Point the caller at a host presenting a valid certificate for a different name and confirm it refuses.",
+      "unknowns": [
+        "flow.controls.authenticates_destination"
+      ],
+      "most_relevant_element": "processor",
+      "most_relevant_flow": "api_to_processor",
+      "most_relevant_data": [
+        "card_data",
+        "payment_token",
+        "processor_credentials"
+      ]
+    },
+    {
+      "id": "unverified-server-identity@shopper_to_storefront",
+      "rule": "unverified-server-identity",
+      "title": "Shopper does not verify who answers on shopper_to_storefront",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "spoofing",
+      "function": "development",
+      "subject": {
+        "kind": "flow",
+        "id": "shopper_to_storefront",
+        "name": "Checkout"
+      },
+      "data_breach_probability": "probable",
+      "data_breach_elements": [
+        "shopper",
+        "storefront"
+      ],
+      "detection_logic": "A non-response flow over an encrypted protocol, crossing a network trust boundary, carrying credentials or data classified confidential or above, where the flow does not record authenticates_destination.\n",
+      "false_positives": "Links where the platform pins and verifies for you, such as a service mesh doing mutual TLS, and clients using a runtime whose defaults cannot be turned off. Record authenticates_destination: true and say which layer does it, because \"the library does it by default\" stops being true the moment somebody sets a flag.\n",
+      "mitigation": "Verify the certificate chain and the hostname, and fail closed when either does not check out. Disabling verification to get past a certificate problem in a test environment is how this reaches production.\n",
+      "tags": [
+        "identity",
+        "tls",
+        "transport"
+      ],
+      "description": "The link is encrypted but the caller does not record that it checks who answered. Encryption without identity verification protects the traffic from a passive listener and not at all from someone who answers in the callee's place, which is the attack that matters on an untrusted path.\n",
+      "cwe": 295,
+      "capec": [
+        "CAPEC-459",
+        "CAPEC-94"
+      ],
+      "asvs": "V9.2.1",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html",
+      "action": "Turn on certificate and hostname verification for this client.",
+      "check": "Point the caller at a host presenting a valid certificate for a different name and confirm it refuses.",
+      "unknowns": [
+        "flow.controls.authenticates_destination"
+      ],
+      "most_relevant_element": "storefront",
+      "most_relevant_flow": "shopper_to_storefront",
+      "most_relevant_data": [
+        "card_data",
+        "customer_profile",
+        "payment_token"
+      ]
+    },
+    {
+      "id": "unverified-server-identity@storefront_to_api",
+      "rule": "unverified-server-identity",
+      "title": "Storefront web app does not verify who answers on storefront_to_api",
+      "severity": "elevated",
+      "likelihood": "likely",
+      "impact": "high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "spoofing",
+      "function": "development",
+      "subject": {
+        "kind": "flow",
+        "id": "storefront_to_api",
+        "name": "Tokenise"
+      },
+      "data_breach_probability": "probable",
+      "data_breach_elements": [
+        "payment_api",
+        "storefront"
+      ],
+      "detection_logic": "A non-response flow over an encrypted protocol, crossing a network trust boundary, carrying credentials or data classified confidential or above, where the flow does not record authenticates_destination.\n",
+      "false_positives": "Links where the platform pins and verifies for you, such as a service mesh doing mutual TLS, and clients using a runtime whose defaults cannot be turned off. Record authenticates_destination: true and say which layer does it, because \"the library does it by default\" stops being true the moment somebody sets a flag.\n",
+      "mitigation": "Verify the certificate chain and the hostname, and fail closed when either does not check out. Disabling verification to get past a certificate problem in a test environment is how this reaches production.\n",
+      "tags": [
+        "identity",
+        "tls",
+        "transport"
+      ],
+      "description": "The link is encrypted but the caller does not record that it checks who answered. Encryption without identity verification protects the traffic from a passive listener and not at all from someone who answers in the callee's place, which is the attack that matters on an untrusted path.\n",
+      "cwe": 295,
+      "capec": [
+        "CAPEC-459",
+        "CAPEC-94"
+      ],
+      "asvs": "V9.2.1",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html",
+      "action": "Turn on certificate and hostname verification for this client.",
+      "check": "Point the caller at a host presenting a valid certificate for a different name and confirm it refuses.",
+      "unknowns": [
+        "flow.controls.authenticates_destination"
+      ],
+      "most_relevant_element": "payment_api",
+      "most_relevant_flow": "storefront_to_api",
+      "most_relevant_data": [
+        "card_data",
+        "payment_token"
+      ]
+    },
+    {
       "id": "dos-risky-access-across-trust-boundary@api_to_token_store",
       "rule": "dos-risky-access-across-trust-boundary",
       "title": "Token store accepts unthrottled traffic over api_to_token_store",
@@ -1523,6 +1915,52 @@
       "most_relevant_flow": "api_to_token_store",
       "most_relevant_data": [
         "customer_profile",
+        "payment_token"
+      ]
+    },
+    {
+      "id": "excessive-privilege@settlement_batch",
+      "rule": "excessive-privilege",
+      "title": "Nightly settlement batch has no recorded limit on its own privileges",
+      "severity": "medium",
+      "likelihood": "unlikely",
+      "impact": "high",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "elevation-of-privilege",
+      "function": "operations",
+      "subject": {
+        "kind": "element",
+        "id": "settlement_batch",
+        "name": "Nightly settlement batch"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "settlement_batch"
+      ],
+      "detection_logic": "An in-scope, non-human, non-client element that either holds data classified confidential or above or is a technology the catalogue marks as a high-value target, that makes outbound calls of its own, and does not record implements_least_privilege.\nThe outbound requirement is what keeps this from becoming wallpaper. Least privilege matters for what an asset can reach from where it stands; a leaf datastore that calls nothing has no onward journey to constrain, and asking the question of every asset in the model is how a rule stops being read.\n",
+      "false_positives": "Assets whose privileges are constrained by a platform rather than by their own configuration, such as a workload with a narrowly scoped cloud role. That is least privilege; record it as true and name where the constraint lives, so the next reader does not have to go looking.\n",
+      "mitigation": "Give the asset only the permissions it uses, scoped to the resources it touches, and review them when its job changes. Separate the identity it runs as from the identity it uses to reach anything else.\n",
+      "tags": [
+        "access-control",
+        "least-privilege"
+      ],
+      "description": "An asset worth attacking does not record that its own privileges are constrained. What matters after a compromise is not whether the asset was breached but how far the attacker travels from it, and that is decided by what it was allowed to do.\n",
+      "cwe": 250,
+      "capec": [
+        "CAPEC-233",
+        "CAPEC-69"
+      ],
+      "asvs": "V1.4.5",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+      "action": "Scope this asset's credentials to what it actually uses.",
+      "check": "Remove one permission the asset should not need and confirm nothing breaks.",
+      "unknowns": [
+        "el.controls.implements_least_privilege"
+      ],
+      "most_relevant_element": "settlement_batch",
+      "most_relevant_data": [
+        "audit_log",
         "payment_token"
       ]
     },
@@ -1639,6 +2077,55 @@
       "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html",
       "action": "Model the identity provider or store that backs these authenticated links.",
       "check": "For one authenticated flow, name the system that holds the credential it verifies, and confirm that system appears in the model."
+    },
+    {
+      "id": "missing-mutual-authentication@batch_to_token_store",
+      "rule": "missing-mutual-authentication",
+      "title": "Token store does not verify which service calls it on batch_to_token_store",
+      "severity": "medium",
+      "likelihood": "unlikely",
+      "impact": "medium",
+      "confidence": "low",
+      "status": "unchecked",
+      "stride": "spoofing",
+      "function": "architecture",
+      "subject": {
+        "kind": "flow",
+        "id": "batch_to_token_store",
+        "name": "Nightly read"
+      },
+      "data_breach_probability": "possible",
+      "data_breach_elements": [
+        "settlement_batch",
+        "token_store"
+      ],
+      "detection_logic": "A non-response flow between two non-human assets, crossing a network trust boundary, arriving at an in-scope asset holding data classified confidential or above, where neither the flow nor the receiving asset records authenticates_source. Flows presenting a client certificate are excluded, since that is the control in action.\n",
+      "false_positives": "Meshes that apply mutual TLS transparently, and networks where an authenticating proxy sits in front of every listener. Both are real; record authenticates_source on the receiving asset and name the layer, because a network control nobody has written down is one nobody will notice being turned off.\n",
+      "mitigation": "Give each workload its own identity and verify it on the receiving side, with mutual TLS or signed tokens. Network position is not identity: treat reachability and authorisation as separate questions.\n",
+      "tags": [
+        "authentication",
+        "identity",
+        "zero-trust"
+      ],
+      "description": "One service calls another across a network boundary and the receiving side does not record that it verifies which service called. Anything that reaches the port is treated as the caller, so a foothold anywhere on that network is a foothold on this asset.\n",
+      "cwe": 287,
+      "capec": [
+        "CAPEC-151",
+        "CAPEC-94"
+      ],
+      "asvs": "V2.10.3",
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Microservices_Security_Cheat_Sheet.html",
+      "action": "Verify the calling workload's identity on the receiving asset.",
+      "check": "Call the endpoint from an unrelated workload on the same network and confirm refusal.",
+      "unknowns": [
+        "flow.controls.authenticates_source",
+        "flow.to.controls.authenticates_source"
+      ],
+      "most_relevant_element": "token_store",
+      "most_relevant_flow": "batch_to_token_store",
+      "most_relevant_data": [
+        "payment_token"
+      ]
     },
     {
       "id": "weak-authentication@api_to_token_store",

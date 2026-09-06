@@ -1,0 +1,58 @@
+id: excessive-privilege
+title: High-value asset with no recorded least-privilege constraint
+stride: elevation-of-privilege
+cwe: 250
+capec: [CAPEC-69, CAPEC-233]
+asvs: V1.4.5
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
+function: operations
+
+description: >
+  An asset worth attacking does not record that its own privileges are constrained.
+  What matters after a compromise is not whether the asset was breached but how far
+  the attacker travels from it, and that is decided by what it was allowed to do.
+
+detection_logic: >
+  An in-scope, non-human, non-client element that either holds data classified
+  confidential or above or is a technology the catalogue marks as a high-value
+  target, that makes outbound calls of its own, and does not record
+  implements_least_privilege.
+
+  The outbound requirement is what keeps this from becoming wallpaper. Least
+  privilege matters for what an asset can reach from where it stands; a leaf
+  datastore that calls nothing has no onward journey to constrain, and asking the
+  question of every asset in the model is how a rule stops being read.
+
+risk_assessment: >
+  Likelihood is Unlikely on its own terms, because this is a second-order failure
+  that needs a first compromise. Impact is High to Very High, because it is precisely
+  what turns one compromised asset into several.
+
+false_positives: >
+  Assets whose privileges are constrained by a platform rather than by their own
+  configuration, such as a workload with a narrowly scoped cloud role. That is least
+  privilege; record it as true and name where the constraint lives, so the next
+  reader does not have to go looking.
+
+mitigation: >
+  Give the asset only the permissions it uses, scoped to the resources it touches,
+  and review them when its job changes. Separate the identity it runs as from the
+  identity it uses to reach anything else.
+action: Scope this asset's credentials to what it actually uses.
+check: Remove one permission the asset should not need and confirm nothing breaks.
+
+scope: element
+match: |
+  !el.human
+  && !el.technology.client
+  && (el.confidentiality >= 'confidential' || el.technology.high_value_target)
+  && el.outgoing.exists(f, !f.is_response)
+  && !el.controls.implements_least_privilege
+
+likelihood: unlikely
+impact: |
+  el.confidentiality >= 'strictly-confidential' ? 'very-high' : 'high'
+
+data_breach_probability: possible
+risk_title: "{{ el.name }} has no recorded limit on its own privileges"
+tags: [access-control, least-privilege]

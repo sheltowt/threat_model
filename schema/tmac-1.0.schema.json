@@ -495,9 +495,6 @@
               "uses_strong_session_ids": {
                 "type": "boolean"
               },
-              "uses_vpn": {
-                "type": "boolean"
-              },
               "validates_content_type": {
                 "type": "boolean"
               },
@@ -755,9 +752,6 @@
                 "type": "boolean"
               },
               "uses_strong_session_ids": {
-                "type": "boolean"
-              },
-              "uses_vpn": {
                 "type": "boolean"
               },
               "validates_content_type": {

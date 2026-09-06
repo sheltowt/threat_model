@@ -1,0 +1,54 @@
+id: missing-content-type-validation
+title: Request bodies parsed without checking what they claim to be
+stride: tampering
+cwe: 434
+capec: [CAPEC-209]
+asvs: V13.1.5
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html
+function: development
+
+description: >
+  The asset accepts more than one body format and does not record that it checks
+  which one it was actually given. A parser chosen from an attacker-supplied header,
+  or a file whose declared type does not match its contents, lets input reach a
+  parser it was never meant to reach.
+
+detection_logic: >
+  An in-scope element running code of our own, reachable from the internet, that
+  accepts more than one body format, and does not record validates_content_type.
+  More than one format is the condition that matters: an asset that only ever parses
+  JSON has nothing to confuse.
+
+risk_assessment: >
+  Likelihood is Likely: it takes one request with an altered header. Impact follows
+  what the asset holds, and is worst where a second parser reachable this way is one
+  the other rules already worry about, such as XML.
+
+false_positives: >
+  Assets behind a gateway that pins the content type before they see it, and
+  frameworks that route strictly on a declared type. Record validates_content_type
+  and note where the check happens.
+
+mitigation: >
+  Accept an explicit allowlist of content types per endpoint, reject anything else
+  before parsing, and for uploads verify the contents rather than trusting the
+  declared type or the file extension.
+action: Pin the accepted content types per endpoint and reject the rest.
+check: Send a body with a mismatched content type and confirm it is refused.
+
+scope: element
+match: |
+  !el.human
+  && !el.technology.client
+  && el.custom_code
+  && el.internet_reachable
+  && size(el.accepts_formats) > 1
+  && !el.controls.validates_content_type
+
+likelihood: likely
+impact: |
+  el.confidentiality >= 'confidential' ? 'high' : 'medium'
+
+data_breach_probability: possible
+risk_title: "{{ el.name }} parses several formats without checking which it was sent"
+tags: [input-validation, parsing]

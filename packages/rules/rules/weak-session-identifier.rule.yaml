@@ -1,0 +1,54 @@
+id: weak-session-identifier
+title: Session identifiers with no recorded strength guarantee
+stride: spoofing
+cwe: 330
+capec: [CAPEC-21, CAPEC-59]
+asvs: V3.2.2
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
+function: development
+
+description: >
+  The link carries a session identifier and nothing records that those identifiers are
+  unpredictable. A session id that can be guessed, or that survives a login, hands an
+  attacker somebody else's session without any need to steal a credential.
+
+detection_logic: >
+  A non-response flow authenticating by session id, arriving at an in-scope asset that
+  runs code of our own, where neither the flow nor the receiving asset records
+  uses_strong_session_ids.
+
+risk_assessment: >
+  Likelihood rises to Very Likely when the asset is reachable from the internet,
+  because guessing is then unmetered and unattended. Impact follows what the session
+  grants access to.
+
+false_positives: >
+  Applications whose framework generates identifiers from a cryptographic source and
+  rotates them on privilege change, which is most modern ones. Record
+  uses_strong_session_ids: true; the point of the field is that the next reader can
+  tell the difference between "the framework does it" and "nobody looked".
+
+mitigation: >
+  Generate identifiers from a cryptographically secure source with at least 128 bits
+  of entropy, rotate them on login and on any privilege change, and invalidate them
+  on logout on the server rather than only in the browser.
+action: Confirm the session store's identifier source and rotation, and record it.
+check: Collect a few hundred identifiers and confirm no structure or sequence in them.
+
+scope: flow
+match: |
+  !flow.is_response
+  && flow.authentication == 'session-id'
+  && !flow.to.out_of_scope
+  && flow.to.custom_code
+  && !flow.controls.uses_strong_session_ids
+  && !flow.to.controls.uses_strong_session_ids
+
+likelihood: |
+  flow.to.internet_reachable ? 'very-likely' : 'likely'
+impact: |
+  flow.to.confidentiality >= 'confidential' ? 'high' : 'medium'
+
+data_breach_probability: probable
+risk_title: "Sessions on {{ flow.to.name }} have no recorded strength guarantee"
+tags: [session-management, identity]

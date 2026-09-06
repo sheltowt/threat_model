@@ -1,0 +1,59 @@
+id: missing-mutual-authentication
+title: Service-to-service call that does not verify the caller
+stride: spoofing
+cwe: 287
+capec: [CAPEC-94, CAPEC-151]
+asvs: V2.10.3
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Microservices_Security_Cheat_Sheet.html
+function: architecture
+
+description: >
+  One service calls another across a network boundary and the receiving side does not
+  record that it verifies which service called. Anything that reaches the port is
+  treated as the caller, so a foothold anywhere on that network is a foothold on this
+  asset.
+
+detection_logic: >
+  A non-response flow between two non-human assets, crossing a network trust boundary,
+  arriving at an in-scope asset holding data classified confidential or above, where
+  neither the flow nor the receiving asset records authenticates_source. Flows
+  presenting a client certificate are excluded, since that is the control in action.
+
+risk_assessment: >
+  Likelihood is Likely where the caller is reachable from the internet, because the
+  path to that network is shorter, and Unlikely otherwise. Impact follows what the
+  receiving asset holds.
+
+false_positives: >
+  Meshes that apply mutual TLS transparently, and networks where an authenticating
+  proxy sits in front of every listener. Both are real; record authenticates_source
+  on the receiving asset and name the layer, because a network control nobody has
+  written down is one nobody will notice being turned off.
+
+mitigation: >
+  Give each workload its own identity and verify it on the receiving side, with
+  mutual TLS or signed tokens. Network position is not identity: treat reachability
+  and authorisation as separate questions.
+action: Verify the calling workload's identity on the receiving asset.
+check: Call the endpoint from an unrelated workload on the same network and confirm refusal.
+
+scope: flow
+match: |
+  !flow.is_response
+  && !flow.from.human
+  && !flow.to.human
+  && flow.authentication != 'client-certificate'
+  && flow.crosses_network_boundary
+  && !flow.to.out_of_scope
+  && flow.to.confidentiality >= 'confidential'
+  && !flow.controls.authenticates_source
+  && !flow.to.controls.authenticates_source
+
+likelihood: |
+  flow.from.internet_reachable ? 'likely' : 'unlikely'
+impact: |
+  flow.to.confidentiality >= 'strictly-confidential' ? 'high' : 'medium'
+
+data_breach_probability: possible
+risk_title: "{{ flow.to.name }} does not verify which service calls it on {{ flow.id }}"
+tags: [identity, authentication, zero-trust]
