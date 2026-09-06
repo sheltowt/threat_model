@@ -45,7 +45,14 @@ a sanitiser, and callers must only pass it SVG they generated.
 
 **Includes.** `includes` is the one place a YAML document's keys are copied into an
 object the tool already holds, which is the shape of a prototype pollution sink. Keys
-that reach the prototype chain are refused with an error rather than merged.
+that reach the prototype chain are refused with an error rather than merged, and the
+merge creates own data properties with `Object.defineProperty` rather than assigning,
+so a setter inherited from an already-polluted prototype is never invoked.
+
+The key filter, not the `defineProperty` hardening, is the primary defence. Zod's
+compiled parser assigns model fields with plain property assignment, so a prototype
+polluted before parsing would still be read through; stopping the pollution happening
+at all is what matters. There is a test recording that boundary.
 
 **What is not defended.** A model file can make the tool do a large amount of work,
 for instance through a very large element count. There is no wall-clock limit on a

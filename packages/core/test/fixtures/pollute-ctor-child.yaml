@@ -1,0 +1,8 @@
+schema: tmc/1.0
+constructor:
+  bad: true
+prototype:
+  worse: true
+elements:
+  legit:
+    technology: web-application

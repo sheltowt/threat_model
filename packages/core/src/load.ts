@@ -39,7 +39,27 @@ type Raw = Record<string, unknown>;
  * merged. Reported, because a model that contains one is either broken or hostile
  * and the reader should know which.
  */
-const UNSAFE_KEYS: ReadonlySet<string> = new Set(['__proto__', 'constructor', 'prototype']);
+function isUnsafeKey(key: string): boolean {
+  return key === '__proto__' || key === 'constructor' || key === 'prototype';
+}
+
+/**
+ * Create an own data property, rather than assigning to one.
+ *
+ * A plain `base[key] = value` runs a setter inherited from the prototype chain if
+ * one exists, which is the second half of a pollution attack and survives any
+ * key-based filter that misses a case. `defineProperty` cannot reach the prototype
+ * at all, so the write is safe on its own terms and not only because the guard above
+ * held. The descriptor matches what assignment would have produced.
+ */
+function define(base: Raw, key: string, value: unknown): void {
+  Object.defineProperty(base, key, {
+    value,
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
+}
 
 /**
  * Merge an included document into the accumulator. Maps merge key-wise and arrays
@@ -48,7 +68,7 @@ const UNSAFE_KEYS: ReadonlySet<string> = new Set(['__proto__', 'constructor', 'p
 function mergeInto(base: Raw, extra: Raw, path: string, diagnostics: Diagnostic[]): void {
   for (const [key, value] of Object.entries(extra)) {
     const here = path ? `${path}.${key}` : key;
-    if (UNSAFE_KEYS.has(key)) {
+    if (isUnsafeKey(key)) {
       diagnostics.push({
         severity: 'error',
         code: 'unsafe-key',
@@ -58,11 +78,14 @@ function mergeInto(base: Raw, extra: Raw, path: string, diagnostics: Diagnostic[
       });
       continue;
     }
-    const existing = base[key];
+    // Own properties only: an inherited one is not this document's to merge with.
+    const existing = Object.prototype.hasOwnProperty.call(base, key)
+      ? base[key]
+      : undefined;
     if (existing === undefined) {
-      base[key] = value;
+      define(base, key, value);
     } else if (Array.isArray(existing) && Array.isArray(value)) {
-      base[key] = [...existing, ...value];
+      define(base, key, [...existing, ...value]);
     } else if (isPlainObject(existing) && isPlainObject(value)) {
       mergeInto(existing, value, here, diagnostics);
     } else if (key !== 'schema' && key !== 'includes') {
