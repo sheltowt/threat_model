@@ -58,7 +58,7 @@ Lines marked `!` widen the attack surface.
 ## Container
 
 ```bash
-docker run --rm -v "$PWD:/work" ghcr.io/sheltowt/tmac analyze --format all --fail-on high
+docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/sheltowt/tmac analyze --format all --fail-on high
 ```
 
 The image carries WASM Graphviz, so diagram rendering has no system dependency and no

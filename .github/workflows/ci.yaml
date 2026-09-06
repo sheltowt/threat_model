@@ -93,17 +93,23 @@ jobs:
       - name: Run the image the way the documentation says to
         run: |
           set -euo pipefail
+          # Also proves the non-root image cannot write where it should not.
           mkdir -p work
           cp examples/payment-service/threatmodel.yaml work/
-          docker run --rm -v "$PWD/work:/work" tmac:ci validate
-          docker run --rm -v "$PWD/work:/work" tmac:ci analyze --format all --out out --quiet
+          # As the documentation says to run it. Without --user the non-root image
+          # cannot write into a bind mount the host owns, which is a real failure
+          # on Linux and invisible on macOS. A function rather than a variable,
+          # because relying on an unquoted expansion to word-split is fragile.
+          run() { docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/work:/work" tmac:ci "$@"; }
+          run validate
+          run analyze --format all --out out --quiet
           test -f work/out/risks.sarif
           test -f work/out/report.html
           test -f work/out/data-flow-diagram.svg
-          docker run --rm -v "$PWD/work:/work" tmac:ci questions --limit 3
+          run questions --limit 3
           # The editor is bundled in, so `tmac serve` must work from the image too.
-          docker run --rm -d -p 7395:7395 -v "$PWD/work:/work" \
-            --name tmac-serve tmac:ci serve --host 0.0.0.0 --port 7395
+          docker run --rm -d -p 7395:7395 --user "$(id -u):$(id -g)" \
+            -v "$PWD/work:/work" --name tmac-serve tmac:ci serve --host 0.0.0.0 --port 7395
           for i in $(seq 1 40); do
             curl -sf http://127.0.0.1:7395/api/model -o /dev/null && break
             sleep 0.5
