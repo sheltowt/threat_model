@@ -106,6 +106,8 @@ elements:
       uses_parameterized_queries: true
       has_access_control: true
       logs_security_events: true
+      checks_input_bounds: true
+      redundant: true
       rate_limited: false
 
   token_store:
@@ -117,6 +119,7 @@ elements:
     stores: [payment_token, customer_profile]
     controls:
       has_access_control: true
+      redundant: true
 
   audit_store:
     name: Audit log store

@@ -76,6 +76,39 @@ export const BUILTIN_RULE_DATA: readonly RawRuleEntry[] = [
   },
   {
     "doc": {
+      "action": "Add a timeout and a fallback path, or raise the dependency's availability.",
+      "asvs": "V1.1.5",
+      "capec": [
+        "CAPEC-607"
+      ],
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+      "check": "Take the dependency away in a rehearsal and confirm the caller still serves.",
+      "cwe": 1188,
+      "data_breach_probability": "improbable",
+      "description": "An asset the system depends on calls out to something rated less available than it is. The caller's rating is therefore a claim it cannot keep: it can be no more available than the weakest thing it needs, and the model says so.\n",
+      "detection_logic": "An in-scope element rated critical or better for availability with an outbound, non-response flow to an asset carrying a lower availability rating. This reads the graph rather than any control, so it is always a confirmed finding, never an unsettled one: both ratings are recorded or the model would not have loaded.\n",
+      "false_positives": "Calls the caller can complete without, where a timeout or a cached answer keeps it serving. That is the fix rather than an exception, and it is worth writing down: either raise the dependency's rating or record that the call is optional by lowering the caller's dependence on it.\n",
+      "function": "architecture",
+      "id": "availability-dependency-inversion",
+      "impact": "el.availability >= 'mission-critical' ? 'high' : 'medium'\n",
+      "likelihood": "likely",
+      "match": "!el.human\n&& !el.technology.client\n&& el.availability >= 'critical'\n&& el.outgoing.exists(f, !f.is_response && !f.to.out_of_scope && f.to.availability < el.availability)\n",
+      "mitigation": "Either raise the dependency to match, or make the call optional with a timeout, a fallback and a circuit breaker, so the caller degrades instead of stopping.\n",
+      "risk_assessment": "Likelihood is Likely, because it needs no attacker at all, only the dependency having the bad day its own rating admits it might. Impact follows the caller's rating, which is the promise being broken.\n",
+      "risk_title": "{{ el.name }} depends on something rated less available than itself",
+      "scope": "element",
+      "stride": "denial-of-service",
+      "tags": [
+        "availability",
+        "resilience",
+        "architecture"
+      ],
+      "title": "Critical asset depends on something less available than itself"
+    },
+    "file": "availability-dependency-inversion.rule.yaml"
+  },
+  {
+    "doc": {
       "action": "Add a frame-ancestors directive to the application's policy.",
       "asvs": "V14.4.7",
       "capec": [
@@ -402,6 +435,72 @@ export const BUILTIN_RULE_DATA: readonly RawRuleEntry[] = [
       "title": "Personal data in operational logging"
     },
     "file": "insufficient-log-minimisation.rule.yaml"
+  },
+  {
+    "doc": {
+      "action": "Log the user identity against the outbound request on the calling asset.",
+      "asvs": "V7.1.3",
+      "capec": [
+        "CAPEC-207"
+      ],
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+      "check": "Take an action as a test user and follow it from the edge to the datastore in the logs.",
+      "cwe": 778,
+      "data_breach_probability": "improbable",
+      "description": "A request that began with a person reaches a critical asset under a shared service identity, and the calling asset keeps no record tying the two together. The action is attributable to a service account and no further, so afterwards nobody can say which person caused it.\n",
+      "detection_logic": "A non-response flow authorised as a technical user, arriving at an asset rated critical or better for integrity, where the caller is reachable from the internet and does not record logs_security_events. Reachable from the internet is the proxy for \"a person started this\": an asset only machines can reach is a different case.\n",
+      "false_positives": "Links that genuinely carry no user-initiated work, such as a scheduled reconciliation job, and callers that propagate the user identity in the payload rather than in the authorisation. In the second case record logs_security_events on the caller, which is what makes the correlation possible.\n",
+      "function": "architecture",
+      "id": "lost-user-attribution",
+      "impact": "flow.to.integrity >= 'mission-critical' ? 'high' : 'medium'\n",
+      "likelihood": "likely",
+      "match": "!flow.is_response\n&& flow.authorization == 'technical-user'\n&& flow.from.internet_reachable\n&& !flow.from.human\n&& flow.to.integrity >= 'critical'\n&& !flow.from.controls.logs_security_events\n",
+      "mitigation": "Propagate the end user identity to the receiving asset, or log the correlation on the caller so a service-account action can be traced back to the person who caused it. Passing an opaque request id through the whole chain is usually enough.\n",
+      "risk_assessment": "Impact follows the integrity rating of the target, since that bounds what an unattributable actor could change. Likelihood is Likely, because this is the ordinary consequence of a service-to-service hop rather than an attack.\n",
+      "risk_title": "Actions on {{ flow.to.name }} via {{ flow.id }} cannot be traced to a person",
+      "scope": "flow",
+      "stride": "repudiation",
+      "tags": [
+        "logging",
+        "accountability",
+        "identity"
+      ],
+      "title": "End user identity is dropped before a critical action"
+    },
+    "file": "lost-user-attribution.rule.yaml"
+  },
+  {
+    "doc": {
+      "action": "Emit a structured audit event for every state change this asset makes.",
+      "asvs": "V7.1.3",
+      "capec": [
+        "CAPEC-81",
+        "CAPEC-93"
+      ],
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+      "check": "Perform a state-changing action and find it, attributed, in the log store.",
+      "cwe": 778,
+      "data_breach_probability": "improbable",
+      "description": "An asset that changes data other people rely on keeps no record of who changed it. Nobody can show afterwards what happened, which blocks an investigation and lets a participant deny an action they took.\n",
+      "detection_logic": "An in-scope, non-human, non-client element that runs code of our own and holds or handles data rated critical or better for integrity, and does not record the logs_security_events control. Elements whose technology exists to observe others, such as monitoring and intrusion detection, are skipped: they are the log.\n",
+      "false_positives": "Assets whose platform logs every mutation underneath them, such as a managed database with audit logging switched on at the service level, and read-only components that change nothing worth attributing. Record logs_security_events with a pointer to where the log actually lands.\n",
+      "function": "development",
+      "id": "missing-audit-log",
+      "impact": "el.integrity >= 'mission-critical' ? 'high' : 'medium'\n",
+      "likelihood": "likely",
+      "match": "!el.human\n&& !el.technology.client\n&& !el.technology.monitoring\n&& !el.technology.ids\n&& el.custom_code\n&& el.integrity >= 'critical'\n&& !el.controls.logs_security_events\n",
+      "mitigation": "Log the actor, the action, the subject and the time for every state change, to a destination the acting asset cannot rewrite. Log the decision, not just the request: \"denied, insufficient scope\" is worth more later than the bare call.\n",
+      "risk_assessment": "Likelihood is Likely rather than higher, because this is not an attack someone mounts; it is a gap discovered at the worst possible moment. Impact follows the integrity rating of what the asset holds, because that is what nobody will be able to reconstruct.\n",
+      "risk_title": "{{ el.name }} changes critical data without an audit trail",
+      "scope": "element",
+      "stride": "repudiation",
+      "tags": [
+        "logging",
+        "accountability"
+      ],
+      "title": "Security-relevant actions are not logged"
+    },
+    "file": "missing-audit-log.rule.yaml"
   },
   {
     "doc": {
@@ -1161,6 +1260,38 @@ export const BUILTIN_RULE_DATA: readonly RawRuleEntry[] = [
   },
   {
     "doc": {
+      "action": "Add a second instance in another failure domain, or correct the rating.",
+      "asvs": "V1.1.5",
+      "capec": [
+        "CAPEC-607"
+      ],
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+      "check": "Remove one instance in a rehearsal and confirm the service survives.",
+      "cwe": 1188,
+      "data_breach_probability": "improbable",
+      "description": "Something the system is rated as needing is recorded as having no redundancy, so a single failure of one asset stops the service. An attacker does not have to break it, only to keep it busy.\n",
+      "detection_logic": "An in-scope, non-human, non-client element rated critical or better for availability that does not record the redundant control. Load balancers and gateways are included deliberately: a single load balancer in front of a redundant fleet is the classic version of this.\n",
+      "false_positives": "Assets whose platform provides redundancy invisibly, such as a managed queue or a serverless function across zones. That is still redundancy: record it as redundant: true, with a note about what the provider guarantees, because the next reader cannot tell from the technology alone.\n",
+      "function": "operations",
+      "id": "single-point-of-failure",
+      "impact": "el.availability >= 'mission-critical' ? 'high' : 'medium'\n",
+      "likelihood": "el.internet_reachable ? 'very-likely' : 'likely'\n",
+      "match": "!el.human\n&& !el.technology.client\n&& el.availability >= 'critical'\n&& !el.controls.redundant\n",
+      "mitigation": "Run more than one instance across more than one failure domain, and check that a failover actually happens rather than assuming it. Where redundancy is genuinely not affordable, lower the availability rating so the model stops claiming the service needs something it does not have.\n",
+      "risk_assessment": "Likelihood rises to Very Likely when the asset is reachable from the internet, because then anyone can apply the load. Impact follows the availability rating, which is the model's own statement of what an outage costs.\n",
+      "risk_title": "{{ el.name }} is availability-critical with no recorded redundancy",
+      "scope": "element",
+      "stride": "denial-of-service",
+      "tags": [
+        "availability",
+        "resilience"
+      ],
+      "title": "Availability-critical asset with no redundancy"
+    },
+    "file": "single-point-of-failure.rule.yaml"
+  },
+  {
+    "doc": {
       "action": "Replace concatenated query construction in the calling service.",
       "asvs": "V5.3.4",
       "capec": [
@@ -1257,6 +1388,39 @@ export const BUILTIN_RULE_DATA: readonly RawRuleEntry[] = [
       "title": "Agent acting without a human in the loop"
     },
     "file": "unbounded-agent-autonomy.rule.yaml"
+  },
+  {
+    "doc": {
+      "action": "Set an explicit body size and parse depth limit on this asset.",
+      "asvs": "V13.1.3",
+      "capec": [
+        "CAPEC-130",
+        "CAPEC-197"
+      ],
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+      "check": "Send an oversized and a deeply nested payload and confirm both are refused cheaply.",
+      "cwe": 400,
+      "data_breach_probability": "improbable",
+      "description": "The asset parses a format that can be made arbitrarily large or deeply nested, and records no bound on what it will accept. One request can then consume memory or CPU out of proportion to its size, which is a cheap way to take a service down.\n",
+      "detection_logic": "An in-scope element running code of our own that is reachable from the internet, accepts a format whose cost an attacker controls (file uploads, serialised objects, XML, JSON), and does not record checks_input_bounds.\n",
+      "false_positives": "Assets behind a gateway that enforces a body limit for them, and parsers configured with limits in a framework rather than in code anyone would recognise. Both are real protection; record checks_input_bounds and say where the limit lives.\n",
+      "function": "development",
+      "id": "unbounded-input-size",
+      "impact": "el.availability >= 'critical' || size(el.shared_runtimes) > 0 ? 'medium' : 'low'\n",
+      "likelihood": "very-likely",
+      "match": "!el.human\n&& !el.technology.client\n&& el.custom_code\n&& el.internet_reachable\n&& el.accepts_formats.exists(f, f == 'file' || f == 'serialization' || f == 'xml' || f == 'json')\n&& !el.controls.checks_input_bounds\n",
+      "mitigation": "Cap request body size, parse depth and element count at the edge and again in the asset, and stream large uploads rather than buffering them. Reject early, before allocating.\n",
+      "risk_assessment": "Likelihood is Very Likely: this needs one request and no privileges. Impact follows the asset's availability rating, and rises when the asset shares a runtime with others, because exhausting it takes them down too.\n",
+      "risk_title": "{{ el.name }} parses attacker-sized input with no recorded bound",
+      "scope": "element",
+      "stride": "denial-of-service",
+      "tags": [
+        "availability",
+        "input-validation"
+      ],
+      "title": "Input accepted without a size or depth bound"
+    },
+    "file": "unbounded-input-size.rule.yaml"
   },
   {
     "doc": {
@@ -1549,6 +1713,39 @@ export const BUILTIN_RULE_DATA: readonly RawRuleEntry[] = [
       "title": "Element with no communication at all"
     },
     "file": "unnecessary-technical-asset.rule.yaml"
+  },
+  {
+    "doc": {
+      "action": "Forward this asset's logs to an append-only destination it cannot rewrite.",
+      "asvs": "V7.3.1",
+      "capec": [
+        "CAPEC-268",
+        "CAPEC-93"
+      ],
+      "cheat_sheet": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+      "check": "From the asset's own credentials, try to delete a log entry and confirm failure.",
+      "cwe": 117,
+      "data_breach_probability": "improbable",
+      "description": "The asset records security events but nothing stops those records being altered or deleted afterwards. An attacker who reaches the asset can remove the evidence of having done so, and an insider can rewrite their own history.\n",
+      "detection_logic": "An in-scope, non-human, non-client element that records logs_security_events as present, and does not record log_integrity_protected.\nThe `known()` guard is the point of the rule. Without it the condition is unsettled wherever nobody mentioned logging at all, and it would ask \"is your log protected?\" of every element in the model, including ones that keep no log. A model that says nothing about logging has a different problem, and missing-audit-log raises it.\n",
+      "false_positives": "Logs shipped immediately to an append-only or write-once destination the asset has no credentials to modify, where the protection is real but lives in the pipeline rather than the asset. Record log_integrity_protected and name the destination.\n",
+      "function": "operations",
+      "id": "unprotected-audit-log",
+      "impact": "el.integrity >= 'critical' ? 'high' : 'medium'\n",
+      "likelihood": "likely",
+      "match": "!el.human\n&& !el.technology.client\n&& known(el.controls.logs_security_events)\n&& el.controls.logs_security_events\n&& !el.controls.log_integrity_protected\n",
+      "mitigation": "Ship logs off the asset as they are written, to a store the asset can append to and not rewrite. Where the record has to stand up to dispute, sign or chain the entries so a gap is detectable rather than invisible.\n",
+      "risk_assessment": "Impact rises with the integrity rating of what the asset handles, because a log is worth exactly as much as the decisions it would let you reconstruct. Likelihood is Likely: tampering with logs is a routine step once an attacker has a foothold, not an exotic one.\n",
+      "risk_title": "{{ el.name }} logs security events but nothing protects the log",
+      "scope": "element",
+      "stride": "repudiation",
+      "tags": [
+        "logging",
+        "accountability"
+      ],
+      "title": "Audit log is not protected from tampering"
+    },
+    "file": "unprotected-audit-log.rule.yaml"
   },
   {
     "doc": {

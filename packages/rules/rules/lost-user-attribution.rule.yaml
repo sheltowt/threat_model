@@ -1,0 +1,55 @@
+id: lost-user-attribution
+title: End user identity is dropped before a critical action
+stride: repudiation
+cwe: 778
+capec: [CAPEC-207]
+asvs: V7.1.3
+cheat_sheet: https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+function: architecture
+
+description: >
+  A request that began with a person reaches a critical asset under a shared service
+  identity, and the calling asset keeps no record tying the two together. The action
+  is attributable to a service account and no further, so afterwards nobody can say
+  which person caused it.
+
+detection_logic: >
+  A non-response flow authorised as a technical user, arriving at an asset rated
+  critical or better for integrity, where the caller is reachable from the internet
+  and does not record logs_security_events. Reachable from the internet is the proxy
+  for "a person started this": an asset only machines can reach is a different case.
+
+risk_assessment: >
+  Impact follows the integrity rating of the target, since that bounds what an
+  unattributable actor could change. Likelihood is Likely, because this is the
+  ordinary consequence of a service-to-service hop rather than an attack.
+
+false_positives: >
+  Links that genuinely carry no user-initiated work, such as a scheduled reconciliation
+  job, and callers that propagate the user identity in the payload rather than in the
+  authorisation. In the second case record logs_security_events on the caller, which
+  is what makes the correlation possible.
+
+mitigation: >
+  Propagate the end user identity to the receiving asset, or log the correlation on
+  the caller so a service-account action can be traced back to the person who caused
+  it. Passing an opaque request id through the whole chain is usually enough.
+action: Log the user identity against the outbound request on the calling asset.
+check: Take an action as a test user and follow it from the edge to the datastore in the logs.
+
+scope: flow
+match: |
+  !flow.is_response
+  && flow.authorization == 'technical-user'
+  && flow.from.internet_reachable
+  && !flow.from.human
+  && flow.to.integrity >= 'critical'
+  && !flow.from.controls.logs_security_events
+
+likelihood: likely
+impact: |
+  flow.to.integrity >= 'mission-critical' ? 'high' : 'medium'
+
+data_breach_probability: improbable
+risk_title: "Actions on {{ flow.to.name }} via {{ flow.id }} cannot be traced to a person"
+tags: [logging, accountability, identity]

@@ -9,6 +9,41 @@
           "informationUri": "https://github.com/tmac-dev/tmac",
           "rules": [
             {
+              "id": "availability-dependency-inversion",
+              "name": "availability-dependency-inversion",
+              "shortDescription": {
+                "text": "Critical asset depends on something less available than itself"
+              },
+              "fullDescription": {
+                "text": "An asset the system depends on calls out to something rated less available than it is. The caller's rating is therefore a claim it cannot keep: it can be no more available than the weakest thing it needs, and the model says so."
+              },
+              "help": {
+                "text": "Either raise the dependency to match, or make the call optional with a timeout, a fallback and a circuit breaker, so the caller degrades instead of stopping.\n\nFalse positives: Calls the caller can complete without, where a timeout or a cached answer keeps it serving. That is the fix rather than an exception, and it is worth writing down: either raise the dependency's rating or record that the call is optional by lowering the caller's dependence on it.",
+                "markdown": "**Mitigation.** Either raise the dependency to match, or make the call optional with a timeout, a fallback and a circuit breaker, so the caller degrades instead of stopping.\n\n**Action.** Add a timeout and a fallback path, or raise the dependency's availability.\n\n**How to check.** Take the dependency away in a rehearsal and confirm the caller still serves.\n\n**When this is a false positive.** Calls the caller can complete without, where a timeout or a cached answer keeps it serving. That is the fix rather than an exception, and it is worth writing down: either raise the dependency's rating or record that the call is optional by lowering the caller's dependence on it.\n\n[OWASP cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html)"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "CWE-1188",
+                  "architecture",
+                  "availability",
+                  "external/cwe/cwe-1188",
+                  "function/architecture",
+                  "resilience",
+                  "security",
+                  "stride/denial-of-service"
+                ],
+                "security-severity": "6.0",
+                "precision": "high",
+                "problem.severity": "warning",
+                "cwe": "CWE-1188",
+                "asvs": "V1.1.5"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html"
+            },
+            {
               "id": "clickjacking",
               "name": "clickjacking",
               "shortDescription": {
@@ -207,6 +242,40 @@
                 "problem.severity": "error",
                 "cwe": "CWE-459"
               }
+            },
+            {
+              "id": "missing-audit-log",
+              "name": "missing-audit-log",
+              "shortDescription": {
+                "text": "Security-relevant actions are not logged"
+              },
+              "fullDescription": {
+                "text": "An asset that changes data other people rely on keeps no record of who changed it. Nobody can show afterwards what happened, which blocks an investigation and lets a participant deny an action they took."
+              },
+              "help": {
+                "text": "Log the actor, the action, the subject and the time for every state change, to a destination the acting asset cannot rewrite. Log the decision, not just the request: \"denied, insufficient scope\" is worth more later than the bare call.\n\nFalse positives: Assets whose platform logs every mutation underneath them, such as a managed database with audit logging switched on at the service level, and read-only components that change nothing worth attributing. Record logs_security_events with a pointer to where the log actually lands.",
+                "markdown": "**Mitigation.** Log the actor, the action, the subject and the time for every state change, to a destination the acting asset cannot rewrite. Log the decision, not just the request: \"denied, insufficient scope\" is worth more later than the bare call.\n\n**Action.** Emit a structured audit event for every state change this asset makes.\n\n**How to check.** Perform a state-changing action and find it, attributed, in the log store.\n\n**When this is a false positive.** Assets whose platform logs every mutation underneath them, such as a managed database with audit logging switched on at the service level, and read-only components that change nothing worth attributing. Record logs_security_events with a pointer to where the log actually lands.\n\n[OWASP cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "CWE-778",
+                  "accountability",
+                  "external/cwe/cwe-778",
+                  "function/development",
+                  "logging",
+                  "security",
+                  "stride/repudiation"
+                ],
+                "security-severity": "6.0",
+                "precision": "medium",
+                "problem.severity": "warning",
+                "cwe": "CWE-778",
+                "asvs": "V7.1.3"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html"
             },
             {
               "id": "missing-authentication-second-factor",
@@ -591,6 +660,40 @@
               "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html"
             },
             {
+              "id": "single-point-of-failure",
+              "name": "single-point-of-failure",
+              "shortDescription": {
+                "text": "Availability-critical asset with no redundancy"
+              },
+              "fullDescription": {
+                "text": "Something the system is rated as needing is recorded as having no redundancy, so a single failure of one asset stops the service. An attacker does not have to break it, only to keep it busy."
+              },
+              "help": {
+                "text": "Run more than one instance across more than one failure domain, and check that a failover actually happens rather than assuming it. Where redundancy is genuinely not affordable, lower the availability rating so the model stops claiming the service needs something it does not have.\n\nFalse positives: Assets whose platform provides redundancy invisibly, such as a managed queue or a serverless function across zones. That is still redundancy: record it as redundant: true, with a note about what the provider guarantees, because the next reader cannot tell from the technology alone.",
+                "markdown": "**Mitigation.** Run more than one instance across more than one failure domain, and check that a failover actually happens rather than assuming it. Where redundancy is genuinely not affordable, lower the availability rating so the model stops claiming the service needs something it does not have.\n\n**Action.** Add a second instance in another failure domain, or correct the rating.\n\n**How to check.** Remove one instance in a rehearsal and confirm the service survives.\n\n**When this is a false positive.** Assets whose platform provides redundancy invisibly, such as a managed queue or a serverless function across zones. That is still redundancy: record it as redundant: true, with a note about what the provider guarantees, because the next reader cannot tell from the technology alone.\n\n[OWASP cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html)"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "CWE-1188",
+                  "availability",
+                  "external/cwe/cwe-1188",
+                  "function/operations",
+                  "resilience",
+                  "security",
+                  "stride/denial-of-service"
+                ],
+                "security-severity": "6.0",
+                "precision": "medium",
+                "problem.severity": "warning",
+                "cwe": "CWE-1188",
+                "asvs": "V1.1.5"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html"
+            },
+            {
               "id": "sql-nosql-injection",
               "name": "sql-nosql-injection",
               "shortDescription": {
@@ -623,6 +726,40 @@
                 "asvs": "V5.3.4"
               },
               "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"
+            },
+            {
+              "id": "unbounded-input-size",
+              "name": "unbounded-input-size",
+              "shortDescription": {
+                "text": "Input accepted without a size or depth bound"
+              },
+              "fullDescription": {
+                "text": "The asset parses a format that can be made arbitrarily large or deeply nested, and records no bound on what it will accept. One request can then consume memory or CPU out of proportion to its size, which is a cheap way to take a service down."
+              },
+              "help": {
+                "text": "Cap request body size, parse depth and element count at the edge and again in the asset, and stream large uploads rather than buffering them. Reject early, before allocating.\n\nFalse positives: Assets behind a gateway that enforces a body limit for them, and parsers configured with limits in a framework rather than in code anyone would recognise. Both are real protection; record checks_input_bounds and say where the limit lives.",
+                "markdown": "**Mitigation.** Cap request body size, parse depth and element count at the edge and again in the asset, and stream large uploads rather than buffering them. Reject early, before allocating.\n\n**Action.** Set an explicit body size and parse depth limit on this asset.\n\n**How to check.** Send an oversized and a deeply nested payload and confirm both are refused cheaply.\n\n**When this is a false positive.** Assets behind a gateway that enforces a body limit for them, and parsers configured with limits in a framework rather than in code anyone would recognise. Both are real protection; record checks_input_bounds and say where the limit lives.\n\n[OWASP cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html)"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "CWE-400",
+                  "availability",
+                  "external/cwe/cwe-400",
+                  "function/development",
+                  "input-validation",
+                  "security",
+                  "stride/denial-of-service"
+                ],
+                "security-severity": "6.0",
+                "precision": "medium",
+                "problem.severity": "warning",
+                "cwe": "CWE-400",
+                "asvs": "V13.1.3"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html"
             },
             {
               "id": "unencrypted-communication",
@@ -728,6 +865,40 @@
               "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Database_Security_Cheat_Sheet.html"
             },
             {
+              "id": "unprotected-audit-log",
+              "name": "unprotected-audit-log",
+              "shortDescription": {
+                "text": "Audit log is not protected from tampering"
+              },
+              "fullDescription": {
+                "text": "The asset records security events but nothing stops those records being altered or deleted afterwards. An attacker who reaches the asset can remove the evidence of having done so, and an insider can rewrite their own history."
+              },
+              "help": {
+                "text": "Ship logs off the asset as they are written, to a store the asset can append to and not rewrite. Where the record has to stand up to dispute, sign or chain the entries so a gap is detectable rather than invisible.\n\nFalse positives: Logs shipped immediately to an append-only or write-once destination the asset has no credentials to modify, where the protection is real but lives in the pipeline rather than the asset. Record log_integrity_protected and name the destination.",
+                "markdown": "**Mitigation.** Ship logs off the asset as they are written, to a store the asset can append to and not rewrite. Where the record has to stand up to dispute, sign or chain the entries so a gap is detectable rather than invisible.\n\n**Action.** Forward this asset's logs to an append-only destination it cannot rewrite.\n\n**How to check.** From the asset's own credentials, try to delete a log entry and confirm failure.\n\n**When this is a false positive.** Logs shipped immediately to an append-only or write-once destination the asset has no credentials to modify, where the protection is real but lives in the pipeline rather than the asset. Record log_integrity_protected and name the destination.\n\n[OWASP cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "CWE-117",
+                  "accountability",
+                  "external/cwe/cwe-117",
+                  "function/operations",
+                  "logging",
+                  "security",
+                  "stride/repudiation"
+                ],
+                "security-severity": "6.0",
+                "precision": "medium",
+                "problem.severity": "warning",
+                "cwe": "CWE-117",
+                "asvs": "V7.3.1"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html"
+            },
+            {
               "id": "weak-authentication",
               "name": "weak-authentication",
               "shortDescription": {
@@ -767,7 +938,7 @@
       "results": [
         {
           "ruleId": "excessive-pii-collection",
-          "ruleIndex": 3,
+          "ruleIndex": 4,
           "level": "error",
           "message": {
             "text": "Storefront web app aggregates several categories of personal data Split the categories across assets that do not share a compromise, replace direct identifiers with tokens resolvable only by the asset that must resolve them, and narrow each service's read scope to the fields it uses rather than the record it sits on."
@@ -809,7 +980,7 @@
         },
         {
           "ruleId": "manual",
-          "ruleIndex": 5,
+          "ruleIndex": 6,
           "level": "error",
           "message": {
             "text": "Settlement batch retains card data in temporary files Write intermediates to a tmpfs and delete on completion."
@@ -821,7 +992,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 131
+                  "startLine": 134
                 }
               },
               "logicalLocations": [
@@ -851,7 +1022,7 @@
         },
         {
           "ruleId": "missing-authentication-second-factor",
-          "ruleIndex": 6,
+          "ruleIndex": 8,
           "level": "error",
           "message": {
             "text": "Operations console signs in to Payment API with a single factor Reported at low confidence because the model does not record flow.controls.uses_mfa. Require a phishing-resistant second factor — a passkey or a hardware authenticator — for administrative access without exception, and step it up on sensitive actions for everyone else."
@@ -863,7 +1034,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 216
+                  "startLine": 219
                 }
               },
               "logicalLocations": [
@@ -896,7 +1067,7 @@
         },
         {
           "ruleId": "missing-authentication-second-factor",
-          "ruleIndex": 6,
+          "ruleIndex": 8,
           "level": "error",
           "message": {
             "text": "Shopper signs in to Storefront web app with a single factor Reported at low confidence because the model does not record flow.controls.uses_mfa. Require a phishing-resistant second factor — a passkey or a hardware authenticator — for administrative access without exception, and step it up on sensitive actions for everyone else."
@@ -908,7 +1079,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 156
+                  "startLine": 159
                 }
               },
               "logicalLocations": [
@@ -941,7 +1112,7 @@
         },
         {
           "ruleId": "unguarded-access-from-internet",
-          "ruleIndex": 19,
+          "ruleIndex": 23,
           "level": "error",
           "message": {
             "text": "Storefront web app is published to the internet with no edge component in front Put a gateway or reverse proxy in front, terminate TLS there, and publish only the routes that need to be public. Keep the asset itself on a private address so the guard cannot be bypassed by anyone who learns the origin."
@@ -982,8 +1153,50 @@
           }
         },
         {
-          "ruleId": "clickjacking",
+          "ruleId": "availability-dependency-inversion",
           "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "Payment API depends on something rated less available than itself Either raise the dependency to match, or make the call optional with a timeout, a fallback and a circuit breaker, so the caller degrades instead of stopping."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 94
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Payment API",
+                  "fullyQualifiedName": "element/payment_api",
+                  "kind": "element"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "availability-dependency-inversion@payment_api"
+          },
+          "properties": {
+            "security-severity": "6.0",
+            "severity": "elevated",
+            "likelihood": "likely",
+            "impact": "medium",
+            "confidence": "high",
+            "status": "unchecked",
+            "stride": "denial-of-service",
+            "function": "architecture",
+            "subject": "element/payment_api",
+            "tmcRiskId": "availability-dependency-inversion@payment_api"
+          }
+        },
+        {
+          "ruleId": "clickjacking",
+          "ruleIndex": 1,
           "level": "warning",
           "message": {
             "text": "Storefront web app can be framed by another origin Set frame-ancestors in the content security policy to the exact origins allowed to embed the page, using 'none' when that is nobody, and require re-authentication or a typed confirmation for the actions worth stealing a click for."
@@ -1025,7 +1238,7 @@
         },
         {
           "ruleId": "container-baseimage-backdooring",
-          "ruleIndex": 1,
+          "ruleIndex": 2,
           "level": "warning",
           "message": {
             "text": "Payment API runs a container image with no recorded provenance check Reported at low confidence because the model does not record el.controls.uses_code_signing, el.controls.verifies_dependencies. Pin base images by digest rather than by tag, sign images at build time and verify the signature at admission, rebuild on base image updates rather than on a schedule, and scan the final image rather than only the manifest."
@@ -1071,7 +1284,7 @@
         },
         {
           "ruleId": "container-baseimage-backdooring",
-          "ruleIndex": 1,
+          "ruleIndex": 2,
           "level": "warning",
           "message": {
             "text": "Storefront web app runs a container image with no recorded provenance check Reported at low confidence because the model does not record el.controls.uses_code_signing, el.controls.verifies_dependencies. Pin base images by digest rather than by tag, sign images at build time and verify the signature at admission, rebuild on base image updates rather than on a schedule, and scan the final image rather than only the manifest."
@@ -1117,7 +1330,7 @@
         },
         {
           "ruleId": "dos-risky-access-across-trust-boundary",
-          "ruleIndex": 2,
+          "ruleIndex": 3,
           "level": "warning",
           "message": {
             "text": "Payment API accepts unthrottled traffic over ops_to_api Reported at low confidence because the model does not record flow.controls.rate_limited. Rate limit per caller identity rather than per address, set concurrency and payload size caps, and shed load at the edge so the pressure never reaches the asset you care about. Load shedding that returns quickly beats a queue that grows."
@@ -1129,7 +1342,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 216
+                  "startLine": 219
                 }
               },
               "logicalLocations": [
@@ -1162,7 +1375,7 @@
         },
         {
           "ruleId": "dos-risky-access-across-trust-boundary",
-          "ruleIndex": 2,
+          "ruleIndex": 3,
           "level": "warning",
           "message": {
             "text": "Payment API accepts unthrottled traffic over storefront_to_api Reported at low confidence because the model does not record flow.controls.rate_limited. Rate limit per caller identity rather than per address, set concurrency and payload size caps, and shed load at the edge so the pressure never reaches the asset you care about. Load shedding that returns quickly beats a queue that grows."
@@ -1174,7 +1387,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 166
+                  "startLine": 169
                 }
               },
               "logicalLocations": [
@@ -1207,7 +1420,7 @@
         },
         {
           "ruleId": "excessive-pii-collection",
-          "ruleIndex": 3,
+          "ruleIndex": 4,
           "level": "warning",
           "message": {
             "text": "Payment API aggregates several categories of personal data Split the categories across assets that do not share a compromise, replace direct identifiers with tokens resolvable only by the asset that must resolve them, and narrow each service's read scope to the fields it uses rather than the record it sits on."
@@ -1248,8 +1461,98 @@
           }
         },
         {
+          "ruleId": "missing-audit-log",
+          "ruleIndex": 7,
+          "level": "warning",
+          "message": {
+            "text": "Nightly settlement batch changes critical data without an audit trail Reported at low confidence because the model does not record el.controls.logs_security_events. Log the actor, the action, the subject and the time for every state change, to a destination the acting asset cannot rewrite. Log the decision, not just the request: \"denied, insufficient scope\" is worth more later than the bare call."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 134
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Nightly settlement batch",
+                  "fullyQualifiedName": "element/settlement_batch",
+                  "kind": "element"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "missing-audit-log@settlement_batch"
+          },
+          "properties": {
+            "security-severity": "6.0",
+            "severity": "elevated",
+            "likelihood": "likely",
+            "impact": "medium",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "repudiation",
+            "function": "development",
+            "subject": "element/settlement_batch",
+            "tmcRiskId": "missing-audit-log@settlement_batch",
+            "unknowns": [
+              "el.controls.logs_security_events"
+            ]
+          }
+        },
+        {
+          "ruleId": "missing-audit-log",
+          "ruleIndex": 7,
+          "level": "warning",
+          "message": {
+            "text": "Storefront web app changes critical data without an audit trail Reported at low confidence because the model does not record el.controls.logs_security_events. Log the actor, the action, the subject and the time for every state change, to a destination the acting asset cannot rewrite. Log the decision, not just the request: \"denied, insufficient scope\" is worth more later than the bare call."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 78
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Storefront web app",
+                  "fullyQualifiedName": "element/storefront",
+                  "kind": "element"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "missing-audit-log@storefront"
+          },
+          "properties": {
+            "security-severity": "6.0",
+            "severity": "elevated",
+            "likelihood": "likely",
+            "impact": "medium",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "repudiation",
+            "function": "development",
+            "subject": "element/storefront",
+            "tmcRiskId": "missing-audit-log@storefront",
+            "unknowns": [
+              "el.controls.logs_security_events"
+            ]
+          }
+        },
+        {
           "ruleId": "missing-cloud-hardening",
-          "ruleIndex": 8,
+          "ruleIndex": 10,
           "level": "warning",
           "message": {
             "text": "Production VPC has no recorded cloud hardening baseline Reported at low confidence because the model does not record m.controls.hardened. Apply the provider's benchmark at the account level, enforce it with policy-as-code in the deployment pipeline rather than by review, turn on the audit trail before anything else, and scope roles to the actions they actually use."
@@ -1261,7 +1564,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 232
+                  "startLine": 235
                 }
               },
               "logicalLocations": [
@@ -1294,7 +1597,7 @@
         },
         {
           "ruleId": "missing-consent-record",
-          "ruleIndex": 9,
+          "ruleIndex": 11,
           "level": "warning",
           "message": {
             "text": "Personal data card_data has no recorded origin Record the origin and the lawful basis on the data asset, then check that the basis actually covers every use the model shows — a basis for collection is not a basis for every downstream transfer this diagram contains."
@@ -1336,7 +1639,7 @@
         },
         {
           "ruleId": "missing-consent-record",
-          "ruleIndex": 9,
+          "ruleIndex": 11,
           "level": "warning",
           "message": {
             "text": "Personal data customer_profile has no recorded origin Record the origin and the lawful basis on the data asset, then check that the basis actually covers every use the model shows — a basis for collection is not a basis for every downstream transfer this diagram contains."
@@ -1378,7 +1681,7 @@
         },
         {
           "ruleId": "missing-content-security-policy",
-          "ruleIndex": 10,
+          "ruleIndex": 12,
           "level": "warning",
           "message": {
             "text": "Storefront web app serves pages without a content security policy Serve a policy with a nonce-based script-src and no unsafe-inline, then tighten frame-ancestors, base-uri and form-action. Start in report-only mode against real traffic rather than guessing at the directive set."
@@ -1420,7 +1723,7 @@
         },
         {
           "ruleId": "missing-hardening",
-          "ruleIndex": 11,
+          "ruleIndex": 13,
           "level": "warning",
           "message": {
             "text": "Payment API is an attractive target with no recorded hardening Reported at low confidence because the model does not record el.controls.hardened. Apply a published benchmark — CIS, the vendor's, your own written one — remove packages and listeners the asset does not need, run as a non-root user with a read-only root filesystem, and re-check the configuration on every deploy rather than once at build time."
@@ -1465,7 +1768,7 @@
         },
         {
           "ruleId": "missing-hardening",
-          "ruleIndex": 11,
+          "ruleIndex": 13,
           "level": "warning",
           "message": {
             "text": "Token store is an attractive target with no recorded hardening Reported at low confidence because the model does not record el.controls.hardened. Apply a published benchmark — CIS, the vendor's, your own written one — remove packages and listeners the asset does not need, run as a non-root user with a read-only root filesystem, and re-check the configuration on every deploy rather than once at build time."
@@ -1477,7 +1780,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 111
+                  "startLine": 113
                 }
               },
               "logicalLocations": [
@@ -1510,7 +1813,7 @@
         },
         {
           "ruleId": "missing-pii-encryption-at-rest",
-          "ruleIndex": 13,
+          "ruleIndex": 15,
           "level": "warning",
           "message": {
             "text": "Token store stores personal data with transparent encryption only Encrypt the identifying fields in the application with keys the datastore's own credentials cannot reach, and prefer tokenisation where the value only needs to be compared rather than read. Then decide who can decrypt, which is the question the disk-level answer never asks."
@@ -1522,7 +1825,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 111
+                  "startLine": 113
                 }
               },
               "logicalLocations": [
@@ -1552,7 +1855,7 @@
         },
         {
           "ruleId": "missing-waf",
-          "ruleIndex": 14,
+          "ruleIndex": 16,
           "level": "warning",
           "message": {
             "text": "Storefront web app faces the internet with no web application firewall in front Put a WAF or schema-validating gateway in front, run it in blocking mode against known signatures, and treat the rules as a place to apply a virtual patch quickly rather than as a permanent substitute for fixing the code."
@@ -1594,7 +1897,7 @@
         },
         {
           "ruleId": "pii-crossing-untrusted-boundary",
-          "ruleIndex": 15,
+          "ruleIndex": 17,
           "level": "warning",
           "message": {
             "text": "api_to_processor carries personal data to Card processor outside the estate Send the least you can: a token or a hashed identifier rather than the record, fields the recipient actually uses rather than the object you happen to have. Encrypt in transit, pin the recipient, and record the lawful basis, the retention period and the deletion path before the first transfer rather than after the first question."
@@ -1606,7 +1909,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 176
+                  "startLine": 179
                 }
               },
               "logicalLocations": [
@@ -1636,7 +1939,7 @@
         },
         {
           "ruleId": "pii-retention-unbounded",
-          "ruleIndex": 16,
+          "ruleIndex": 18,
           "level": "warning",
           "message": {
             "text": "Personal data customer_profile is stored in volume with no owner Name an owner, set a retention period in the store rather than in a document, and implement deletion as a scheduled job that proves it ran. Confirm that a deletion request reaches replicas, exports, caches, analytics copies and backups, since those are where the data survives the policy."
@@ -1677,8 +1980,53 @@
           }
         },
         {
+          "ruleId": "single-point-of-failure",
+          "ruleIndex": 19,
+          "level": "warning",
+          "message": {
+            "text": "Nightly settlement batch is availability-critical with no recorded redundancy Reported at low confidence because the model does not record el.controls.redundant. Run more than one instance across more than one failure domain, and check that a failover actually happens rather than assuming it. Where redundancy is genuinely not affordable, lower the availability rating so the model stops claiming the service needs something it does not have."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 134
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Nightly settlement batch",
+                  "fullyQualifiedName": "element/settlement_batch",
+                  "kind": "element"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "single-point-of-failure@settlement_batch"
+          },
+          "properties": {
+            "security-severity": "6.0",
+            "severity": "elevated",
+            "likelihood": "likely",
+            "impact": "medium",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "denial-of-service",
+            "function": "operations",
+            "subject": "element/settlement_batch",
+            "tmcRiskId": "single-point-of-failure@settlement_batch",
+            "unknowns": [
+              "el.controls.redundant"
+            ]
+          }
+        },
+        {
           "ruleId": "sql-nosql-injection",
-          "ruleIndex": 17,
+          "ruleIndex": 20,
           "level": "warning",
           "message": {
             "text": "Nightly settlement batch may build injectable queries against Token store Reported at low confidence because the model does not record flow.from.controls.uses_parameterized_queries. Use parameterised statements or an ORM binding for every query, and never build one by string concatenation."
@@ -1690,7 +2038,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 206
+                  "startLine": 209
                 }
               },
               "logicalLocations": [
@@ -1722,8 +2070,53 @@
           }
         },
         {
+          "ruleId": "unbounded-input-size",
+          "ruleIndex": 21,
+          "level": "warning",
+          "message": {
+            "text": "Storefront web app parses attacker-sized input with no recorded bound Reported at low confidence because the model does not record el.controls.checks_input_bounds. Cap request body size, parse depth and element count at the edge and again in the asset, and stream large uploads rather than buffering them. Reject early, before allocating."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 78
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Storefront web app",
+                  "fullyQualifiedName": "element/storefront",
+                  "kind": "element"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "unbounded-input-size@storefront"
+          },
+          "properties": {
+            "security-severity": "6.0",
+            "severity": "elevated",
+            "likelihood": "very-likely",
+            "impact": "medium",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "denial-of-service",
+            "function": "development",
+            "subject": "element/storefront",
+            "tmcRiskId": "unbounded-input-size@storefront",
+            "unknowns": [
+              "el.controls.checks_input_bounds"
+            ]
+          }
+        },
+        {
           "ruleId": "unencrypted-communication",
-          "ruleIndex": 18,
+          "ruleIndex": 22,
           "level": "warning",
           "message": {
             "text": "Unencrypted sql-access-protocol link from Payment API to Token store Use the encrypted variant of the protocol with TLS 1.2 or better, and prefer mutual authentication where both ends are services you operate."
@@ -1735,7 +2128,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 186
+                  "startLine": 189
                 }
               },
               "logicalLocations": [
@@ -1765,7 +2158,7 @@
         },
         {
           "ruleId": "unencrypted-communication",
-          "ruleIndex": 18,
+          "ruleIndex": 22,
           "level": "warning",
           "message": {
             "text": "Unencrypted sql-access-protocol link from Nightly settlement batch to Token store Use the encrypted variant of the protocol with TLS 1.2 or better, and prefer mutual authentication where both ends are services you operate."
@@ -1777,7 +2170,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 206
+                  "startLine": 209
                 }
               },
               "logicalLocations": [
@@ -1807,7 +2200,7 @@
         },
         {
           "ruleId": "unguarded-direct-datastore-access",
-          "ruleIndex": 20,
+          "ruleIndex": 24,
           "level": "warning",
           "message": {
             "text": "Payment API reaches Token store directly across a network boundary Give the caller a database role limited to the exact tables and operations it uses, restrict the datastore's listener to the caller's addresses or identities, and put reads that do not need to be live behind a cache or a view."
@@ -1819,7 +2212,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 186
+                  "startLine": 189
                 }
               },
               "logicalLocations": [
@@ -1848,8 +2241,53 @@
           }
         },
         {
+          "ruleId": "unprotected-audit-log",
+          "ruleIndex": 25,
+          "level": "warning",
+          "message": {
+            "text": "Payment API logs security events but nothing protects the log Reported at low confidence because the model does not record el.controls.log_integrity_protected. Ship logs off the asset as they are written, to a store the asset can append to and not rewrite. Where the record has to stand up to dispute, sign or chain the entries so a gap is detectable rather than invisible."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/payment-service/threatmodel.yaml"
+                },
+                "region": {
+                  "startLine": 94
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "Payment API",
+                  "fullyQualifiedName": "element/payment_api",
+                  "kind": "element"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "tmcRiskId": "unprotected-audit-log@payment_api"
+          },
+          "properties": {
+            "security-severity": "6.0",
+            "severity": "elevated",
+            "likelihood": "likely",
+            "impact": "high",
+            "confidence": "low",
+            "status": "unchecked",
+            "stride": "repudiation",
+            "function": "operations",
+            "subject": "element/payment_api",
+            "tmcRiskId": "unprotected-audit-log@payment_api",
+            "unknowns": [
+              "el.controls.log_integrity_protected"
+            ]
+          }
+        },
+        {
           "ruleId": "dos-risky-access-across-trust-boundary",
-          "ruleIndex": 2,
+          "ruleIndex": 3,
           "level": "note",
           "message": {
             "text": "Token store accepts unthrottled traffic over api_to_token_store Reported at low confidence because the model does not record flow.controls.rate_limited, flow.to.controls.rate_limited. Rate limit per caller identity rather than per address, set concurrency and payload size caps, and shed load at the edge so the pressure never reaches the asset you care about. Load shedding that returns quickly beats a queue that grows."
@@ -1861,7 +2299,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 186
+                  "startLine": 189
                 }
               },
               "logicalLocations": [
@@ -1895,7 +2333,7 @@
         },
         {
           "ruleId": "incomplete-model",
-          "ruleIndex": 4,
+          "ruleIndex": 5,
           "level": "note",
           "message": {
             "text": "Nightly settlement batch records no security controls at all Answer the six questions for this element, with false where the answer is false. A recorded false produces a confident finding that someone can act on, which is far more useful than a blank that produces nothing."
@@ -1907,7 +2345,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 131
+                  "startLine": 134
                 }
               },
               "logicalLocations": [
@@ -1937,7 +2375,7 @@
         },
         {
           "ruleId": "missing-build-infrastructure",
-          "ruleIndex": 7,
+          "ruleIndex": 9,
           "level": "note",
           "message": {
             "text": "Payment Service builds custom code with no build pipeline modelled Model the build system, then treat it as production infrastructure: authenticated and authorised triggers, isolated runners per trust level, signed artefacts, and no standing credentials that a pull request can reach."
@@ -1976,7 +2414,7 @@
         },
         {
           "ruleId": "missing-identity-store",
-          "ruleIndex": 12,
+          "ruleIndex": 14,
           "level": "note",
           "message": {
             "text": "Payment Service authenticates callers but models no identity store Add the component that verifies these credentials to the model — even as an external, out-of-scope element — so the rules about isolation, storage and second factors have something to attach to."
@@ -2015,7 +2453,7 @@
         },
         {
           "ruleId": "weak-authentication",
-          "ruleIndex": 21,
+          "ruleIndex": 26,
           "level": "note",
           "message": {
             "text": "Payment API authenticates to Token store with a static credential Replace the static secret with a workload identity: mutual TLS between services, or a short-lived token minted per connection. Where the datastore cannot do that, at least sink the password into a vault and rotate it on a schedule the team can prove."
@@ -2027,7 +2465,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 186
+                  "startLine": 189
                 }
               },
               "logicalLocations": [
@@ -2057,7 +2495,7 @@
         },
         {
           "ruleId": "weak-authentication",
-          "ruleIndex": 21,
+          "ruleIndex": 26,
           "level": "note",
           "message": {
             "text": "Nightly settlement batch authenticates to Token store with a static credential Replace the static secret with a workload identity: mutual TLS between services, or a short-lived token minted per connection. Where the datastore cannot do that, at least sink the password into a vault and rotate it on a schedule the team can prove."
@@ -2069,7 +2507,7 @@
                   "uri": "examples/payment-service/threatmodel.yaml"
                 },
                 "region": {
-                  "startLine": 206
+                  "startLine": 209
                 }
               },
               "logicalLocations": [
@@ -2101,8 +2539,8 @@
       "properties": {
         "model": "Payment Service",
         "businessCriticality": "critical",
-        "openRisks": 31,
-        "lowConfidenceRisks": 11
+        "openRisks": 37,
+        "lowConfidenceRisks": 16
       }
     }
   ]

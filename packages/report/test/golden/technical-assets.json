@@ -122,9 +122,11 @@
       "tags": [],
       "machine": "container",
       "controls": {
+        "checks_input_bounds": true,
         "has_access_control": true,
         "logs_security_events": true,
         "rate_limited": false,
+        "redundant": true,
         "uses_parameterized_queries": true,
         "validates_input": true,
         "validates_schema": true
@@ -311,7 +313,8 @@
       "tags": [],
       "machine": "virtual",
       "controls": {
-        "has_access_control": true
+        "has_access_control": true,
+        "redundant": true
       }
     }
   ],

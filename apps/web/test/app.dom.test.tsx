@@ -7,7 +7,7 @@ import { App } from '../src/App.js';
 
 // Under happy-dom `import.meta.url` is an http URL, so resolve from the repo root
 // that vitest runs in rather than from this file.
-const EXAMPLE = readFileSync(resolve('apps/web/src/example.yaml'), 'utf8');
+const EXAMPLE = readFileSync(resolve('examples/payment-service/threatmodel.yaml'), 'utf8');
 
 /**
  * The app fetches its bundled example on first paint. Stub that, so the test
