@@ -1,18 +1,24 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist-types",
-    "noEmit": false,
-    "emitDeclarationOnly": true,
+    "noEmit": true,
     "composite": false,
     "declaration": false,
     "declarationMap": false,
+    "sourceMap": false,
     "jsx": "react-jsx",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "moduleResolution": "bundler",
     "module": "ESNext",
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "types": ["vite/client"],
+    "paths": {
+      "@tmc/core/browser": ["../../packages/core/src/browser.ts"],
+      "@tmc/rules/browser": ["../../packages/rules/src/browser.ts"],
+      "@tmc/render/browser": ["../../packages/render/src/browser.ts"],
+      "@tmc/render/svg-text": ["../../packages/render/src/svg-text.ts"],
+      "@tmc/report/browser": ["../../packages/report/src/browser.ts"]
+    }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "test/**/*.ts", "test/**/*.tsx"]
 }

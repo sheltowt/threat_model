@@ -123,6 +123,27 @@ That writes `report.html` and `report.md`, the machine-readable `risks.json`,
 diagrams as SVG and DOT. The HTML is self-contained, loads nothing from the network,
 and prints to PDF.
 
+## Looking at it in a browser
+
+```bash
+npx tmc serve --write
+```
+
+That opens a local editor on the file: the diagram, the findings with filters, the
+detail of anything you click, and the report. Editing the source reanalyses as you
+type, and Save writes back to the file.
+
+It parses and analyses in the tab, using the same core and rule library as the
+command line, so it cannot tell you something different from CI. Nothing is
+uploaded. Without `--write` it is read only, and a save that would not load is
+refused rather than written.
+
+Any view is linkable, which is useful in a review comment:
+
+```
+http://127.0.0.1:7300/?model=/api/model#tab=risks&risk=sql-nosql-injection@batch_to_token_store
+```
+
 ## Adding a rule
 
 Rules are documents. Drop this in `.tmc/rules/no-public-buckets.rule.yaml`:

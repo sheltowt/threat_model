@@ -15,7 +15,7 @@
   "scripts": {
     "build": "npm run generate && tsc --build && npm run build --workspace @tmc/web",
     "clean": "tsc --build --clean",
-    "typecheck": "tsc --build --dry 2>/dev/null || tsc --build",
+    "typecheck": "tsc --build && npm run typecheck --workspace @tmc/web",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
