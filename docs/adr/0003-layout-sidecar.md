@@ -15,7 +15,7 @@ so a diff cannot distinguish "we moved a node" from "we removed authentication".
 optional `threatmodel.layout.json` sidecar. Deleting the sidecar is always safe: the
 renderer falls back to automatic layout.
 
-`tmc diff` compares the semantic model, so its output contains only security-relevant
+`tmac diff` compares the semantic model, so its output contains only security-relevant
 change.
 
 ## Consequences

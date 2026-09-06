@@ -229,7 +229,7 @@ export const metaSchema = z
 
 export const modelSchema = z
   .object({
-    schema: z.literal('tmc/1.0'),
+    schema: z.literal('tmac/1.0'),
     /** Relative paths merged before validation, for models too large for one file. */
     includes: z.array(z.string()).default([]),
     meta: metaSchema,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fileURLToPath } from 'node:url';
-import { buildGraph, loadModel } from '@tmc/core';
+import { buildGraph, loadModel } from 'tmac-core';
 
 const fixture = (name: string) => fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url));
 const graphOf = (name: string) => {

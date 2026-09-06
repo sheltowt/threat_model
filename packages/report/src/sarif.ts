@@ -10,8 +10,8 @@
  * `tags` is for humans reading the raw file.
  */
 
-import { isResolved, SEVERITY, type ModelGraph, type Severity } from '@tmc/core/browser';
-import type { Analysis, Risk } from '@tmc/rules/browser';
+import { isResolved, SEVERITY, type ModelGraph, type Severity } from 'tmac-core/browser';
+import type { Analysis, Risk } from 'tmac-rules/browser';
 import { compareRisks } from './json.js';
 
 export interface SarifOptions {
@@ -44,12 +44,12 @@ export interface RuleMeta {
 export const SARIF_SCHEMA =
   'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json';
 
-const INFORMATION_URI = 'https://github.com/tmc-dev/tmc';
+const INFORMATION_URI = 'https://github.com/tmac-dev/tmac';
 
 export type SarifLevel = 'error' | 'warning' | 'note' | 'none';
 
 /**
- * SARIF has three usable levels and tmc has five severities, so the mapping is lossy
+ * SARIF has three usable levels and tmac has five severities, so the mapping is lossy
  * by construction. `security-severity` carries the full resolution; `level` decides
  * whether a pull request check goes red.
  */
@@ -325,7 +325,7 @@ export function toSarif(
       {
         tool: {
           driver: {
-            name: 'tmc',
+            name: 'tmac',
             informationUri: options.informationUri ?? INFORMATION_URI,
             ...(options.toolVersion ? { version: options.toolVersion } : {}),
             rules,

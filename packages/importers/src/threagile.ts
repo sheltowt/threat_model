@@ -1,14 +1,14 @@
 /**
  * Threagile YAML importer.
  *
- * tmc's model is a deliberate descendant of Threagile's, so most of this file is
+ * tmac's model is a deliberate descendant of Threagile's, so most of this file is
  * renames. The places that are not renames are called out in comments: Threagile's
  * `technology` is a single string where ours is a catalogue entry, and its
  * `encryption` values carry a `data-with-` prefix we drop.
  */
 
 import { parse as parseYaml } from 'yaml';
-import type { ModelInput } from '@tmc/core';
+import type { ModelInput } from 'tmac-core';
 import {
   asBool,
   asRecord,
@@ -100,7 +100,7 @@ function enumOr<T extends string>(
   pushWarning(
     warnings,
     'threagile-enum-unmapped',
-    `${where}: "${text}" is not a valid ${field} for tmc and was left at the default`,
+    `${where}: "${text}" is not a valid ${field} for tmac and was left at the default`,
     `Valid values: ${[...allowed].join(', ')}.`,
   );
   return undefined;
@@ -128,8 +128,8 @@ function technologyOf(
     pushWarning(
       warnings,
       'threagile-technology-unmapped',
-      `${where}: technology "${names.join(', ')}" is not in the tmc catalogue; used unknown-technology`,
-      'Add the technology to .tmc/technologies.yaml with the attributes the rules should see.',
+      `${where}: technology "${names.join(', ')}" is not in the tmac catalogue; used unknown-technology`,
+      'Add the technology to .tmac/technologies.yaml with the attributes the rules should see.',
     );
   }
   return 'unknown-technology';
@@ -306,8 +306,8 @@ export function importThreagile(input: unknown): ImportResult {
           pushWarning(
             warnings,
             'threagile-protocol-unmapped',
-            `${linkWhere}: protocol "${spelled}" is not in the tmc catalogue`,
-            'Add it to .tmc/protocols.yaml with the attributes the rules should see.',
+            `${linkWhere}: protocol "${spelled}" is not in the tmac catalogue`,
+            'Add it to .tmac/protocols.yaml with the attributes the rules should see.',
           );
         }
       }
@@ -390,7 +390,7 @@ export function importThreagile(input: unknown): ImportResult {
       pushWarning(
         warnings,
         'threagile-risk-status-unmapped',
-        `risk tracking "${key}" has status "${status ?? '(none)'}", which tmc does not recognise; entry dropped`,
+        `risk tracking "${key}" has status "${status ?? '(none)'}", which tmac does not recognise; entry dropped`,
       );
       continue;
     }
@@ -443,7 +443,7 @@ export function importThreagile(input: unknown): ImportResult {
   }
   if (Object.keys(requirements).length > 0) meta.security_requirements = requirements;
 
-  const model: ModelInput = { schema: 'tmc/1.0', meta };
+  const model: ModelInput = { schema: 'tmac/1.0', meta };
   if (Object.keys(dataAssets).length > 0) model.data_assets = dataAssets;
   if (Object.keys(elements).length > 0) model.elements = elements;
   if (flows.length > 0) model.flows = flows;

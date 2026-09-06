@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dataAssetDot, dataFlowDot, escapeLabel, renderSvg } from '@tmc/render';
+import { dataAssetDot, dataFlowDot, escapeLabel, renderSvg } from 'tmac-render';
 import { graphOf, HOSTILE } from './helper.js';
 
 /**

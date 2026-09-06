@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { comparableEnum, isNetworkBoundary, isResolved, rankOf } from '@tmc/core';
+import { comparableEnum, isNetworkBoundary, isResolved, rankOf } from 'tmac-core';
 
 describe('ordered enums', () => {
   it('ranks confidentiality', () => {

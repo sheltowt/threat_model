@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { ModelGraph } from '@tmc/core/browser';
-import type { Analysis } from '@tmc/rules/browser';
-import { toHtml, toMarkdown } from '@tmc/report/browser';
+import type { ModelGraph } from 'tmac-core/browser';
+import type { Analysis } from 'tmac-rules/browser';
+import { toHtml, toMarkdown } from 'tmac-report/browser';
 import { dataAssetSvg, dataFlowSvg } from '../lib/render.js';
 
 interface Props {
@@ -71,7 +71,7 @@ export function ReportView({ graph, analysis, name }: Props) {
         </button>
         <span style={{ flex: 1 }} />
         <span style={{ color: 'var(--muted)', fontSize: 12 }}>
-          Identical to what <span className="mono">tmc analyze --format all</span> writes.
+          Identical to what <span className="mono">tmac analyze --format all</span> writes.
         </span>
       </div>
       {html ? (

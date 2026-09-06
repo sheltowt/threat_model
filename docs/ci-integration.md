@@ -1,4 +1,4 @@
-# Running tmc in CI
+# Running tmac in CI
 
 ## Exit codes
 
@@ -26,8 +26,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npx tmc validate
-      - run: npx tmc analyze --format sarif --fail-on high
+      - run: npx tmac validate
+      - run: npx tmac analyze --format sarif --fail-on high
       - uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
@@ -44,13 +44,13 @@ as dismissed and you can still see them.
 
 ## Showing what changed
 
-`tmc diff` compares two models semantically. Layout is not in the model, so its
+`tmac diff` compares two models semantically. Layout is not in the model, so its
 output contains only security-relevant change.
 
 ```yaml
       - run: git fetch origin ${{ github.base_ref }} --depth=1
       - run: git show origin/${{ github.base_ref }}:threatmodel.yaml > /tmp/base.yaml
-      - run: npx tmc diff /tmp/base.yaml threatmodel.yaml | tee /tmp/diff.txt
+      - run: npx tmac diff /tmp/base.yaml threatmodel.yaml | tee /tmp/diff.txt
 ```
 
 Lines marked `!` widen the attack surface.
@@ -58,7 +58,7 @@ Lines marked `!` widen the attack surface.
 ## Container
 
 ```bash
-docker run --rm -v "$PWD:/work" ghcr.io/example/tmc analyze --format all --fail-on high
+docker run --rm -v "$PWD:/work" ghcr.io/sheltowt/tmac analyze --format all --fail-on high
 ```
 
 The image carries WASM Graphviz, so diagram rendering has no system dependency and no
@@ -79,7 +79,7 @@ rather than for the system.
 Adopting the tool on a system that already exists produces a long list at once.
 
 ```bash
-npx tmc track seed --write
+npx tmac track seed --write
 ```
 
 That writes an `unchecked` entry for every open risk. Work through them, setting a

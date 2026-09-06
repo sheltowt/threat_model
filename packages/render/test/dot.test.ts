@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fileURLToPath } from 'node:url';
-import { dataAssetDot, dataFlowDot, renderSvg } from '@tmc/render';
-import { analyze, loadRules } from '@tmc/rules';
+import { dataAssetDot, dataFlowDot, renderSvg } from 'tmac-render';
+import { analyze, loadRules } from 'tmac-rules';
 import { EXAMPLE, graphOf } from './helper.js';
 import { expectGolden } from './golden.js';
 

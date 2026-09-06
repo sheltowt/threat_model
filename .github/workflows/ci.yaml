@@ -31,6 +31,8 @@ jobs:
       # A stale generated file means someone edited the YAML without regenerating.
       - run: npm run generate:check
       - run: npm run build
+      # The committed JSON Schema is what editors fetch by URL; keep it current.
+      - run: npm run schema:check
       - run: npm run test
 
   coverage:
@@ -46,7 +48,7 @@ jobs:
       - run: npm run coverage
 
   self-check:
-    # The tool analyses its own example model. If tmc cannot run its own example,
+    # The tool analyses its own example model. If tmac cannot run its own example,
     # nothing else in this repository is trustworthy.
     runs-on: ubuntu-latest
     steps:

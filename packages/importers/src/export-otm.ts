@@ -1,5 +1,5 @@
 /**
- * Export a tmc model to Open Threat Model (OTM) JSON.
+ * Export a tmac model to Open Threat Model (OTM) JSON.
  *
  * OTM has no vocabulary for data assets, controls or CIA ratings, so those are
  * carried in `attributes` rather than silently dropped: `attributes.technology` and
@@ -7,7 +7,7 @@
  * without losing the technology catalogue entry.
  */
 
-import type { Model } from '@tmc/core';
+import type { Model } from 'tmac-core';
 import { slugify } from './util.js';
 
 export interface OtmExportOptions {
@@ -28,7 +28,7 @@ const TRUST_RATING: Record<string, number> = {
   'execution-environment': 90,
 };
 
-const UNASSIGNED_ZONE = 'tmc-unassigned';
+const UNASSIGNED_ZONE = 'tmac-unassigned';
 
 function pruneUndefined<T extends Record<string, unknown>>(value: T): T {
   for (const key of Object.keys(value)) {
@@ -69,7 +69,7 @@ export function exportOtm(model: Model, options: OtmExportOptions = {}): Record<
     trustZones.push({
       id: UNASSIGNED_ZONE,
       name: 'Unassigned',
-      description: 'Elements the tmc model does not place in a trust boundary.',
+      description: 'Elements the tmac model does not place in a trust boundary.',
       risk: { trustRating: 50 },
       attributes: { type: 'network-on-prem' },
     });
@@ -170,7 +170,7 @@ export function exportOtm(model: Model, options: OtmExportOptions = {}): Record<
     otmVersion: options.otmVersion ?? '0.2.0',
     project: pruneUndefined({
       name: model.meta.title,
-      id: options.projectId ?? slugify(model.meta.title, 'tmc-model'),
+      id: options.projectId ?? slugify(model.meta.title, 'tmac-model'),
       description: model.meta.description,
       owner: model.meta.owner,
       attributes: pruneUndefined({
@@ -190,7 +190,7 @@ export function exportOtm(model: Model, options: OtmExportOptions = {}): Record<
             : undefined,
         // OTM has no concept of either of these, so park them here rather than drop
         // them. Another tool ignores an attribute it does not know; ours reads it
-        // back, which is what makes a tmc -> OTM -> tmc round trip keep its meaning.
+        // back, which is what makes a tmac -> OTM -> tmac round trip keep its meaning.
         dataAssets:
           Object.keys(model.data_assets ?? {}).length > 0 ? model.data_assets : undefined,
         sharedRuntimes:
@@ -198,7 +198,7 @@ export function exportOtm(model: Model, options: OtmExportOptions = {}): Record<
       }),
     }),
     representations: [
-      { name: 'tmc', id: 'tmc', type: 'threat-model', description: 'Exported by tmc' },
+      { name: 'tmac', id: 'tmac', type: 'threat-model', description: 'Exported by tmac' },
     ],
     trustZones,
     components,

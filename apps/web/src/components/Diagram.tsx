@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ModelGraph } from '@tmc/core/browser';
-import type { Risk } from '@tmc/rules/browser';
+import type { ModelGraph } from 'tmac-core/browser';
+import type { Risk } from 'tmac-rules/browser';
 import { dataAssetSvg, dataFlowSvg } from '../lib/render.js';
 import type { Selection } from '../state/selection.js';
 

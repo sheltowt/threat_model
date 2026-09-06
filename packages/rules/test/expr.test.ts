@@ -6,7 +6,7 @@ import {
   evaluate,
   parseExpression,
   triState,
-} from '@tmc/rules';
+} from 'tmac-rules';
 
 const run = (src: string, scope: Record<string, unknown> = {}) =>
   evaluate(parseExpression(src), scope);

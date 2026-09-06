@@ -88,8 +88,8 @@ export function checkReferences(
         message: `technology "${el.technology}" is not in the catalogue`,
         path: `elements.${id}.technology`,
         hint: near
-          ? `did you mean "${near}"? Otherwise add it to .tmc/technologies.yaml`
-          : 'add it to .tmc/technologies.yaml to extend the catalogue',
+          ? `did you mean "${near}"? Otherwise add it to .tmac/technologies.yaml`
+          : 'add it to .tmac/technologies.yaml to extend the catalogue',
       });
     }
     el.processes.forEach((d, i) => ref(d, dataIds, `elements.${id}.processes[${i}]`, 'data asset'));
@@ -124,7 +124,7 @@ export function checkReferences(
         code: 'unknown-protocol',
         message: `protocol "${flow.protocol}" is not in the catalogue`,
         path: `flows[${i}].protocol`,
-        hint: near ? `did you mean "${near}"?` : 'add it to .tmc/protocols.yaml',
+        hint: near ? `did you mean "${near}"?` : 'add it to .tmac/protocols.yaml',
       });
     }
     flow.sends.forEach((d, j) => ref(d, dataIds, `flows[${i}].sends[${j}]`, 'data asset'));

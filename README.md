@@ -1,11 +1,17 @@
-# tmc
+# tmac
 
 Threat models as code. One declarative file, a rule library that generates the
 findings, and output a pipeline can act on.
 
 ```bash
-npx tmc init
-npx tmc analyze --format all --fail-on high
+npx tmac init
+npx tmac analyze --format all --fail-on high
+```
+
+Or without installing anything:
+
+```bash
+docker run --rm -v "$PWD:/work" ghcr.io/sheltowt/tmac analyze
 ```
 
 ## Why another one
@@ -21,7 +27,7 @@ open.
 | Rich typed model | no | partly | yes |
 | Custom rules without forking | no | edit a JSON file of Python | Linux-only `.so` plugins |
 
-`tmc` takes the model from Threagile, the element-level security controls from pytm,
+`tmac` takes the model from Threagile, the element-level security controls from pytm,
 the storage and diagramming approach from Threat Dragon, and makes rules data rather
 than code.
 
@@ -48,7 +54,7 @@ resolves or becomes confirmed.
 ## The model
 
 ```yaml
-schema: tmc/1.0
+schema: tmac/1.0
 meta:
   title: Payment Service
   business_criticality: critical
@@ -88,7 +94,7 @@ trust_boundaries:
 
 Elements are generic: a `kind` plus a `technology` from a catalogue, rather than a
 class hierarchy of `Server`, `Lambda` and `LLM`. Rules never name a technology; they
-ask about its attributes, so adding `our-event-bus` to `.tmc/technologies.yaml` makes
+ask about its attributes, so adding `our-event-bus` to `.tmac/technologies.yaml` makes
 every existing rule apply to it.
 
 Diagram coordinates live in a separate `threatmodel.layout.json`, so a `git diff`
@@ -131,7 +137,7 @@ network, no way to name a function that is not on a fixed list. Ordered values
 compare by rank, so `'internal' < 'confidential'` is true. See
 [ADR 0002](docs/adr/0002-expression-language.md).
 
-Drop a `*.rule.yaml` in `.tmc/rules/` to add one. Reuse a built-in id to replace it.
+Drop a `*.rule.yaml` in `.tmac/rules/` to add one. Reuse a built-in id to replace it.
 
 ## Severity is derived
 
@@ -169,23 +175,23 @@ quietly describing a risk that no longer exists.
 
 | | |
 |---|---|
-| `tmc init` | scaffold a model |
-| `tmc validate` | schema and cross-reference check |
-| `tmc analyze` | run the rules; `--format json,sarif,md,html,all` |
-| `tmc analyze --fail-on high` | exit 1 on an open risk at or above a severity |
-| `tmc diff old.yaml new.yaml` | semantic diff, security-relevant changes flagged |
-| `tmc explain <rule-or-finding-id>` | why a rule exists and why a finding is uncertain |
-| `tmc diagram` | data flow or data asset diagram as SVG |
-| `tmc track seed` | write tracking entries for every open risk |
-| `tmc import --from threat-dragon model.json` | convert from another tool |
-| `tmc export --to tm-bom` | CycloneDX threat model BOM, or OTM |
-| `tmc serve --write` | open the editor against the local file, and save back to it |
-| `tmc schema -o tmc.schema.json` | JSON Schema for editor completion |
+| `tmac init` | scaffold a model |
+| `tmac validate` | schema and cross-reference check |
+| `tmac analyze` | run the rules; `--format json,sarif,md,html,all` |
+| `tmac analyze --fail-on high` | exit 1 on an open risk at or above a severity |
+| `tmac diff old.yaml new.yaml` | semantic diff, security-relevant changes flagged |
+| `tmac explain <rule-or-finding-id>` | why a rule exists and why a finding is uncertain |
+| `tmac diagram` | data flow or data asset diagram as SVG |
+| `tmac track seed` | write tracking entries for every open risk |
+| `tmac import --from threat-dragon model.json` | convert from another tool |
+| `tmac export --to tm-bom` | CycloneDX threat model BOM, or OTM |
+| `tmac serve --write` | open the editor against the local file, and save back to it |
+| `tmac schema -o tmac.schema.json` | JSON Schema for editor completion |
 
 ## The editor
 
 ```bash
-tmc serve --write
+tmac serve --write
 ```
 
 A browser view of the model: the diagram, the findings with filters, the detail of
@@ -196,7 +202,7 @@ It is a static site that does its own parsing and analysis in the tab, running t
 same core and the same rule library as the CLI rather than a second implementation
 that can disagree with it (ADR 0006). Nothing is uploaded, and it works offline.
 
-`tmc serve` binds to the loopback interface, serves one asset directory, and touches
+`tmac serve` binds to the loopback interface, serves one asset directory, and touches
 exactly one file. It is read only unless you pass `--write`, and a save that would
 not load is refused rather than written.
 
@@ -209,7 +215,7 @@ Findings, elements and flows are all linkable:
 ## In CI
 
 ```yaml
-- run: npx tmc analyze --format sarif --fail-on high
+- run: npx tmac analyze --format sarif --fail-on high
 - uses: github/codeql-action/upload-sarif@v3
   with:
     sarif_file: tm-out/risks.sarif
@@ -233,7 +239,7 @@ low-confidence findings where pytm produced confident ones. That is the import b
 honest about what the source file actually knew.
 
 **Through OTM**, a round trip keeps its meaning. OTM has no data asset of its own, so
-`tmc` parks those and the shared runtimes under project attributes, which another
+`tmac` parks those and the shared runtimes under project attributes, which another
 tool ignores and this one reads back. There is a test asserting the stronger property
 that matters: the same model produces the same findings after a round trip, not
 merely the same fields.
@@ -247,7 +253,7 @@ merely the same fields.
 | `packages/render` | Graphviz DOT and SVG, via WASM so there is no system dependency |
 | `packages/report` | Markdown, HTML, SARIF, JSON |
 | `packages/importers` | Threat Dragon, pytm, Threagile, OTM |
-| `apps/cli` | the `tmc` command |
+| `apps/cli` | the `tmac` command |
 | `apps/web` | the browser viewer and editor |
 
 ## Documentation
@@ -278,6 +284,21 @@ Not built: drag-and-drop diagram editing, and the hosted git provider integratio
 from [PLAN.md](PLAN.md). Editing today is the model text with live analysis, which is
 the half of authoring that carries the value; the diagram is laid out automatically
 and is read only.
+
+## Releasing
+
+Tag a version and the release workflow does the rest: it verifies, then packs the
+CLI, installs it into a clean directory and runs it end to end, and only publishes
+if that works. Publishing a CLI nobody has run from a tarball is how a broken
+release reaches people.
+
+```bash
+npm version 0.1.0 --workspaces --include-workspace-root
+git tag v0.1.0 && git push --tags
+```
+
+`npm` packages publish with provenance, and the container image is built with
+provenance and an SBOM.
 
 ## Licence
 

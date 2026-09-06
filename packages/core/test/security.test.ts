@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fileURLToPath } from 'node:url';
-import { validateModel } from '@tmc/core';
+import { validateModel } from 'tmac-core';
 
 const fixture = (name: string) => fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url));
 

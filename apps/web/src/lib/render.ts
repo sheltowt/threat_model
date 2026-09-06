@@ -1,16 +1,16 @@
-import type { ModelGraph } from '@tmc/core/browser';
+import type { ModelGraph } from 'tmac-core/browser';
 
 /**
  * Graphviz is a megabyte of compiled WASM, and most of it is only needed once
  * somebody actually looks at a diagram. Loading it on demand keeps the first paint
  * to the app itself; the module caches after the first call.
  */
-type RenderModule = typeof import('@tmc/render/browser');
+type RenderModule = typeof import('tmac-render/browser');
 
 let pending: Promise<RenderModule> | undefined;
 
 export function renderModule(): Promise<RenderModule> {
-  pending ??= import('@tmc/render/browser');
+  pending ??= import('tmac-render/browser');
   return pending;
 }
 

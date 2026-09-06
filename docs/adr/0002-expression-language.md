@@ -30,7 +30,7 @@ run. The lexicographic comparison is silently wrong, which is worse than an erro
 
 ## Decision
 
-Write a small expression evaluator in `@tmc/rules` implementing a CEL-shaped subset,
+Write a small expression evaluator in `tmac-rules` implementing a CEL-shaped subset,
 with no third-party dependency in the security-critical path:
 
 - Grammar: literals, identifiers, member access, index, unary `!` and `-`, `*` `/`

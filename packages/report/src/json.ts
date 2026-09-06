@@ -9,17 +9,17 @@
  * diff in CI means the model changed.
  */
 
-import { SEVERITY, type ModelGraph, type ElementNode } from '@tmc/core/browser';
-import type { Analysis, Risk } from '@tmc/rules/browser';
+import { SEVERITY, type ModelGraph, type ElementNode } from 'tmac-core/browser';
+import type { Analysis, Risk } from 'tmac-rules/browser';
 
 export interface JsonOptions {
   /** ISO timestamp. Injectable so golden files and CI diffs stay deterministic. */
   generatedAt?: string;
 }
 
-export const RISKS_SCHEMA = 'tmc/risks/1.0';
-export const STATS_SCHEMA = 'tmc/stats/1.0';
-export const ASSETS_SCHEMA = 'tmc/technical-assets/1.0';
+export const RISKS_SCHEMA = 'tmac/risks/1.0';
+export const STATS_SCHEMA = 'tmac/stats/1.0';
+export const ASSETS_SCHEMA = 'tmac/technical-assets/1.0';
 
 function stamp(options: JsonOptions): string {
   return options.generatedAt ?? new Date().toISOString();
@@ -244,7 +244,7 @@ function assetEntry(el: ElementNode): Record<string, unknown> {
   if (el.machine) out['machine'] = el.machine;
   if (el.owner) out['owner'] = el.owner;
   // Controls are tri-state; only the keys the author actually recorded are emitted,
-  // because "absent" is a distinct answer from "false" everywhere else in tmc.
+  // because "absent" is a distinct answer from "false" everywhere else in tmac.
   const controls = Object.entries(el.controls)
     .filter(([, v]) => v !== undefined)
     .sort(([a], [b]) => a.localeCompare(b));

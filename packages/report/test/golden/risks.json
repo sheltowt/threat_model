@@ -1,5 +1,5 @@
 {
-  "schema": "tmc/risks/1.0",
+  "schema": "tmac/risks/1.0",
   "generated_at": "2026-09-06T12:00:00Z",
   "model": {
     "title": "Payment Service",

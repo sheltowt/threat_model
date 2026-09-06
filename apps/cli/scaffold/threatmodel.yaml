@@ -1,6 +1,6 @@
-# yaml-language-server: $schema=./tmc.schema.json
+# yaml-language-server: $schema=./tmac.schema.json
 #
-# Run `tmc schema -o tmc.schema.json` once and your editor will complete every
+# Run `tmac schema -o tmac.schema.json` once and your editor will complete every
 # field and enum in this file.
 #
 # The one rule worth knowing: a security control you omit means "nobody has
@@ -8,7 +8,7 @@
 # control come back marked low confidence, naming the gap. Write the control as
 # `false` when you know it is missing.
 
-schema: tmc/1.0
+schema: tmac/1.0
 
 meta:
   title: My System
@@ -36,7 +36,7 @@ elements:
 
   api:
     name: API service
-    technology: web-service-rest    # run `tmc rules list` and see docs for the catalogue
+    technology: web-service-rest    # run `tmac rules list` and see docs for the catalogue
     size: service
     machine: container
     internet_facing: true

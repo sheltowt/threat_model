@@ -3,7 +3,7 @@
 # Every string here is something a model author can legitimately write, and every one
 # of them would break out of a quoted DOT string if it were interpolated raw. Threat
 # Dragon and pytm have both shipped exactly this bug.
-schema: tmc/1.0
+schema: tmac/1.0
 
 meta:
   title: 'Evil "model" \ {with} <braces>'

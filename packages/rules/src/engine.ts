@@ -13,7 +13,7 @@ import {
   type Likelihood,
   type ModelGraph,
   type RiskStatus,
-} from '@tmc/core/browser';
+} from 'tmac-core/browser';
 import {
   evaluate,
   parseExpression,

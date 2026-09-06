@@ -1,5 +1,5 @@
-import type { ModelGraph } from '@tmc/core/browser';
-import type { Analysis, Risk } from '@tmc/rules/browser';
+import type { ModelGraph } from 'tmac-core/browser';
+import type { Analysis, Risk } from 'tmac-rules/browser';
 import type { Selection } from '../state/selection.js';
 
 interface Props {

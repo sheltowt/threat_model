@@ -1,4 +1,4 @@
-import type { Diagnostic } from '@tmc/core/browser';
+import type { Diagnostic } from 'tmac-core/browser';
 
 /**
  * Diagnostics from the real loader, shown the way the CLI shows them.

@@ -203,7 +203,7 @@ export function loadModel(file: string, options: LoadOptions = {}): LoadResult {
   const abs = resolve(file);
   const { raw, sources } = resolveIncludes(abs, diagnostics, options.maxIncludeDepth ?? 10);
 
-  const catalogDirs = options.catalogDirs ?? [resolve(dirname(abs), '.tmc')];
+  const catalogDirs = options.catalogDirs ?? [resolve(dirname(abs), '.tmac')];
   const catalog = loadCatalog(catalogDirs);
 
   let parsed;

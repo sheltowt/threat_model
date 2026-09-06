@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { SEVERITY, isResolved } from '@tmc/core/browser';
-import { isOpen, type Analysis } from '@tmc/rules/browser';
+import { SEVERITY, isResolved } from 'tmac-core/browser';
+import { isOpen, type Analysis } from 'tmac-rules/browser';
 import type { Selection } from '../state/selection.js';
 
 interface Props {

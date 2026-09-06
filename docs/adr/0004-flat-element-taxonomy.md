@@ -34,7 +34,7 @@ and `unprotected_communications_tolerated`.
 flow.to.technology.vulnerable_to_query_injection && flow.from.custom_code
 ```
 
-A project extends the catalogue in `.tmc/technologies.yaml` with only the entries it
+A project extends the catalogue in `.tmac/technologies.yaml` with only the entries it
 is adding or changing.
 
 pytm's `LLM` and `Agent` classes become the `ai-model` and `ai-agent` technologies,

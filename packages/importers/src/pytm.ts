@@ -4,13 +4,13 @@
  * The important part of this file is not the class mapping, it is the control
  * handling. pytm's element attributes are plain Python booleans that default to
  * `False`, so its JSON dump cannot distinguish "we checked, there is no input
- * validation" from "nobody has said". tmc treats those as different states
+ * validation" from "nobody has said". tmac treats those as different states
  * (ADR 0002), and a `false` we invent here would fabricate an assertion the pytm
  * author never made. So only `true` is carried across, and every dropped `false`
  * is counted into one summary warning.
  */
 
-import type { ModelInput } from '@tmc/core';
+import type { ModelInput } from 'tmac-core';
 import {
   asArray,
   asBool,
@@ -54,7 +54,7 @@ const CLASS_MAP: Record<string, { kind: ElementIn['kind']; technology: string; m
   agent: { kind: 'process', technology: 'ai-agent' },
 };
 
-/** pytm control attribute -> tmc control name. */
+/** pytm control attribute -> tmac control name. */
 const CONTROL_MAP: Record<string, string> = {
   authenticatesSource: 'authenticates_source',
   authenticatesDestination: 'authenticates_destination',
@@ -90,7 +90,7 @@ const CONTROL_MAP: Record<string, string> = {
   isLogIntegrityProtected: 'log_integrity_protected',
 };
 
-/** pytm Classification -> tmc confidentiality. */
+/** pytm Classification -> tmac confidentiality. */
 const CLASSIFICATION_MAP: Record<string, DataAssetIn['classification']> = {
   UNKNOWN: 'internal',
   PUBLIC: 'public',
@@ -278,7 +278,7 @@ export function importPytm(json: unknown, options: PytmImportOptions = {}): Impo
           warnings,
           'pytm-protocol-unmapped',
           `protocol "${spelled}" on dataflow "${name}" is not in the catalogue; used ${protocol}`,
-          'Add it to .tmc/protocols.yaml if your organisation uses it.',
+          'Add it to .tmac/protocols.yaml if your organisation uses it.',
         );
       }
     }
@@ -331,7 +331,7 @@ export function importPytm(json: unknown, options: PytmImportOptions = {}): Impo
       warnings,
       'pytm-controls-indeterminate',
       `${droppedControls} control flag(s) were false in the pytm export and have been imported as unknown rather than as "absent"`,
-      'pytm defaults every control to False, so a false there cannot be distinguished from "nobody has said". tmc keeps the two apart (ADR 0002): set the controls you have actually verified, or re-run the import with trustFalseControls if every false in your pytm model was deliberate.',
+      'pytm defaults every control to False, so a false there cannot be distinguished from "nobody has said". tmac keeps the two apart (ADR 0002): set the controls you have actually verified, or re-run the import with trustFalseControls if every false in your pytm model was deliberate.',
     );
   }
 
@@ -341,7 +341,7 @@ export function importPytm(json: unknown, options: PytmImportOptions = {}): Impo
   const description = asString(pick(root, 'description'));
   if (description !== undefined) meta.description = description;
 
-  const model: ModelInput = { schema: 'tmc/1.0', meta };
+  const model: ModelInput = { schema: 'tmac/1.0', meta };
   if (Object.keys(dataAssets).length > 0) model.data_assets = dataAssets;
   if (Object.keys(elements).length > 0) model.elements = elements;
   if (flows.length > 0) model.flows = flows;

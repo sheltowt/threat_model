@@ -55,8 +55,11 @@ export function modelJsonSchema(): Record<string, unknown> {
 
   return {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
-    $id: 'https://tmc.dev/schema/tmc-1.0.json',
-    title: 'tmc threat model',
+    // A URL we actually control and that actually serves this file. Some editors
+    // and validators fetch `$id`; pointing it at a domain nobody has registered
+    // invites whoever registers it later to serve a schema of their choosing.
+    $id: 'https://raw.githubusercontent.com/sheltowt/threat_model/main/schema/tmac-1.0.schema.json',
+    title: 'tmac threat model',
     description:
       'Declarative threat model. Security controls are tri-state: omit a control to say it is unknown rather than absent.',
     ...base,

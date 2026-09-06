@@ -1,21 +1,60 @@
 {
-  "name": "@tmc/cli",
+  "name": "tmac",
   "version": "0.1.0",
   "type": "module",
-  "description": "tmc command line interface",
+  "description": "Threat models as code: one declarative file, a rule library that generates the findings, and output CI can act on.",
   "license": "Apache-2.0",
-  "bin": { "tmc": "./dist/index.js" },
+  "bin": {
+    "tmac": "./dist/index.js"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "scaffold"],
-  "scripts": { "build": "tsc --build" },
+  "files": [
+    "dist",
+    "scaffold",
+    "web"
+  ],
+  "scripts": {
+    "build": "tsc --build",
+    "prepack": "node ../../scripts/bundle-editor.mjs"
+  },
   "dependencies": {
-    "@tmc/core": "0.1.0",
-    "@tmc/importers": "0.1.0",
-    "@tmc/render": "0.1.0",
-    "@tmc/report": "0.1.0",
-    "@tmc/rules": "0.1.0",
+    "tmac-core": "^0.1.0",
+    "tmac-importers": "^0.1.0",
+    "tmac-render": "^0.1.0",
+    "tmac-report": "^0.1.0",
+    "tmac-rules": "^0.1.0",
     "commander": "^12.1.0",
     "yaml": "^2.9.0"
-  }
+  },
+  "author": "B. Shelton",
+  "homepage": "https://github.com/sheltowt/threat_model#readme",
+  "bugs": {
+    "url": "https://github.com/sheltowt/threat_model/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sheltowt/threat_model.git",
+    "directory": "apps/cli"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "tmac",
+    "threat-modeling",
+    "threat-model-as-code",
+    "threat-model",
+    "stride",
+    "linddun",
+    "security",
+    "sarif",
+    "appsec",
+    "devsecops",
+    "cli"
+  ]
 }

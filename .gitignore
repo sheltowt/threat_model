@@ -5,3 +5,4 @@ coverage/
 tm-out/
 .DS_Store
 *.log
+apps/cli/web/

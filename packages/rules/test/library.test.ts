@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { buildGraph, builtinCatalog, modelSchema, type Model } from '@tmc/core';
-import { CONTROL_NAMES } from '@tmc/core';
-import { analyze, loadRules, type LoadedRule } from '@tmc/rules';
+import { buildGraph, builtinCatalog, modelSchema, type Model } from 'tmac-core';
+import { CONTROL_NAMES } from 'tmac-core';
+import { analyze, loadRules, type LoadedRule } from 'tmac-rules';
 
 const { rules } = loadRules();
 
@@ -22,7 +22,7 @@ function allControls(value: boolean): Record<string, boolean> {
  */
 function system(controls: Record<string, boolean>): Model {
   return modelSchema.parse({
-    schema: 'tmc/1.0',
+    schema: 'tmac/1.0',
     meta: { title: 'Property fixture', business_criticality: 'critical' },
     data_assets: {
       secrets: {

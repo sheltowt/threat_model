@@ -1,8 +1,8 @@
 /**
- * Saving back to the file `tmc serve` is editing.
+ * Saving back to the file `tmac serve` is editing.
  *
  * Only available when the app was opened with `?model=/api/model`, which is what
- * `tmc serve` prints. A model opened from a dropped file or a remote URL has nowhere
+ * `tmac serve` prints. A model opened from a dropped file or a remote URL has nowhere
  * to save to, and the button is hidden rather than failing when pressed.
  */
 
@@ -31,7 +31,7 @@ export async function saveModel(target: SaveTarget, text: string): Promise<SaveR
       body: text,
     });
   } catch (err) {
-    return { ok: false, message: `could not reach tmc serve: ${(err as Error).message}` };
+    return { ok: false, message: `could not reach tmac serve: ${(err as Error).message}` };
   }
 
   if (response.ok) return { ok: true };

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fileURLToPath } from 'node:url';
-import { buildGraph, loadModel, type ModelGraph } from '@tmc/core';
-import { analyze, calculateSeverity, ruleSchema, type LoadedRule } from '@tmc/rules';
+import { buildGraph, loadModel, type ModelGraph } from 'tmac-core';
+import { analyze, calculateSeverity, ruleSchema, type LoadedRule } from 'tmac-rules';
 
 const fixture = (name: string) =>
   fileURLToPath(new URL(`../../core/test/fixtures/${name}`, import.meta.url));

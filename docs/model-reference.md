@@ -1,6 +1,6 @@
 # The model file
 
-One YAML document describes the system. `tmc schema -o tmc.schema.json` emits the
+One YAML document describes the system. `tmac schema -o tmac.schema.json` emits the
 JSON Schema, and pointing your editor at it gives completion and inline validation
 for everything below.
 
@@ -28,7 +28,7 @@ both directions.
 
 | key | notes |
 |---|---|
-| `schema` | must be `tmc/1.0` |
+| `schema` | must be `tmac/1.0` |
 | `includes` | list of relative paths merged before validation |
 | `meta` | required, see below |
 | `data_assets` | map of id to data asset |
@@ -273,7 +273,7 @@ A key matching nothing **fails the run**, because the note attached to it now
 describes a risk that does not exist. Pass `--allow-orphaned-tracking` to downgrade
 that to a warning while you clean up.
 
-`tmc track seed` writes an `unchecked` entry for every open risk, which is how you
+`tmac track seed` writes an `unchecked` entry for every open risk, which is how you
 adopt the tool on a system that already exists.
 
 ## disabled_rules

@@ -3,30 +3,30 @@
 ## Install
 
 ```bash
-npx tmc --help
+npx tmac --help
 ```
 
 Or from the container, which needs nothing installed:
 
 ```bash
-docker run --rm -v "$PWD:/work" ghcr.io/example/tmc --help
+docker run --rm -v "$PWD:/work" ghcr.io/sheltowt/tmac --help
 ```
 
 ## Five minutes
 
 ```bash
 mkdir payments && cd payments
-npx tmc init
-npx tmc analyze
+npx tmac init
+npx tmac analyze
 ```
 
-`init` writes a small worked model and a `.tmc/` directory. `analyze` runs the rule
+`init` writes a small worked model and a `.tmac/` directory. `analyze` runs the rule
 library over it and prints what it found.
 
 Wire up editor completion once and the rest of the work is much faster:
 
 ```bash
-npx tmc schema -o tmc.schema.json
+npx tmac schema -o tmac.schema.json
 ```
 
 The scaffolded model already carries the `yaml-language-server` comment that points
@@ -60,7 +60,7 @@ finding is a question rather than a verdict.
 Ask about any of them:
 
 ```bash
-npx tmc explain sql-nosql-injection@batch_to_token_store
+npx tmac explain sql-nosql-injection@batch_to_token_store
 ```
 
 For a low-confidence finding that prints the exact fields nobody recorded.
@@ -109,13 +109,13 @@ with a note about a risk that no longer exists.
 On an existing system, seed the whole list at once:
 
 ```bash
-npx tmc track seed --write
+npx tmac track seed --write
 ```
 
 ## Reports and diagrams
 
 ```bash
-npx tmc analyze --format all --out tm-out
+npx tmac analyze --format all --out tm-out
 ```
 
 That writes `report.html` and `report.md`, the machine-readable `risks.json`,
@@ -126,7 +126,7 @@ and prints to PDF.
 ## Looking at it in a browser
 
 ```bash
-npx tmc serve --write
+npx tmac serve --write
 ```
 
 That opens a local editor on the file: the diagram, the findings with filters, the
@@ -146,7 +146,7 @@ http://127.0.0.1:7300/?model=/api/model#tab=risks&risk=sql-nosql-injection@batch
 
 ## Adding a rule
 
-Rules are documents. Drop this in `.tmc/rules/no-public-buckets.rule.yaml`:
+Rules are documents. Drop this in `.tmac/rules/no-public-buckets.rule.yaml`:
 
 ```yaml
 id: no-public-buckets
@@ -173,7 +173,7 @@ likelihood: very-likely
 impact: high
 ```
 
-`tmc analyze` picks it up immediately. Give a rule the same `id` as a built-in and it
+`tmac analyze` picks it up immediately. Give a rule the same `id` as a built-in and it
 replaces that built-in, which is how you retune one that is noisy for you without
 forking anything.
 
@@ -182,9 +182,9 @@ The full reference is in [rule authoring](rule-authoring.md).
 ## Coming from another tool
 
 ```bash
-npx tmc import --from threat-dragon model.json -o threatmodel.yaml
-npx tmc import --from pytm pytm-output.json -o threatmodel.yaml
-npx tmc import --from threagile threagile.yaml -o threatmodel.yaml
+npx tmac import --from threat-dragon model.json -o threatmodel.yaml
+npx tmac import --from pytm pytm-output.json -o threatmodel.yaml
+npx tmac import --from threagile threagile.yaml -o threatmodel.yaml
 ```
 
 Read the warnings. Importing from pytm in particular will report how many controls

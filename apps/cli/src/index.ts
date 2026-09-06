@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import { ModelError } from '@tmc/core';
+import { ModelError } from 'tmac-core';
 import { analyze, type Format } from './commands/analyze.js';
 import { reportModelError, validate } from './commands/validate.js';
 import { diagram, diff, explain, init, rulesList, schema, trackSeed } from './commands/misc.js';
@@ -20,7 +20,7 @@ async function main(argv: string[]): Promise<number> {
   const program = new Command();
 
   program
-    .name('tmc')
+    .name('tmac')
     .description('Threat models as code: one file, a rule library, and output CI can read.')
     .version(VERSION)
     .showHelpAfterError();

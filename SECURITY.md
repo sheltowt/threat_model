@@ -8,7 +8,7 @@ three working days.
 
 ## Threat model of the tool itself
 
-`tmc` reads model files and rule files that may come from a repository the operator
+`tmac` reads model files and rule files that may come from a repository the operator
 does not fully control, so both are treated as untrusted input.
 
 **Rule conditions.** Conditions are evaluated by a purpose-built interpreter in
@@ -56,7 +56,7 @@ at all is what matters. There is a test recording that boundary.
 
 **What is not defended.** A model file can make the tool do a large amount of work,
 for instance through a very large element count. There is no wall-clock limit on a
-whole run, only per-expression bounds. Do not run `tmc` on an untrusted model in an
+whole run, only per-expression bounds. Do not run `tmac` on an untrusted model in an
 unbounded process.
 
 ## Scanning

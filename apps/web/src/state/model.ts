@@ -5,8 +5,8 @@ import {
   type Diagnostic,
   type Model,
   type ModelGraph,
-} from '@tmc/core/browser';
-import { analyze, builtinRules, type Analysis } from '@tmc/rules/browser';
+} from 'tmac-core/browser';
+import { analyze, builtinRules, type Analysis } from 'tmac-rules/browser';
 
 /**
  * The model text is the single source of truth.

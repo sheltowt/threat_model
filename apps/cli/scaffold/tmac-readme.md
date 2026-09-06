@@ -1,6 +1,6 @@
-# .tmc
+# .tmac
 
-Project configuration for `tmc`.
+Project configuration for `tmac`.
 
 ## rules/
 
@@ -8,7 +8,7 @@ Any `*.rule.yaml` here is loaded on top of the built-in library. Give a rule the
 same `id` as a built-in and it replaces that built-in, which is how you retune a
 rule that is noisy in your context without forking the tool.
 
-See `tmc explain <rule-id>` for the shape of an existing rule, and the rule
+See `tmac explain <rule-id>` for the shape of an existing rule, and the rule
 authoring guide in the project documentation.
 
 ## technologies.yaml and protocols.yaml

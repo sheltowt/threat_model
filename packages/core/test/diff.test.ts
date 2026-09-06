@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fileURLToPath } from 'node:url';
-import { diffModels, formatDiff, loadModel } from '@tmc/core';
+import { diffModels, formatDiff, loadModel } from 'tmac-core';
 
 const fixture = (name: string) => fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url));
 const modelOf = (name: string) => loadModel(fixture(name)).model;

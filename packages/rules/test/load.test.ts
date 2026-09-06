@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { loadRules } from '@tmc/rules';
+import { loadRules } from 'tmac-rules';
 
 /** Write one rule file into a fresh directory and load it alongside the built-ins. */
 function withRule(body: string, name = 'test.rule.yaml') {
-  const dir = mkdtempSync(join(tmpdir(), 'tmc-rules-'));
+  const dir = mkdtempSync(join(tmpdir(), 'tmac-rules-'));
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, name), body, 'utf8');
   return loadRules([dir]);

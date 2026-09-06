@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { buildGraph, loadModel, type LoadResult, type ModelGraph } from '@tmc/core';
-import { loadRules, type LoadedRule } from '@tmc/rules';
+import { buildGraph, loadModel, type LoadResult, type ModelGraph } from 'tmac-core';
+import { loadRules, type LoadedRule } from 'tmac-rules';
 
 export const DEFAULT_MODEL = 'threatmodel.yaml';
 
@@ -28,7 +28,7 @@ export interface Context {
 }
 
 export function projectDir(file: string): string {
-  return resolve(dirname(file), '.tmc');
+  return resolve(dirname(file), '.tmac');
 }
 
 export function open(file: string): Context {

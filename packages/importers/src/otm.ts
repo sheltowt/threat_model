@@ -6,7 +6,7 @@
  * we cannot place becomes `unknown-technology` and a warning, never a guess.
  */
 
-import type { ModelInput } from '@tmc/core';
+import type { ModelInput } from 'tmac-core';
 import {
   asArray,
   asBool,
@@ -30,7 +30,7 @@ import {
   stringList,
 } from './util.js';
 
-/** OTM component type -> tmc technology. Keys are normalised (lower, dashed). */
+/** OTM component type -> tmac technology. Keys are normalised (lower, dashed). */
 const TYPE_MAP: Record<string, string> = {
   'empty-component': 'unknown-technology',
   'generic-component': 'unknown-technology',
@@ -156,8 +156,8 @@ function resolveType(raw: unknown, where: string, warnings: ImportWarning[]): Te
   pushWarning(
     warnings,
     'otm-type-unmapped',
-    `${where}: component type "${asString(raw)}" has no tmc technology; used unknown-technology`,
-    'Add a matching entry to .tmc/technologies.yaml, or set `technology:` on the element.',
+    `${where}: component type "${asString(raw)}" has no tmac technology; used unknown-technology`,
+    'Add a matching entry to .tmac/technologies.yaml, or set `technology:` on the element.',
   );
   return { technology: 'unknown-technology' };
 }
@@ -193,7 +193,7 @@ const BOUNDARY_TYPES = new Set([
   'execution-environment',
 ]);
 
-/** Read an attribute only when it names a member of the tmc enum it belongs to. */
+/** Read an attribute only when it names a member of the tmac enum it belongs to. */
 function enumAttr<T extends string>(
   attributes: Record<string, unknown>,
   key: string,
@@ -237,7 +237,7 @@ export function importOtm(json: unknown): ImportResult {
   const dataRegistry = new IdRegistry();
 
   /**
-   * OTM has no data asset of its own, so a tmc export parks them under
+   * OTM has no data asset of its own, so a tmac export parks them under
    * `project.attributes.dataAssets`. Reading them back is what makes the round trip
    * keep classifications, and with them every reference on an element or a flow.
    * A file from another tool simply has no such attribute and loses nothing.
@@ -300,7 +300,7 @@ export function importOtm(json: unknown): ImportResult {
     const id = registry.assign([otmId, name], otmId ?? name, 'element');
     const where = `component "${name}"`;
     const attributes = asRecord(component['attributes']);
-    // `attributes.technology` is what a tmc export writes; trust it over `type`.
+    // `attributes.technology` is what a tmac export writes; trust it over `type`.
     const declaredTech = asString(pick(attributes, 'technology'));
     const resolved =
       declaredTech !== undefined && knownTechnology(declaredTech)
@@ -570,7 +570,7 @@ export function importOtm(json: unknown): ImportResult {
     meta.security_requirements = requirements as NonNullable<ModelInput['meta']>['security_requirements'];
   }
 
-  const model: ModelInput = { schema: 'tmc/1.0', meta };
+  const model: ModelInput = { schema: 'tmac/1.0', meta };
   if (Object.keys(dataAssets).length > 0) model.data_assets = dataAssets;
   const sharedRuntimes = asRecord(
     pick(projectAttributes, 'sharedRuntimes', 'shared_runtimes'),

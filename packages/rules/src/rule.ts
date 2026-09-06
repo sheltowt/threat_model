@@ -7,14 +7,14 @@ import {
   RULE_FUNCTION,
   RULE_SCOPE,
   STRIDE,
-} from '@tmc/core/browser';
+} from 'tmac-core/browser';
 
 /**
  * A rule is a document, not code.
  *
  * The metadata block is the union of Threagile's risk category and pytm's
  * CAPEC-linked threat entry: enough for a reader to judge the finding without
- * opening the rule, and enough for `tmc explain` to be a real answer. Two fields are
+ * opening the rule, and enough for `tmac explain` to be a real answer. Two fields are
  * mandatory that neither project requires: `false_positives`, because a rule whose
  * author cannot say when it is wrong is not ready, and `detection_logic`, because a
  * finding nobody can trace back to a condition gets ignored.

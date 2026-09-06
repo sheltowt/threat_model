@@ -1,7 +1,7 @@
 import { parseExpression, rootIdentifiers } from './expr/index.js';
 import { ruleSchema, type Rule } from './rule.js';
 import { BUILTIN_RULE_DATA } from './generated/rule-data.js';
-import { IMPACT, LIKELIHOOD } from '@tmc/core/browser';
+import { IMPACT, LIKELIHOOD } from 'tmac-core/browser';
 
 /**
  * Rule parsing and the built-in library, with no filesystem.
@@ -172,7 +172,7 @@ export function builtinRules(): LoadedRule[] {
   if (errors.length > 0) {
     // A built-in that fails to parse is a build error, not a user error.
     throw new Error(
-      `tmc: the built-in rule library is invalid:\n${errors
+      `tmac: the built-in rule library is invalid:\n${errors
         .map((e) => `  ${e.file}: ${e.message}`)
         .join('\n')}`,
     );

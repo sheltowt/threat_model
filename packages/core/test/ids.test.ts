@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { matchesTrackingKey, parseSyntheticId, resolveTrackingKey, syntheticId } from '@tmc/core';
+import { matchesTrackingKey, parseSyntheticId, resolveTrackingKey, syntheticId } from 'tmac-core';
 
 describe('synthetic ids', () => {
   it('builds from rule and subject', () => {

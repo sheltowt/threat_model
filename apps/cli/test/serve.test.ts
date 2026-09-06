@@ -25,7 +25,7 @@ async function waitForServer(timeoutMs = 15_000): Promise<void> {
     } catch {
       /* not up yet */
     }
-    if (Date.now() > deadline) throw new Error('tmc serve did not start in time');
+    if (Date.now() > deadline) throw new Error('tmac serve did not start in time');
     await new Promise((r) => setTimeout(r, 150));
   }
 }
@@ -33,11 +33,11 @@ async function waitForServer(timeoutMs = 15_000): Promise<void> {
 beforeAll(async () => {
   if (!existsSync(CLI)) throw new Error('build the workspace first: npm run build');
   if (!existsSync(join(ROOT, 'apps/web/dist/index.html'))) {
-    throw new Error('build the editor first: npm run build --workspace @tmc/web');
+    throw new Error('build the editor first: npm run build --workspace tmac-web');
   }
 
   // A copy, because these tests write to it.
-  const dir = mkdtempSync(join(tmpdir(), 'tmc-serve-'));
+  const dir = mkdtempSync(join(tmpdir(), 'tmac-serve-'));
   modelPath = join(dir, 'threatmodel.yaml');
   copyFileSync(EXAMPLE, modelPath);
 
@@ -81,7 +81,7 @@ describe('the model endpoint', () => {
     const before = readFileSync(modelPath, 'utf8');
     const response = await fetch(`${BASE}/api/model`, {
       method: 'PUT',
-      body: 'schema: tmc/1.0\nmeta:\n  owner: nobody\n',
+      body: 'schema: tmac/1.0\nmeta:\n  owner: nobody\n',
     });
     expect(response.status).toBe(422);
     const body = (await response.json()) as { error: string; issues: unknown[] };
