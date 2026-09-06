@@ -224,6 +224,44 @@ describe('track seed', () => {
   });
 });
 
+describe('questions', () => {
+  it('lists the gaps worst first', () => {
+    const r = tmac(['questions', EXAMPLE]);
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain('Unrecorded, in the order worth answering');
+    expect(r.stdout).toContain('RECORD THIS');
+    expect(r.stdout).toContain('Start here');
+  });
+
+  it('emits machine-readable output', () => {
+    const r = tmac(['questions', EXAMPLE, '--json']);
+    const parsed = JSON.parse(r.stdout) as {
+      schema: string;
+      stats: { open: number; unsettledFindings: number };
+      questions: { field: string; settles: number; rules: string[] }[];
+    };
+    expect(parsed.schema).toBe('tmac/questions/1.0');
+    expect(parsed.stats.open).toBe(parsed.questions.length);
+    expect(parsed.questions.length).toBeGreaterThan(0);
+    for (const q of parsed.questions) {
+      expect(q.field.length).toBeGreaterThan(0);
+      expect(q.rules.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('honours the limit', () => {
+    const all = JSON.parse(tmac(['questions', EXAMPLE, '--json']).stdout) as {
+      questions: unknown[];
+    };
+    const r = tmac(['questions', EXAMPLE, '--limit', '3']);
+    expect(r.stdout).toContain('and ' + (all.questions.length - 3) + ' more');
+  });
+
+  it('is reachable as gaps', () => {
+    expect(tmac(['gaps', EXAMPLE]).status).toBe(0);
+  });
+});
+
 describe('diagram', () => {
   it('renders an SVG with no external references', () => {
     const dir = mkdtempSync(join(tmpdir(), 'tmac-dia-'));

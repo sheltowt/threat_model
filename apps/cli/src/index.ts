@@ -6,6 +6,7 @@ import { reportModelError, validate } from './commands/validate.js';
 import { diagram, diff, explain, init, rulesList, schema, trackSeed } from './commands/misc.js';
 import { exportModel, importModel } from './commands/transfer.js';
 import { serve } from './commands/serve.js';
+import { showQuestions } from './commands/questions.js';
 import { red } from './ui.js';
 
 const VERSION = '0.1.0';
@@ -151,6 +152,24 @@ async function main(argv: string[]): Promise<number> {
     .action((file: string | undefined, opts: { to: string; out?: string }) => {
       process.exitCode = exportModel(file, opts);
     });
+
+  program
+    .command('questions')
+    .alias('gaps')
+    .description('list what the model does not record, worst first')
+    .argument('[file]')
+    .option('--json', 'emit the questions as JSON')
+    .option('-o, --out <path>', 'write the JSON here')
+    .option('-n, --limit <n>', 'how many to show; 0 for all', '20')
+    .option('--include-settled', 'include gaps behind resolved or suppressed findings')
+    .action(
+      (
+        file: string | undefined,
+        opts: { json?: boolean; out?: string; limit?: string; includeSettled?: boolean },
+      ) => {
+        process.exitCode = showQuestions(file, opts);
+      },
+    );
 
   program
     .command('serve')

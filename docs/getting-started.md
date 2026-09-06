@@ -67,7 +67,25 @@ For a low-confidence finding that prints the exact fields nobody recorded.
 
 ## Closing a gap
 
-Say `explain` told you the model does not record whether the batch uses parameterised
+`explain` answers this one finding at a time. To see the whole list at once, worst
+first:
+
+```bash
+npx tmac questions
+```
+
+```
+WORST     WAITING  RECORD THIS                                 FOR
+--------  -------  ------------------------------------------  ---------------------
+high      1        ops_to_api.controls.uses_mfa                missing-authentication-second-factor
+elevated  2        token_store.controls.authenticates_source   missing-mutual-authentication
+elevated  1        payment_api.controls.hardened               missing-hardening
+```
+
+That is the model's own to-do list. Work down it and the findings sharpen in both
+directions.
+
+Say it told you the model does not record whether the batch uses parameterised
 queries. If it does:
 
 ```yaml
@@ -80,6 +98,10 @@ elements:
 The finding disappears. If it does not, write `false` and the finding becomes
 confirmed at full confidence. Either way the model now says something true, and the
 next run is sharper.
+
+Sometimes answering one question reveals another: a rule that could not get past an
+earlier condition now evaluates further and asks about the next field along. That is
+the model getting more specific rather than the list growing without end.
 
 This is the loop the whole tool is built around. A threat model that does not record
 what you know is not worth regenerating.
