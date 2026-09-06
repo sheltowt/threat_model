@@ -8,7 +8,15 @@ import {
   toMarkdown,
   toSarif,
 } from '@tmc/report';
+import { readFileSync } from 'node:fs';
 import { EXAMPLE, FIXED_NOW, expectGolden, fixture, goldenPath } from './helper.js';
+
+/**
+ * A relative path, because the golden file is committed and an absolute one would
+ * only ever match the machine that generated it.
+ */
+const MODEL_PATH = 'examples/payment-service/threatmodel.yaml';
+const MODEL_TEXT = readFileSync(EXAMPLE, 'utf8');
 
 const opts = { generatedAt: FIXED_NOW };
 
@@ -84,7 +92,16 @@ describe('SARIF', () => {
     const { analysis, graph, rules } = fixture();
     expectGolden(
       goldenPath('risks.sarif'),
-      `${JSON.stringify(toSarif(analysis, graph, { ...opts, modelPath: EXAMPLE, rules }), null, 2)}\n`,
+      `${JSON.stringify(
+        toSarif(analysis, graph, {
+          ...opts,
+          modelPath: MODEL_PATH,
+          modelText: MODEL_TEXT,
+          rules,
+        }),
+        null,
+        2,
+      )}\n`,
     );
   });
 
@@ -116,6 +133,37 @@ describe('SARIF', () => {
       expect(Number.isFinite(score)).toBe(true);
       expect(score).toBeGreaterThan(0);
       expect(score).toBeLessThanOrEqual(10);
+    }
+  });
+
+  it('locates a result at a real line of the model file', () => {
+    // Without a line, code scanning pins every finding to the top of the file and
+    // the reader has to go hunting for the element it is about.
+    const { analysis, graph } = fixture();
+    const run = toSarif(analysis, graph, {
+      ...opts,
+      modelPath: MODEL_PATH,
+      modelText: MODEL_TEXT,
+    }).runs[0]!;
+    const located = (run['results'] as {
+      locations?: { physicalLocation?: { region?: { startLine?: number } } }[];
+    }[]).filter((r) => r.locations?.[0]?.physicalLocation?.region?.startLine !== undefined);
+    expect(located.length).toBeGreaterThan(0);
+    const lineCount = MODEL_TEXT.split('\n').length;
+    for (const r of located) {
+      const line = r.locations![0]!.physicalLocation!.region!.startLine!;
+      expect(line).toBeGreaterThan(0);
+      expect(line).toBeLessThanOrEqual(lineCount);
+    }
+  });
+
+  it('omits the region rather than guessing when it has no model text', () => {
+    const { analysis, graph } = fixture();
+    const run = toSarif(analysis, graph, { ...opts, modelPath: MODEL_PATH }).runs[0]!;
+    for (const r of run['results'] as {
+      locations?: { physicalLocation?: { region?: unknown } }[];
+    }[]) {
+      expect(r.locations?.[0]?.physicalLocation?.region).toBeUndefined();
     }
   });
 

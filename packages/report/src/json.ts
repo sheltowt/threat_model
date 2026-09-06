@@ -9,8 +9,8 @@
  * diff in CI means the model changed.
  */
 
-import { SEVERITY, type ModelGraph, type ElementNode } from '@tmc/core';
-import type { Analysis, Risk } from '@tmc/rules';
+import { SEVERITY, type ModelGraph, type ElementNode } from '@tmc/core/browser';
+import type { Analysis, Risk } from '@tmc/rules/browser';
 
 export interface JsonOptions {
   /** ISO timestamp. Injectable so golden files and CI diffs stay deterministic. */

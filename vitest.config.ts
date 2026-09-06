@@ -10,13 +10,20 @@ export default defineConfig({
       '@tmc/core': r('./packages/core/src/index.ts'),
       '@tmc/rules/browser': r('./packages/rules/src/browser.ts'),
       '@tmc/rules': r('./packages/rules/src/index.ts'),
+      '@tmc/render/svg-text': r('./packages/render/src/svg-text.ts'),
+      '@tmc/render/browser': r('./packages/render/src/browser.ts'),
       '@tmc/render': r('./packages/render/src/index.ts'),
+      '@tmc/report/browser': r('./packages/report/src/browser.ts'),
       '@tmc/report': r('./packages/report/src/index.ts'),
       '@tmc/importers': r('./packages/importers/src/index.ts'),
     },
   },
   test: {
-    include: ['packages/**/test/**/*.test.ts', 'apps/**/test/**/*.test.ts'],
+    include: [
+      'packages/**/test/**/*.test.ts',
+      'apps/**/test/**/*.test.ts',
+      'apps/**/test/**/*.test.tsx',
+    ],
     coverage: {
       provider: 'v8',
       include: ['packages/*/src/**/*.ts'],

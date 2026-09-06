@@ -10,11 +10,25 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
+    },
+    "./package.json": "./package.json"
   },
-  "files": ["dist", "data", "rules", "templates"],
+  "files": [
+    "dist",
+    "data",
+    "rules",
+    "templates"
+  ],
   "scripts": {
     "build": "tsc --build"
   },
-  "dependencies": { "@tmc/core": "0.1.0", "@tmc/rules": "0.1.0", "@tmc/render": "0.1.0" }
+  "dependencies": {
+    "@tmc/core": "0.1.0",
+    "@tmc/rules": "0.1.0",
+    "@tmc/render": "0.1.0"
+  }
 }

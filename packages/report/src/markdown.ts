@@ -10,8 +10,8 @@
  * output noisy enough to ignore.
  */
 
-import { isResolved, type ModelGraph, type Severity } from '@tmc/core';
-import type { Analysis, Risk } from '@tmc/rules';
+import { isResolved, type ModelGraph, type Severity } from '@tmc/core/browser';
+import type { Analysis, Risk } from '@tmc/rules/browser';
 import {
   attentionFirst,
   cweLabel,
