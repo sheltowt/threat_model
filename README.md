@@ -11,7 +11,7 @@ npx tmac analyze --format all --fail-on high
 Or without installing anything:
 
 ```bash
-docker run --rm -v "$PWD:/work" ghcr.io/sheltowt/tmac analyze
+docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/sheltowt/tmac analyze
 ```
 
 ## Why another one

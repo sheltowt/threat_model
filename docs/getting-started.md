@@ -9,7 +9,7 @@ npx tmac --help
 Or from the container, which needs nothing installed:
 
 ```bash
-docker run --rm -v "$PWD:/work" ghcr.io/sheltowt/tmac --help
+docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/sheltowt/tmac --help
 ```
 
 ## Five minutes

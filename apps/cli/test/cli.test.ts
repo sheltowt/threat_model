@@ -233,12 +233,21 @@ describe('questions', () => {
     expect(r.stdout).toContain('Start here');
   });
 
+  it('says findings are waiting, never that answering settles them', () => {
+    // A finding can wait on several fields, so answering one need not resolve it.
+    // The header already said WAITING while the summary said "settles"; the two
+    // disagreeing is how an overclaim survives a review.
+    const r = tmac(['questions', EXAMPLE]);
+    expect(r.stdout).not.toContain('settles');
+    expect(r.stdout).toMatch(/waits? on the first one/);
+  });
+
   it('emits machine-readable output', () => {
     const r = tmac(['questions', EXAMPLE, '--json']);
     const parsed = JSON.parse(r.stdout) as {
       schema: string;
       stats: { open: number; unsettledFindings: number };
-      questions: { field: string; settles: number; rules: string[] }[];
+      questions: { field: string; waiting: number; rules: string[] }[];
     };
     expect(parsed.schema).toBe('tmac/questions/1.0');
     expect(parsed.stats.open).toBe(parsed.questions.length);
@@ -246,6 +255,7 @@ describe('questions', () => {
     for (const q of parsed.questions) {
       expect(q.field.length).toBeGreaterThan(0);
       expect(q.rules.length).toBeGreaterThan(0);
+      expect(q.waiting).toBeGreaterThan(0);
     }
   });
 

@@ -1,0 +1,26 @@
+# The image installs its own dependencies and builds its own output. Copying the
+# host's in would be slower and wrong: node_modules holds binaries built for the
+# host architecture, and dist may be stale.
+node_modules
+**/node_modules
+dist
+**/dist
+apps/cli/web
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# `examples/` is deliberately NOT ignored. The editor imports the worked example at
+# build time, so that it and the CLI share one copy rather than keeping two that
+# drift. Excluding it breaks `vite build` with an unresolved import.
+
+# Never needed at build time, and every file here is context that has to be sent.
+.git
+.github
+coverage
+tm-out
+schema
+docs
+*.md
+!README.md
+.editorconfig
+.gitignore

@@ -46,7 +46,9 @@ export function showQuestions(file: string | undefined, options: QuestionsOption
         subject: q.subject,
         control: q.control,
         worst_severity: q.worstSeverity,
-        settles: q.blocking.length,
+        // Findings waiting on this field, some of which also wait on others.
+        // Not "settles": answering one question need not resolve any of them.
+        waiting: q.blocking.length,
         rules: q.rules,
         findings: q.blocking.map((r) => ({ id: r.id, severity: r.severity, title: r.title })),
       })),
@@ -75,7 +77,7 @@ export function showQuestions(file: string | undefined, options: QuestionsOption
     `\n${bold('Unrecorded, in the order worth answering')}\n` +
       dim(
         `  ${plural(stats.open, 'question')} holding up ${plural(stats.unsettledFindings, 'finding')}.\n` +
-          `  Answering the first settles ${plural(stats.topQuestionUnblocks, 'finding')}.\n\n`,
+          `  ${plural(stats.topQuestionUnblocks, 'finding')} ${stats.topQuestionUnblocks === 1 ? 'waits' : 'wait'} on the first one.\n\n`,
       ),
   );
 

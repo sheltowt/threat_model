@@ -74,6 +74,49 @@ jobs:
           name: example-report
           path: tm-out/
 
+  container:
+    # The image was broken for three merges because nothing ever built it: the data
+    # generator was added to the build and `scripts/` was never copied in. It only
+    # fails when somebody actually builds it, so now something always does.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3.7.1
+      - uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6.10.0
+        with:
+          context: .
+          push: false
+          load: true
+          tags: tmac:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Run the image the way the documentation says to
+        run: |
+          set -euo pipefail
+          # Also proves the non-root image cannot write where it should not.
+          mkdir -p work
+          cp examples/payment-service/threatmodel.yaml work/
+          # As the documentation says to run it. Without --user the non-root image
+          # cannot write into a bind mount the host owns, which is a real failure
+          # on Linux and invisible on macOS. A function rather than a variable,
+          # because relying on an unquoted expansion to word-split is fragile.
+          run() { docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/work:/work" tmac:ci "$@"; }
+          run validate
+          run analyze --format all --out out --quiet
+          test -f work/out/risks.sarif
+          test -f work/out/report.html
+          test -f work/out/data-flow-diagram.svg
+          run questions --limit 3
+          # The editor is bundled in, so `tmac serve` must work from the image too.
+          docker run --rm -d -p 7395:7395 --user "$(id -u):$(id -g)" \
+            -v "$PWD/work:/work" --name tmac-serve tmac:ci serve --host 0.0.0.0 --port 7395
+          for i in $(seq 1 40); do
+            curl -sf http://127.0.0.1:7395/api/model -o /dev/null && break
+            sleep 0.5
+          done
+          curl -sf http://127.0.0.1:7395/ | grep -q 'id="root"'
+          docker rm -f tmac-serve
+
   codeql:
     runs-on: ubuntu-latest
     permissions:
