@@ -10,9 +10,8 @@
  * `tags` is for humans reading the raw file.
  */
 
-import { readFileSync } from 'node:fs';
-import { isResolved, SEVERITY, type ModelGraph, type Severity } from '@tmc/core';
-import type { Analysis, Risk } from '@tmc/rules';
+import { isResolved, SEVERITY, type ModelGraph, type Severity } from '@tmc/core/browser';
+import type { Analysis, Risk } from '@tmc/rules/browser';
 import { compareRisks } from './json.js';
 
 export interface SarifOptions {
@@ -116,16 +115,15 @@ export function findModelLine(text: string, id: string): number | undefined {
   return undefined;
 }
 
+/**
+ * The model text, used to compute line numbers for result locations.
+ *
+ * The caller supplies it rather than this module reading the path itself: a reporter
+ * that opens files cannot run in a browser, and a path recorded in a stored analysis
+ * may not exist on the machine regenerating the report anyway.
+ */
 function loadModelText(options: SarifOptions): string | undefined {
-  if (options.modelText !== undefined) return options.modelText;
-  if (!options.modelPath) return undefined;
-  try {
-    return readFileSync(options.modelPath, 'utf8');
-  } catch {
-    // A path recorded for the report but absent on this machine is normal, for
-    // instance when the SARIF is regenerated from a stored analysis.
-    return undefined;
-  }
+  return options.modelText;
 }
 
 /**
@@ -203,7 +201,8 @@ function descriptorFor(ruleId: string, risks: readonly Risk[], meta: RuleMeta | 
 
 /** SARIF `text` fields are single-paragraph by convention; collapse the YAML folding. */
 function oneLine(text: string | undefined): string {
-  return (text ?? '').replace(/\s*\n\s*/g, ' ').trim();
+  // One unambiguous class, for the reason given on the copy in `common.ts`.
+  return (text ?? '').replace(/\s+/g, ' ').trim();
 }
 
 function suppressionFor(risk: Risk): Record<string, unknown>[] | undefined {

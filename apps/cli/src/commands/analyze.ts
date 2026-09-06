@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { SEVERITY, type Severity } from '@tmc/core';
 import { analyze as runAnalysis, atLeastSeverity, isOpen, type Analysis } from '@tmc/rules';
@@ -162,7 +162,16 @@ export async function analyze(file: string | undefined, options: AnalyzeOptions)
       const path = join(outDir, 'risks.sarif');
       writeFileSync(
         path,
-        `${JSON.stringify(toSarif(analysis, ctx.graph, { ...reportOptions, rules: ctx.rules }), null, 2)}\n`,
+        `${JSON.stringify(
+          toSarif(analysis, ctx.graph, {
+            ...reportOptions,
+            rules: ctx.rules,
+            // SARIF locates each result by line, so the reporter needs the text.
+            modelText: readFileSync(target, 'utf8'),
+          }),
+          null,
+          2,
+        )}\n`,
         'utf8',
       );
       written.push(path);

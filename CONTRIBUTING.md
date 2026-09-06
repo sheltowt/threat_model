@@ -19,6 +19,35 @@ The workspace is npm workspaces over TypeScript with NodeNext resolution, so
 | `packages/report` | Markdown, HTML, SARIF, JSON. |
 | `packages/importers` | foreign formats in, interchange formats out. |
 | `apps/cli` | the `tmc` command. |
+| `apps/web` | the browser editor. |
+
+## Two entry points per package
+
+`@tmc/core` and `@tmc/rules` each export a `/browser` entry carrying only the half
+with no filesystem dependency, because the editor runs the real code rather than a
+copy of it (ADR 0006). A test walks the import graph of each built browser entry and
+fails on any reachable `node:` specifier.
+
+So: put anything that reads a file in the default entry, and import
+`@tmc/core/browser` from any package that the editor also loads.
+
+The technology catalogue and the rule library are mirrored into generated
+TypeScript by `scripts/generate-data.mjs`, which runs as part of `npm run build`.
+After editing `packages/core/data/*.yaml` or `packages/rules/rules/*.rule.yaml`, run
+`npm run generate`. CI fails if you forget.
+
+## Working on the editor
+
+```bash
+npm run build          # the libraries and the editor
+npm run dev            # vite, with the libraries aliased to source
+tmc serve --write      # the built editor against a real file
+```
+
+UI tests mount the app under happy-dom in `apps/web/test`. The assertion that
+matters most is in `state.test.ts`: the browser produces the same findings as the
+CLI for the same file. If that ever fails, the editor has drifted and nothing else
+about it matters.
 
 ## Adding a rule
 

@@ -5,6 +5,7 @@ import { analyze, type Format } from './commands/analyze.js';
 import { reportModelError, validate } from './commands/validate.js';
 import { diagram, diff, explain, init, rulesList, schema, trackSeed } from './commands/misc.js';
 import { exportModel, importModel } from './commands/transfer.js';
+import { serve } from './commands/serve.js';
 import { red } from './ui.js';
 
 const VERSION = '0.1.0';
@@ -150,6 +151,22 @@ async function main(argv: string[]): Promise<number> {
     .action((file: string | undefined, opts: { to: string; out?: string }) => {
       process.exitCode = exportModel(file, opts);
     });
+
+  program
+    .command('serve')
+    .description('open the editor in a browser against a local model')
+    .argument('[file]')
+    .option('-p, --port <port>', 'port to listen on', '7300')
+    .option('--host <host>', 'interface to bind; loopback by default', '127.0.0.1')
+    .option('-w, --write', 'let the editor save back to the model file')
+    .action(
+      async (
+        file: string | undefined,
+        opts: { port: string; host: string; write?: boolean },
+      ) => {
+        process.exitCode = await serve(file, opts);
+      },
+    );
 
   program
     .command('schema')

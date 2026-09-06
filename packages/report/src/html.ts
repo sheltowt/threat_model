@@ -11,9 +11,9 @@
  * so the document survives greyscale printing and colour-blind readers.
  */
 
-import { isResolved, type ModelGraph, type Severity } from '@tmc/core';
-import type { Analysis, Risk } from '@tmc/rules';
-import { svgBody } from '@tmc/render';
+import { isResolved, type ModelGraph, type Severity } from '@tmc/core/browser';
+import type { Analysis, Risk } from '@tmc/rules/browser';
+import { svgBody } from '@tmc/render/svg-text';
 import {
   attentionFirst,
   groupBySeverity,

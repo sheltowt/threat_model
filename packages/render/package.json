@@ -10,11 +10,28 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
+    },
+    "./package.json": "./package.json",
+    "./svg-text": {
+      "types": "./dist/svg-text.d.ts",
+      "default": "./dist/svg-text.js"
     }
   },
-  "files": ["dist", "data", "rules", "templates"],
+  "files": [
+    "dist",
+    "data",
+    "rules",
+    "templates"
+  ],
   "scripts": {
     "build": "tsc --build"
   },
-  "dependencies": { "@tmc/core": "0.1.0", "@viz-js/viz": "^3.30.0" }
+  "dependencies": {
+    "@tmc/core": "0.1.0",
+    "@viz-js/viz": "^3.30.0"
+  }
 }

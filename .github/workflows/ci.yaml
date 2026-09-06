@@ -28,6 +28,8 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
+      # A stale generated file means someone edited the YAML without regenerating.
+      - run: npm run generate:check
       - run: npm run build
       - run: npm run test
 
@@ -57,6 +59,14 @@ jobs:
       - run: npm run build
       - run: node apps/cli/dist/index.js validate examples/payment-service/threatmodel.yaml
       - run: node apps/cli/dist/index.js analyze examples/payment-service/threatmodel.yaml --format all --out tm-out --now 1970-01-01T00:00:00Z
+      # The editor must load the example and agree with the CLI about it.
+      - run: node apps/cli/dist/index.js serve examples/payment-service/threatmodel.yaml --port 7390 &
+      - run: |
+          for i in $(seq 1 40); do
+            curl -sf http://127.0.0.1:7390/api/model -o /dev/null && break
+            sleep 0.5
+          done
+          curl -sf http://127.0.0.1:7390/ | grep -q 'id="root"'
       - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: example-report

@@ -1,0 +1,4 @@
+schema: tmc/1.0
+includes: [pollute-child.yaml]
+meta:
+  title: Include with a hostile key

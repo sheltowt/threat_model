@@ -1,4 +1,4 @@
-import { IMPACT, LIKELIHOOD, SEVERITY, type Impact, type Likelihood, type Severity } from '@tmc/core';
+import { IMPACT, LIKELIHOOD, SEVERITY, type Impact, type Likelihood, type Severity } from '@tmc/core/browser';
 
 /**
  * Severity is likelihood times impact, on Threagile's 1-to-4 weights.

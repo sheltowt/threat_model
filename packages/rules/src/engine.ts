@@ -13,7 +13,7 @@ import {
   type Likelihood,
   type ModelGraph,
   type RiskStatus,
-} from '@tmc/core';
+} from '@tmc/core/browser';
 import {
   evaluate,
   parseExpression,
@@ -21,7 +21,7 @@ import {
   isUnknown,
   type Value,
 } from './expr/index.js';
-import { interpolationParts, type LoadedRule } from './load.js';
+import { interpolationParts, type LoadedRule } from './builtin.js';
 import { calculateSeverity, compareSeverity } from './severity.js';
 import type { Risk, RiskSubject } from './risk.js';
 

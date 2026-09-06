@@ -179,7 +179,32 @@ quietly describing a risk that no longer exists.
 | `tmc track seed` | write tracking entries for every open risk |
 | `tmc import --from threat-dragon model.json` | convert from another tool |
 | `tmc export --to tm-bom` | CycloneDX threat model BOM, or OTM |
+| `tmc serve --write` | open the editor against the local file, and save back to it |
 | `tmc schema -o tmc.schema.json` | JSON Schema for editor completion |
+
+## The editor
+
+```bash
+tmc serve --write
+```
+
+A browser view of the model: the diagram, the findings with filters, the detail of
+any element, flow or finding, and the report. Editing the source reanalyses as you
+type, and Save writes back to the file on disk.
+
+It is a static site that does its own parsing and analysis in the tab, running the
+same core and the same rule library as the CLI rather than a second implementation
+that can disagree with it (ADR 0006). Nothing is uploaded, and it works offline.
+
+`tmc serve` binds to the loopback interface, serves one asset directory, and touches
+exactly one file. It is read only unless you pass `--write`, and a save that would
+not load is refused rather than written.
+
+Findings, elements and flows are all linkable:
+
+```
+#tab=risks&risk=unencrypted-communication@api_to_token_store
+```
 
 ## In CI
 
@@ -223,6 +248,7 @@ merely the same fields.
 | `packages/report` | Markdown, HTML, SARIF, JSON |
 | `packages/importers` | Threat Dragon, pytm, Threagile, OTM |
 | `apps/cli` | the `tmc` command |
+| `apps/web` | the browser viewer and editor |
 
 ## Documentation
 
@@ -239,14 +265,19 @@ Decisions and why:
 - [ADR 0003: layout lives outside the model](docs/adr/0003-layout-sidecar.md)
 - [ADR 0004: a flat element taxonomy](docs/adr/0004-flat-element-taxonomy.md)
 - [ADR 0005: synthetic ids and risk tracking](docs/adr/0005-synthetic-ids-and-tracking.md)
+- [ADR 0006: a browser-capable core](docs/adr/0006-browser-capable-core.md)
 
 ## Status
 
-Early but working end to end. 53 built-in rules, 261 tests.
+Early but working end to end. 53 built-in rules, 308 tests.
 
-The model format, rule format, engine, reporters, importers and CLI are built and
-tested. The web editor described in [PLAN.md](PLAN.md) is not; the CLI and the
-generated HTML report cover reading and reviewing a model in the meantime.
+Built and tested: the model format, the rule format and engine, the reporters, the
+importers, the CLI, and a browser editor that reads, analyses and saves a model.
+
+Not built: drag-and-drop diagram editing, and the hosted git provider integration
+from [PLAN.md](PLAN.md). Editing today is the model text with live analysis, which is
+the half of authoring that carries the value; the diagram is laid out automatically
+and is read only.
 
 ## Licence
 

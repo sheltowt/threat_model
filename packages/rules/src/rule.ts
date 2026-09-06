@@ -7,7 +7,7 @@ import {
   RULE_FUNCTION,
   RULE_SCOPE,
   STRIDE,
-} from '@tmc/core';
+} from '@tmc/core/browser';
 
 /**
  * A rule is a document, not code.

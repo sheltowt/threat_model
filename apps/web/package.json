@@ -1,0 +1,29 @@
+{
+  "name": "@tmc/web",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Browser viewer and editor for tmc threat models",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@tmc/core": "0.1.0",
+    "@tmc/render": "0.1.0",
+    "@tmc/report": "0.1.0",
+    "@tmc/rules": "0.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "vite": "^8.2.2"
+  }
+}
